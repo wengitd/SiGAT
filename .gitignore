@@ -1,0 +1,27 @@
+# Variables de entorno con secretos
+.env
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (para cuando agreguemos backend)
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node (para cuando agreguemos frontend)
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Datos locales de Postgres (Docker volumes nunca se commitean)
+postgres_data/
