@@ -114,20 +114,12 @@ CREATE TABLE emp_lic (
 --============== Cambios de estado========================
 --========================================================
 
-CREATE TABLE historial_estado (
-    id_hes          SERIAL PRIMARY KEY,
-    fecha_reg       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    descr           TEXT,
-    causa           VARCHAR(50) NOT NULL        
-);
 
 CREATE TABLE tipo_estado (
     id_tipoe        SERIAL PRIMARY KEY,
     nombre          VARCHAR(50) NOT NULL UNIQUE,
     descr           TEXT,
-    operatividad    BOOLEAN NOT NULL DEFAULT TRUE,
-
-    id_hes INT references historial_estado(id_hes)
+    operatividad    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 INSERT INTO tipo_estado (nombre,descr) VALUES
@@ -143,7 +135,7 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 --========================================================
 
 CREATE TABLE activo_ti (
-    id              SERIAL PRIMARY KEY,
+    id_act          SERIAL PRIMARY KEY,
     modelo          VARCHAR(50) , 
     marca           VARCHAR(50) , 
     num_serie       VARCHAR(50) UNIQUE, 
@@ -151,12 +143,12 @@ CREATE TABLE activo_ti (
     tipo            VARCHAR(20) NOT NULL CHECK (tipo IN ('equipo_computo', 'periferico')), 
     origen          VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
     
-    id_fact         INT references factura (id_fact),
-    id_hes          INT references historial_estado (id_hes)
+    id_fact         INT references factura (id_fact) NOT NULL,
+    id_tipoe        INT references tipo_estado (id_tipoe) NOT NULL      
 );
 
 CREATE TABLE equipo_computo (
-    id              INT NOT NULL,
+    id_act          INT NOT NULL,
     ram_capac       INT,
     ram_tipo        VARCHAR(10) ,
     sist_op         VARCHAR(50) ,
@@ -169,20 +161,32 @@ CREATE TABLE equipo_computo (
     host_name       VARCHAR(50) ,
     tipo_equipo     VARCHAR(50) ,
 
-    PRIMARY KEY (id),
-    FOREIGN KEY (id) references activo_ti(id)
+    PRIMARY KEY (id_act),
+    FOREIGN KEY (id_act) references activo_ti(id_act)
 
 );
 
 CREATE TABLE periferico (
-    id              INT NOT NULL,
+    id_act          INT NOT NULL,
     tipo_per        VARCHAR(50) ,
     valor_tec       decimal,
     u_medida        VARCHAR(50) ,
     obs_perif       TEXT,
 
-    PRIMARY KEY (id),
-    FOREIGN KEY (id) references activo_ti(id)
+    PRIMARY KEY (id_act) ,
+    FOREIGN KEY (id_act) references activo_ti(id_act)
+);
+
+
+
+CREATE TABLE historial_estado (
+    id_hes          SERIAL PRIMARY KEY,
+    fecha_reg       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descr           TEXT,
+    causa           VARCHAR(50) NOT NULL,
+
+    id_tipoe        INT references tipo_estado(id_tipoe) NOT NULL,
+    id_act          INT references activo_ti(id_act) NOT NULL
 );
 
 
@@ -197,8 +201,8 @@ CREATE TABLE asignacion (
     ruta_acta_entr      VARCHAR(255),
     operatividad        BOOLEAN NOT NULL DEFAULT TRUE,
 
-    id INT references activo_ti(id),
-    id_emp INT references empleado (id_emp)
+    id_act INT references activo_ti(id_act) NOT NULL,
+    id_emp INT references empleado (id_emp) NOT NULL   
 );
 
 
