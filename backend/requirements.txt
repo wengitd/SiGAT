@@ -1,0 +1,14 @@
+fastapi==0.115.0                # Framework principal para crear la API REST.
+uvicorn[standard]==0.32.0       # Servidor ASGI para ejecutar la app FastAPI.
+sqlalchemy==2.0.36              # ORM para modelar tablas y consultar la base de datos.
+psycopg2-binary==2.9.10         # Driver de PostgreSQL usado por SQLAlchemy.
+python-dotenv==1.0.1            # Carga variables de entorno desde archivo .env.
+pydantic==2.10.4                # Validacion y serializacion de datos (esquemas).
+pydantic-settings==2.7.0        # Gestion de configuracion basada en variables de entorno.
+passlib[bcrypt]==1.7.4          # Hash y verificacion segura de contrasenas con bcrypt.
+python-jose[cryptography]==3.3.0  # Creacion y validacion de tokens JWT.
+python-multipart==0.0.20          # Soporte para formularios y subida de archivos multipart.
+
+
+
+#pip install -r requirements.txt
