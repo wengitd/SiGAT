@@ -6,12 +6,16 @@ from config import settings
 from database import get_db
 
 
+from routes import tipo_estado as tipo_estado_routes
+
 # Inicialización de la app
 app = FastAPI(
     title=settings.app_name,
     description="API del Sistema de Gestión de Activos Tecnológicos - Forestal Leonera",
     version="0.1.0",
 )
+
+app.include_router(tipo_estado_routes.router)
 
 # Endpoint raíz: confirma que la app está corriendo.
 @app.get("/")
