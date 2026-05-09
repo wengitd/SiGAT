@@ -5,8 +5,7 @@ from sqlalchemy.orm import Session
 from config import settings
 from database import get_db
 
-
-from routes import tipo_estado as tipo_estado_routes
+from routes import tipo_estado_route, dpto_route
 
 # Inicialización de la app
 app = FastAPI(
@@ -15,9 +14,10 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.include_router(tipo_estado_routes.router)
+app.include_router(tipo_estado_route.router)
+app.include_router(dpto_route.router)
 
-# Endpoint raíz: confirma que la app está corriendo.
+
 @app.get("/")
 def root():
     """Endpoint raíz: confirma que la app está corriendo."""

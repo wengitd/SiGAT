@@ -25,8 +25,8 @@ CREATE TABLE factura (
 CREATE TABLE departamento (
     id_dpto         SERIAL PRIMARY KEY,
     empresa         VARCHAR(50) NOT NULL,
-    zona            VARCHAR(50) NOT NULL,
-    subarea         VARCHAR(50) NOT NULL
+    zona            VARCHAR(50) ,
+    subarea         VARCHAR(50) ,
 );
 
 
