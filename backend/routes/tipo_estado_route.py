@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models.tipo_estado import TipoEstado
-from schemas.tipo_estado import TipoEstadoCreate, TipoEstadoUpdate, TipoEstadoOut
+from models.tipo_estado_model import TipoEstado
+from schemas.tipo_estado_schema import TipoEstadoCreate, TipoEstadoUpdate, TipoEstadoOut
 
 #Agrupa endpoints relacionados.
 #El prefijo hace que todas las rutas debajo empiecen con /tipo_estado

@@ -25,4 +25,5 @@ class Informatico(Base):
     id_emp      : Mapped[int] = mapped_column(ForeignKey("empleado.id_emp"), primary_key=True)
     hash_pass   : Mapped[str] = mapped_column(String(255), nullable=False)
     rol         : Mapped[str] = mapped_column(String(50), nullable=False)
+    vigente     : Mapped[bool]= mapped_column(nullable=False, default=True)
 

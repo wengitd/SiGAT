@@ -25,8 +25,9 @@ CREATE TABLE factura (
 CREATE TABLE departamento (
     id_dpto         SERIAL PRIMARY KEY,
     empresa         VARCHAR(50) NOT NULL,
-    zona            VARCHAR(50) NOT NULL,
-    subarea         VARCHAR(50) NOT NULL
+    zona            VARCHAR(50) ,
+    subarea         VARCHAR(50),
+    nom_dpto        VARCHAR(50)
 );
 
 
@@ -62,6 +63,7 @@ CREATE TABLE informatico (
     id_emp          INT PRIMARY KEY,
     hash_pass       VARCHAR(255) NOT NULL,
     rol             VARCHAR(50) NOT NULL,
+    vigente         BOOLEAN NOT NULL DEFAULT TRUE,
 
     FOREIGN KEY (id_emp) references empleado (id_emp)
 
