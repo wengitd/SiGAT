@@ -6,7 +6,7 @@ from models.empleado_model import Empleado
 from schemas.empleado_schema import EmpleadoCreate, EmpleadoUpdate, EmpleadoOut
 from models.dpto_model import Departamento
 
-router=APIRouter(prefix="/empleado", tags=["empleado"])
+router=APIRouter(prefix="/empleado", tags=["Empleado"])
 
 @router.get("/", response_model=list[EmpleadoOut])
 def listar (db: Session = Depends(get_db)):
