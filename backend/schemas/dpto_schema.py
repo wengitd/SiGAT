@@ -5,6 +5,7 @@ class DepartamentoBase(BaseModel):
     empresa : str
     zona    : str
     subarea : str
+    nom_dpto: str
 
 #Hereda de Base, representa datos para crear
 class DepartamentoCreate(DepartamentoBase):
@@ -17,6 +18,7 @@ class DepartamentoUpdate(BaseModel):
     empresa : str | None = None
     zona    : str 
     subarea : str 
+    nom_dpto: str
 
 class DepartamentoOut(DepartamentoBase):
     """Lo que la API devuelve"""

@@ -1,0 +1,99 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from passlib.context import CryptContext #libreria para hash pass
+
+
+from database import get_db
+from models.empleado_model import Informatico
+from models.empleado_model import Empleado
+
+from schemas.empleado_schema import InformaticoCreate, InformaticoUpdate, InformaticoOut
+
+router=APIRouter(prefix="/informatico", tags=["Informáticos"])
+
+#objeto que sabe hashear y verificar pass
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
+
+@router.get("/", response_model=list[InformaticoOut])
+def listar (db: Session = Depends(get_db)):
+    "Muestra todos los Informáticos."
+    #return.db.query(model.py)
+    return db.query(Informatico).all()
+
+@router.get("/{id_emp}", response_model=InformaticoOut)
+def obtener (id_emp: int, db: Session = Depends(get_db)):
+    """Devuelve un Informatico por id."""
+    
+    #variable = db.query(model).filter(model.id == id).first()
+    inf = db.query(Informatico).filter(Informatico.id_emp == id_emp).first()
+    if inf is None:
+        raise  HTTPException(status_code=404, detail="Informatico no encontrado")
+    return inf
+
+@router.post("/", response_model=InformaticoOut, status_code=status.HTTP_201_CREATED)
+def crear(payload: InformaticoCreate, db: Session = Depends(get_db)):
+     
+    #verificar que empleado existe 
+    emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
+    if emp is None:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    #verificar que no sea ya un informatico (para no duplicar PK)
+    inf=db.query(Informatico).filter(Informatico.id_emp == payload.id_emp).first()
+    if inf is not None:
+        raise HTTPException(status_code=400, detail="Este empleado ya es informatico")
+
+    #hashear la pass
+    hash_pass=pwd_context.hash(payload.password)
+
+    #crear el objeto SQLAlchemy con el hash no con pass
+    nuevo_inf=Informatico(
+        id_emp=payload.id_emp,
+        hash_pass=hash_pass,
+        rol=payload.rol,
+        vigente=payload.vigente
+    )
+
+    #guardar
+    db.add(nuevo_inf)
+    db.commit()
+    db.refresh(nuevo_inf)
+    return nuevo_inf
+
+@router.put("/{id_emp}", response_model=InformaticoOut)
+def actualizar(id_emp:int, payload: InformaticoUpdate, db: Session = Depends(get_db)):
+    #variable=db.query(model.py).filter(model.id_model==id_model).first()
+    act_inf = db.query(Informatico).filter(Informatico.id_emp == id_emp).first()
+
+    if act_inf is None:
+        raise HTTPException(status_code=404, detail="Informatico no encontrado")
+
+    datos= payload.model_dump(exclude_unset=True)
+    
+    #si el cliente envia password, se hashea y renombra la clave a hash_pass
+    if "password" in datos:
+        datos["hash_pass"] = pwd_context.hash(datos.pop("password"))
+    
+    #sino, solo cambia el rol.
+
+    #"datos" contiene hash_pass,rol, pero no password
+    #cuando el for itere datos, va a tener hash_pass y rol
+    for campo, valor in datos.items():
+        setattr(act_inf,campo,valor)
+    
+    db.commit()
+    db.refresh(act_inf)
+    return act_inf
+
+@router.delete ("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar(id_emp:int, db: Session = Depends(get_db)):
+    eli_inf= db.query(Informatico).filter(Informatico.id_emp == id_emp).first()
+    
+    if eli_inf is None:
+        raise HTTPException(status_code=404, detail="Informatico no encontrado")
+
+    eli_inf.vigente = False
+    db.commit()
+
+    return None

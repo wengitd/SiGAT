@@ -19,7 +19,7 @@ def obtener (id_dpto: int, db: Session = Depends(get_db)):
     
     dptos = db.query(Departamento).filter(Departamento.id_dpto == id_dpto).first()
     if dptos is None:
-        return  HTTPException(status_code=404, detail="Departamento no encontrado")
+        raise  HTTPException(status_code=404, detail="Departamento no encontrado")
     return dptos
 
 @router.post("/", response_model=DepartamentoOut, status_code=status.HTTP_201_CREATED)
@@ -58,7 +58,7 @@ def eliminar(id_dpto:int, db: Session = Depends(get_db)):
     eli_dpto= db.query(Departamento).filter(Departamento.id_dpto == id_dpto).first()
     
     if eli_dpto is None:
-        HTTPException(status_code=404, detail="Departamento no encontrado")
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
 
     eli_dpto.operatividad=False
     db.commit()

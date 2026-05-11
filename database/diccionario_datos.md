@@ -61,6 +61,7 @@ A continuación se documenta cada tabla del esquema en el orden lógico de creac
 | `empresa` | VARCHAR(50) | NOT NULL | — | Nombre de la empresa subsidiaria del Holding |
 | `zona` | VARCHAR(50) | NOT NULL | — | Zona geográfica donde opera el departamento |
 | `subarea` | VARCHAR(50) | NOT NULL | — | Subárea funcional dentro del departamento |
+|`nom_dpto` |VARCHAR(50)  |NOT NULL  |-  |Nombre del departamento  
 
 **Claves foráneas**: ninguna.
 
@@ -95,12 +96,13 @@ A continuación se documenta cada tabla del esquema en el orden lógico de creac
 | `id_emp` | INT | PK, FK | — | Identificador del empleado (compartido con `empleado.id_emp`) |
 | `hash_pass` | VARCHAR(255) | NOT NULL | — | Hash de la contraseña generado con bcrypt (irreversible) |
 | `rol` | VARCHAR(20) | NOT NULL, CHECK | — | Rol funcional. Valores permitidos: `'editor'`, `'viewer'` |
+|`vigente`| BOOLEAN |NOT NULL|TRUE | indica si el informatico está dentro de la empresa, si tiene permiso para acceder al sistema, sin perder la trzabilidad de su checklist realizados.  
 
 **Claves foráneas**:
 - `informatico.id_emp → empleado.id_emp`
 
-**Notas de implementación**: el hash de contraseña se genera con el algoritmo bcrypt mediante la librería `passlib`, conforme a las recomendaciones de OWASP para almacenamiento seguro de credenciales [5]. La contraseña en texto plano nunca se persiste en la base de datos.
-
+**Notas de implementación**:  
+"El hash de contraseña se genera con el algoritmo argon2id mediante la librería argon2-cffi a través de passlib. Argon2 fue el algoritmo ganador de la Password Hashing Competition de 2015, conforme a las recomendaciones de OWASP para almacenamiento seguro de credenciales [5]. y reemplaza al algoritmo bcrypt anterior por su mayor resistencia a ataques con hardware especializado."
 ---
 
 ### 4.4 `licencia`
