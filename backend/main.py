@@ -5,7 +5,16 @@ from sqlalchemy.orm import Session
 from config import settings
 from database import get_db
 
-from routes import tipo_estado_route, dpto_route,empleado_route, informatico_route, licencia_route, emp_lic_route, factura_route
+from routes import (
+    tipo_estado_route,
+    dpto_route,
+    empleado_route,
+    informatico_route,
+    licencia_route,
+    emp_lic_route,
+    factura_route,
+    activo_route,
+)
 
 # Inicialización de la app
 app = FastAPI(
@@ -21,6 +30,7 @@ app.include_router(informatico_route.router)
 app.include_router(licencia_route.router)
 app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)
+app.include_router(activo_route.router)
 
 @app.get("/")
 def root():
