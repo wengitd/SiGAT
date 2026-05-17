@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from config import settings
 from database import get_db
 
-from routes import tipo_estado_route, dpto_route,empleado_route, informatico_route, licencia_route, emp_lic_route, factura_route
 from routes import (
     tipo_estado_route,
     dpto_route,
