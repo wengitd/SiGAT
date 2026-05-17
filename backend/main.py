@@ -14,7 +14,6 @@ from routes import (
     emp_lic_route,
     factura_route,
     activo_route,
-    historial_estado_route
 )
 
 # Inicialización de la app
@@ -32,8 +31,6 @@ app.include_router(licencia_route.router)
 app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)
 app.include_router(activo_route.router)
-app.include_router(historial_estado_route.router)
-
 
 @app.get("/")
 def root():
