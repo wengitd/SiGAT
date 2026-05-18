@@ -14,9 +14,11 @@ from routes import (
     emp_lic_route,
     factura_route,
     activo_route,
+    historial_estado_route,
+    asignacion_route
 )
 
-# Inicialización de la app
+# Inicialización de la app  
 app = FastAPI(
     title=settings.app_name,
     description="API del Sistema de Gestión de Activos Tecnológicos - Forestal Leonera",
@@ -31,6 +33,8 @@ app.include_router(licencia_route.router)
 app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)
 app.include_router(activo_route.router)
+app.include_router(historial_estado_route.router)
+app.include_router(asignacion_route.router)
 
 @app.get("/")
 def root():

@@ -1,0 +1,28 @@
+Soy Wendy, estoy desarrollando SiGAT (Sistema de Gestión de Activos 
+Tecnológicos para Forestal Leonera), mi proyecto de título de 
+Ingeniería Civil Informática en U. Bío-Bío.
+
+Stack: PostgreSQL 16 (Docker), FastAPI + SQLAlchemy 2.0, Pydantic v2, 
+Argon2 para hash de passwords. Frontend pendiente (React + Vite). 
+Git Flow con main/dev/feature/* en https://github.com/wengitd/SiGAT.
+
+Schema tiene 13 tablas: departamento, empleado, informatico (herencia 1:1), 
+licencia, emp_lic (N:N), tipo_estado (catálogo), factura, activo_ti, 
+equipo_computo y periferico (herencia 1:1), historial_estado, asignacion, 
+checklist, plantilla, check_plantilla (N:N). 
+
+Convenciones: snake_case, PK como id_<entidad>, FK con mismo nombre que 
+la PK que referencia, soft-delete via campos "operatividad" (empleado) y 
+"vigente" (informatico). El campo "tipo" en activo_ti discrimina 
+equipo_computo vs periferico.
+
+Avance hasta hoy: schema BD completo, init.sql aplicado, modelos 
+SQLAlchemy listos, endpoints CRUD completos de: tipo_estado, departamento, 
+empleado, informatico, licencia, emp_lic, factura, activo_ti (POST combinado).
+
+Hoy quiero seguir con: Autenticación JWT: el login con email + password hasheado, generar tokens
+
+
+Lo importante: trabajamos con vos guiándome, vos no escribís código por mí, 
+yo escribo y vos revisás. Y vos cuidás los tokens — sin leer archivos del 
+disco innecesariamente, mejor pegar snippets en el chat.
