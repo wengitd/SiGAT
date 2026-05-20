@@ -15,7 +15,10 @@ from routes import (
     factura_route,
     activo_route,
     historial_estado_route,
-    asignacion_route
+    asignacion_route,
+    checklist_route,
+    plantilla_route,
+    check_plantilla_route
 )
 
 # Inicialización de la app  
@@ -35,6 +38,11 @@ app.include_router(factura_route.router)
 app.include_router(activo_route.router)
 app.include_router(historial_estado_route.router)
 app.include_router(asignacion_route.router)
+app.include_router(checklist_route.router)
+app.include_router(plantilla_route.router)
+app.include_router(check_plantilla_route.router)
+
+
 
 @app.get("/")
 def root():

@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
+
 
 from database import Base
 
@@ -9,7 +10,12 @@ class Plantilla(Base):
 
     id_ip:Mapped[int] = mapped_column(primary_key=True) 
     descr:Mapped[str | None] = mapped_column()
-    orden:Mapped[int] = mapped_column(nullable=False)         
+    orden:Mapped[int] = mapped_column(nullable=False)   
+
+    # relación inversa
+    check_plantillas = relationship("CheckPlantilla", back_populates="plantilla")    
+
+         
 
 class Checklist (Base):
     __tablename__ ="checklist"
@@ -21,6 +27,9 @@ class Checklist (Base):
 
     id_emp      :Mapped[int]= mapped_column(ForeignKey("informatico.id_emp"))
 
+    #relacion inversa
+    check_plantillas = relationship("CheckPlantilla", back_populates="checklist")
+  
 
 class CheckPlantilla(Base):
     __tablename__ = "check_plantilla"
@@ -30,3 +39,7 @@ class CheckPlantilla(Base):
 
     id_check    : Mapped[int] = mapped_column(ForeignKey("checklist.id_check"),primary_key=True)
     id_ip       : Mapped[int] = mapped_column(ForeignKey("plantilla.id_ip"),primary_key=True)
+
+    #para anidar datos
+    checklist = relationship("Checklist", back_populates="check_plantillas")
+    plantilla = relationship("Plantilla", back_populates="check_plantillas")
