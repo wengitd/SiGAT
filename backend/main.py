@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from config import settings
 from database import get_db
 
+from auth.router import router as auth_router #carpeta creada para jwt
+#de la carpeta auth/, del archivo router.py, importa la variable router
+
 from routes import (
     tipo_estado_route,
     dpto_route,
@@ -41,6 +44,8 @@ app.include_router(asignacion_route.router)
 app.include_router(checklist_route.router)
 app.include_router(plantilla_route.router)
 app.include_router(check_plantilla_route.router)
+app.include_router(auth_router)
+
 
 
 
