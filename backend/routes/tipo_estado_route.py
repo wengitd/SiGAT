@@ -49,24 +49,24 @@ def crear(payload: TipoEstadoCreate, db: Session = Depends(get_db)):
 #ACTUALIZAR
 @router.put("/{id_tipoe}", response_model=TipoEstadoOut)
 def actualizar(id_tipoe: int, payload: TipoEstadoUpdate, db: Session = Depends(get_db)):
-    # 1. Buscar el registro (igual que en obtener); si no existe, 404
+    # Buscar el registro (igual que en obtener); si no existe, 404
     act_tipo= db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
 
     if act_tipo is None:
         raise HTTPException(status_code=404, detail="No encontrado")
     
 
-    # 2. Iterar payload.model_dump(exclude_unset=True) y setear los atributos en el objeto
+    # Iterar payload.model_dump(exclude_unset=True) y setear los atributos en el objeto
     datos= payload.model_dump(exclude_unset=True)
     for campo, valor in datos.items():
         #setattr(objeto, "atributo", valor)
         setattr(act_tipo,campo,valor)
     
-    # 3. db.commit() + db.refresh()
+    #  db.commit() + db.refresh()
     db.commit()
     db.refresh(act_tipo)
 
-    # 4. retornar
+    # retornar
     return act_tipo
 
 

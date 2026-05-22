@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_host: str = "localhost"
 
+    #Campos de JWT
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     # Configuración de la app
     app_name: str = "SiGAT API"
     app_env: str = "development"
