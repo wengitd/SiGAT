@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
+from auth.dependencies import get_current_user, require_editor
 
 
 from models.checklist_model import Plantilla, Checklist
@@ -10,14 +11,14 @@ router=APIRouter(prefix="/Plantilla", tags=["Plantilla"])
 
 
 @router.get("/", response_model=list[PlantillaOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todas las plantillas."
     #return.db.query(model.py)
     return db.query(Plantilla).all()
 
 
 @router.post("/", response_model=PlantillaOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: PlantillaCreate, db: Session = Depends(get_db)):
+def crear(payload: PlantillaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
        
     nueva_plantilla = Plantilla(**payload.model_dump())
 
@@ -32,7 +33,7 @@ def crear(payload: PlantillaCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_ip}", response_model=PlantillaOut)
-def actualizar(id_ip: int, payload: PlantillaUpdate, db: Session = Depends(get_db)):
+def actualizar(id_ip: int, payload: PlantillaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     
     act_plantilla =db.query(Plantilla).filter(Plantilla.id_ip==id_ip).first()
 

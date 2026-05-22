@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.asignacion_model import Asignacion
 from schemas.asignacion_schema import AsignacionCreate, AsignacionUpdate, AsignacionOut
+from auth.dependencies import get_current_user, require_editor
+
 
 from models.activo_ti_model import ActivoTi
 from models.empleado_model import Empleado
@@ -12,13 +14,13 @@ router=APIRouter(prefix="/asignaciones", tags=["Asignaciones"])
 
 
 @router.get("/", response_model=list[AsignacionOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos las asignaciones."
     #return.db.query(model.py)
     return db.query(Asignacion).all()
 
 @router.get("/{id_asig}", response_model=AsignacionOut)
-def obtener (id_asig: int, db: Session = Depends(get_db)):
+def obtener (id_asig: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve una Asignacion por id."""
     
     #variable = db.query(model).filter(model.id == id).first()
@@ -28,7 +30,7 @@ def obtener (id_asig: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=AsignacionOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: AsignacionCreate, db: Session = Depends(get_db)):
+def crear(payload: AsignacionCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
      
      # Bloque para las FK y validaciones
     
@@ -65,7 +67,7 @@ def crear(payload: AsignacionCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_asig}", response_model=AsignacionOut)
-def actualizar(id_asig:int, payload: AsignacionUpdate, db: Session = Depends(get_db)):
+def actualizar(id_asig:int, payload: AsignacionUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_asig = db.query(Asignacion).filter(Asignacion.id_asig == id_asig).first()
 

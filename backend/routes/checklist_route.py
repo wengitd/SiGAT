@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from sqlalchemy.orm import joinedload
-
+from auth.dependencies import get_current_user, require_editor
 
 from models.empleado_model import Empleado
 from models.checklist_model import  Checklist
@@ -13,7 +13,7 @@ router=APIRouter(prefix="/Checklist", tags=["Checklist"])
 
 
 @router.get("/", response_model=list[ChecklistOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los checklist."
     #return.db.query(model.py)
     return db.query(Checklist).all()
@@ -21,7 +21,7 @@ def listar (db: Session = Depends(get_db)):
 
 
 @router.get("/{id_check}", response_model=ChecklistOut)
-def obtener(id_check: int, db: Session = Depends(get_db)):
+def obtener(id_check: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un Checklist por id."""
     checklist = (
         db.query(Checklist).options(joinedload(Checklist.check_plantillas)) .filter(Checklist.id_check == id_check).first()
@@ -33,7 +33,7 @@ def obtener(id_check: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ChecklistOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: ChecklistCreate, db: Session = Depends(get_db)):
+def crear(payload: ChecklistCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
 
     #para FK empleado
     if db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first() is None:
@@ -49,7 +49,7 @@ def crear(payload: ChecklistCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_check}", response_model=ChecklistOut)
-def actualizar(id_check: int, payload: ChecklistUpdate, db: Session = Depends(get_db)):
+def actualizar(id_check: int, payload: ChecklistUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     
     act_checklist =db.query(Checklist).filter(Checklist.id_check==id_check).first()
 

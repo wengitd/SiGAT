@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from auth.dependencies import get_current_user, require_editor
+
 
 from database import get_db
 from models.empleado_model import Empleado
@@ -9,14 +11,14 @@ from models.dpto_model import Departamento
 router=APIRouter(prefix="/empleado", tags=["Empleado"])
 
 @router.get("/", response_model=list[EmpleadoOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los Empleados."
     #return.db.query(model.py)
     return db.query(Empleado).all()
 
 
 @router.get("/{id_emp}", response_model=EmpleadoOut)
-def obtener (id_emp: int, db: Session = Depends(get_db)):
+def obtener (id_emp: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un Empleado por id."""
     
     #variable = db.query(model).filter(model.id == id).first()
@@ -26,7 +28,7 @@ def obtener (id_emp: int, db: Session = Depends(get_db)):
     return emp
 
 @router.post("/", response_model=EmpleadoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: EmpleadoCreate, db: Session = Depends(get_db)):
+def crear(payload: EmpleadoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
      
      # para las FK
      # Validar que el departamento existe
@@ -47,7 +49,7 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db)):
     return nuevo_emp
 
 @router.put("/{id_emp}", response_model=EmpleadoOut)
-def actualizar(id_emp:int, payload: EmpleadoUpdate, db: Session = Depends(get_db)):
+def actualizar(id_emp:int, payload: EmpleadoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_emp = db.query(Empleado).filter(Empleado.id_emp == id_emp).first()
 
@@ -63,7 +65,7 @@ def actualizar(id_emp:int, payload: EmpleadoUpdate, db: Session = Depends(get_db
     return act_emp
 
 @router.delete ("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_emp:int, db: Session = Depends(get_db)):
+def eliminar(id_emp:int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     eli_emp= db.query(Empleado).filter(Empleado.id_emp == id_emp).first()
     
     if eli_emp is None:

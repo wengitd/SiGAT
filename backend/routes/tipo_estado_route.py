@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from auth.dependencies import get_current_user, require_editor
+
 
 from database import get_db
 from models.tipo_estado_model import TipoEstado
@@ -12,14 +14,14 @@ router = APIRouter(prefix="/tipos-estado", tags=["tipos_estado"])
 
 #get listar 
 @router.get("/", response_model=list[TipoEstadoOut])
-def listar(db: Session = Depends(get_db)):
+def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve todos los tipos de estado."""
     return db.query(TipoEstado).all()
 
 
 #get por id
 @router.get("/{id_tipoe}", response_model=TipoEstadoOut)
-def obtener(id_tipoe: int, db: Session = Depends(get_db)):
+def obtener(id_tipoe: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un tipo de estado por id."""
     tipo = db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
     if tipo is None:
@@ -28,7 +30,7 @@ def obtener(id_tipoe: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=TipoEstadoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: TipoEstadoCreate, db: Session = Depends(get_db)):
+def crear(payload: TipoEstadoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
 
     # 1. Convertir el payload Pydantic a un dict, y desempaquetarlo en el constructor del modelo
     nuevo_tipo = TipoEstado(**payload.model_dump())
@@ -48,7 +50,7 @@ def crear(payload: TipoEstadoCreate, db: Session = Depends(get_db)):
 
 #ACTUALIZAR
 @router.put("/{id_tipoe}", response_model=TipoEstadoOut)
-def actualizar(id_tipoe: int, payload: TipoEstadoUpdate, db: Session = Depends(get_db)):
+def actualizar(id_tipoe: int, payload: TipoEstadoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     # Buscar el registro (igual que en obtener); si no existe, 404
     act_tipo= db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
 
@@ -72,7 +74,7 @@ def actualizar(id_tipoe: int, payload: TipoEstadoUpdate, db: Session = Depends(g
 
 #ELIMINAR
 @router.delete("/{id_tipoe}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_tipoe:int, db: Session = Depends(get_db)):
+def eliminar(id_tipoe:int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     eli_tipo=db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
 
     if eli_tipo is None:

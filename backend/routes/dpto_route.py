@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from auth.dependencies import get_current_user, require_editor
+
 
 from database import get_db
 from models.dpto_model import Departamento
@@ -8,13 +10,13 @@ from schemas.dpto_schema import DepartamentoCreate, DepartamentoUpdate, Departam
 router=APIRouter(prefix="/departamento", tags=["departamento"])
 
 @router.get("/", response_model=list[DepartamentoOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los departamentos."
     #return.db.query(model.py)
     return db.query(Departamento).all()
 
 @router.get("/{id_dpto}", response_model=DepartamentoOut)
-def obtener (id_dpto: int, db: Session = Depends(get_db)):
+def obtener (id_dpto: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un departamento por id."""
     
     dptos = db.query(Departamento).filter(Departamento.id_dpto == id_dpto).first()
@@ -23,7 +25,7 @@ def obtener (id_dpto: int, db: Session = Depends(get_db)):
     return dptos
 
 @router.post("/", response_model=DepartamentoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: DepartamentoCreate, db: Session = Depends(get_db)):
+def crear(payload: DepartamentoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=model.py(**play.model_dump())
     nuevo_dptos = Departamento(**payload.model_dump())
     db.add(nuevo_dptos)
@@ -32,7 +34,7 @@ def crear(payload: DepartamentoCreate, db: Session = Depends(get_db)):
     return nuevo_dptos
 
 @router.put("/{id_dpto}", response_model=DepartamentoOut)
-def actualizar(id_dpto:int, payload: DepartamentoUpdate, db: Session = Depends(get_db)):
+def actualizar(id_dpto:int, payload: DepartamentoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_dpto= db.query(Departamento).filter(Departamento.id_dpto == id_dpto).first()
 

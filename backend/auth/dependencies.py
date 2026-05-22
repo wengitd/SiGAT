@@ -19,7 +19,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
         raise HTTPException(status_code=401, detail="Token inválido")
 
     id_emp=int(var_token["sub"])
-    inf= db.query(Informatico).filter(Informatico.id_emp==var_token.id_emp).first()
+    inf= db.query(Informatico).filter(Informatico.id_emp==id_emp).first()
 
     if not inf or not inf.vigente:
         raise HTTPException(status_code=401, detail="Usuario no autorizado")
