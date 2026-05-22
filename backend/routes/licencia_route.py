@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from auth.dependencies import get_current_user, require_editor
+
 
 from database import get_db
 from models.licencia_model import Licencia
@@ -9,14 +11,14 @@ router=APIRouter(prefix="/licencia", tags=["Licencias"])
 
 
 @router.get("/", response_model=list[LicenciaOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos las Licencias."
     #return.db.query(model)
     return db.query(Licencia).all()
 
 
 @router.get("/{id_lic}", response_model=LicenciaOut)
-def obtener (id_lic: int, db: Session = Depends(get_db)):
+def obtener (id_lic: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve una Licencia por id."""
     
     #variable = db.query(model).filter(model.id == id).first()
@@ -27,7 +29,7 @@ def obtener (id_lic: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=LicenciaOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: LicenciaCreate, db: Session = Depends(get_db)):
+def crear(payload: LicenciaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #crear el objeto SQLAlchemy     
     #variable=model(**play.model_dump())
     nueva_lic = Licencia(**payload.model_dump())
@@ -40,7 +42,7 @@ def crear(payload: LicenciaCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_lic}", response_model=LicenciaOut)
-def actualizar(id_lic:int, payload: LicenciaUpdate, db: Session = Depends(get_db)):
+def actualizar(id_lic:int, payload: LicenciaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_lic= db.query(Licencia).filter(Licencia.id_lic == id_lic).first()
 

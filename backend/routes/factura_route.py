@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
+from auth.dependencies import get_current_user, require_editor
+
 
 from models.factura_model import Factura
 from schemas.factura_schema import FacturaCreate, FacturaUpdate, FacturaOut
@@ -8,14 +10,14 @@ from schemas.factura_schema import FacturaCreate, FacturaUpdate, FacturaOut
 router=APIRouter(prefix="/factura", tags=["Factura"])
 
 @router.get("/", response_model=list[FacturaOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos las Facturas."
     #return.db.query(model.py)
     return db.query(Factura).all()
 
 
 @router.get("/{id_fact}", response_model=FacturaOut)
-def obtener (id_fact: int, db: Session = Depends(get_db)):
+def obtener (id_fact: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve una Factura por id."""
     
     #variable = db.query(model).filter(model.id == id).first()
@@ -27,7 +29,7 @@ def obtener (id_fact: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=FacturaOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: FacturaCreate, db: Session = Depends(get_db)):
+def crear(payload: FacturaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
      
     #crear el objeto SQLAlchemy     
     #variable=model(**play.model_dump())
@@ -40,7 +42,7 @@ def crear(payload: FacturaCreate, db: Session = Depends(get_db)):
     return nueva_fact
 
 @router.put("/{id_fact}", response_model=FacturaOut)
-def actualizar(id_fact:int, payload: FacturaUpdate, db: Session = Depends(get_db)):
+def actualizar(id_fact:int, payload: FacturaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_fact = db.query(Factura).filter(Factura.id_fact == id_fact).first()
 

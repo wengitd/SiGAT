@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
 
@@ -14,7 +15,7 @@ from typing import Optional
 router=APIRouter(prefix="/historial_estado", tags=["Historial de estados"])
 
 @router.get("/", response_model=list[HistorialEstadoOut])
-def listar (id_act:Optional[int]=None, id_tipoe:Optional[int]=None,db: Session = Depends(get_db)):
+def listar (id_act:Optional[int]=None, id_tipoe:Optional[int]=None,db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve historial de estados."""
 
     query = db.query(HistorialEstado)
@@ -30,7 +31,7 @@ def listar (id_act:Optional[int]=None, id_tipoe:Optional[int]=None,db: Session =
 
 
 @router.get("/{id_hes}", response_model=HistorialEstadoOut)
-def obtener (id_hes: int, db: Session = Depends(get_db)):
+def obtener (id_hes: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve historial por id."""
     
    
@@ -42,7 +43,7 @@ def obtener (id_hes: int, db: Session = Depends(get_db)):
     return his
 
 @router.post("/", response_model=HistorialEstadoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: HistorialEstadoCreate, db: Session = Depends(get_db)):
+def crear(payload: HistorialEstadoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
      
     # para las FK
     # Validar que el tipo estado existe

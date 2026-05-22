@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from sqlalchemy.orm import joinedload
-
-
+from auth.dependencies import get_current_user, require_editor
 
 from models.checklist_model import CheckPlantilla, Checklist, Plantilla
 from schemas.checklist_schema import CheckPlantillaCreate, CheckPlantillaUpdate, CheckPlantillaOut
@@ -11,13 +10,13 @@ from schemas.checklist_schema import CheckPlantillaCreate, CheckPlantillaUpdate,
 router=APIRouter(prefix="/check-plantillas", tags=["Check Plantillas"])
 
 @router.get("/", response_model=list[CheckPlantillaOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los checklist de las plantillas."
     #return.db.query(model.py)
     return db.query(CheckPlantilla).all()
 
 @router.get("/{id_check}/{id_ip}", response_model=CheckPlantillaOut)
-def obtener(id_check: int, id_ip:int, db: Session = Depends(get_db)):
+def obtener(id_check: int, id_ip:int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un Checklist de plantillas por id."""
     obt_checkplantilla=( db.query(CheckPlantilla).options(
             joinedload(CheckPlantilla.checklist),
@@ -36,7 +35,7 @@ def obtener(id_check: int, id_ip:int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=CheckPlantillaOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: CheckPlantillaCreate, db: Session = Depends(get_db)):
+def crear(payload: CheckPlantillaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     
     # Validar que el checklist  existe
     if db.query(Checklist).filter(Checklist.id_check == payload.id_check).first() is None:
@@ -67,7 +66,7 @@ def crear(payload: CheckPlantillaCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_check}/{id_ip}", response_model=CheckPlantillaOut)
-def actualizar(id_check: int, id_ip: int, payload: CheckPlantillaUpdate, db: Session = Depends(get_db)):
+def actualizar(id_check: int, id_ip: int, payload: CheckPlantillaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     act_checkplantilla= db.query(CheckPlantilla).filter(CheckPlantilla.id_check == id_check).first()
 
     if act_checkplantilla is None:
@@ -84,7 +83,7 @@ def actualizar(id_check: int, id_ip: int, payload: CheckPlantillaUpdate, db: Ses
 
 
 @router.delete("/{id_check}/{id_ip}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_check: int, id_ip: int, db: Session = Depends(get_db)):
+def eliminar(id_check: int, id_ip: int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     """Para eliminar necesitamos los DOS ids porque la PK es compuesta."""
     eli_check = db.query(CheckPlantilla).filter(
         CheckPlantilla.id_check == id_check,

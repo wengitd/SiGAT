@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext #libreria para hash pass
+from auth.dependencies import get_current_user, require_editor
 
 
 from database import get_db
@@ -16,13 +17,13 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 @router.get("/", response_model=list[InformaticoOut])
-def listar (db: Session = Depends(get_db)):
+def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Muestra todos los Informáticos."
     #return.db.query(model.py)
     return db.query(Informatico).all()
 
 @router.get("/{id_emp}", response_model=InformaticoOut)
-def obtener (id_emp: int, db: Session = Depends(get_db)):
+def obtener (id_emp: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve un Informatico por id."""
     
     #variable = db.query(model).filter(model.id == id).first()
@@ -32,7 +33,7 @@ def obtener (id_emp: int, db: Session = Depends(get_db)):
     return inf
 
 @router.post("/", response_model=InformaticoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: InformaticoCreate, db: Session = Depends(get_db)):
+def crear(payload: InformaticoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
      
     #verificar que empleado existe 
     emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
@@ -62,7 +63,7 @@ def crear(payload: InformaticoCreate, db: Session = Depends(get_db)):
     return nuevo_inf
 
 @router.put("/{id_emp}", response_model=InformaticoOut)
-def actualizar(id_emp:int, payload: InformaticoUpdate, db: Session = Depends(get_db)):
+def actualizar(id_emp:int, payload: InformaticoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     #variable=db.query(model.py).filter(model.id_model==id_model).first()
     act_inf = db.query(Informatico).filter(Informatico.id_emp == id_emp).first()
 
@@ -87,7 +88,7 @@ def actualizar(id_emp:int, payload: InformaticoUpdate, db: Session = Depends(get
     return act_inf
 
 @router.delete ("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_emp:int, db: Session = Depends(get_db)):
+def eliminar(id_emp:int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     eli_inf= db.query(Informatico).filter(Informatico.id_emp == id_emp).first()
     
     if eli_inf is None:
