@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from config import settings
 from database import get_db
+from fastapi.middleware.cors import CORSMiddleware #CORS bloqueaba conexion con frontend
+
 
 from auth.router import router as auth_router #carpeta creada para jwt
 #de la carpeta auth/, del archivo router.py, importa la variable router
@@ -46,6 +48,14 @@ app.include_router(plantilla_route.router)
 app.include_router(check_plantilla_route.router)
 app.include_router(auth_router)
 
+#middleware que responde con en el header access-control-allow-origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 
