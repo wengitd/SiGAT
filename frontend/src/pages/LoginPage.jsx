@@ -2,16 +2,19 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import axiosClient from "../api/axiosClient";
 import { Box, Button, Container, TextField, Typography, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const { login } = useAuth(); /* Extrae la funcion login del contexto creado*/
+  const navigate = useNavigate();
 
   /*funcion que maneja el submit del formulario */
   async function handleSubmit(e) {
-    
+    console.log("handleSubmit llamado");
+  
     e.preventDefault(); /*evita que el formulario recargue la pagina al enviarse */
     setError(null); /*limpia cualquier error antes de intentar de nuevo */
 
@@ -22,8 +25,19 @@ export default function LoginPage() {
     /*llamada a la API */
     try {
       const response = await axiosClient.post("/auth/login", formData);
+      console.log("RESPONSE:", response);
+      console.log("DATA:", response.data);
+      console.log("TOKEN:", response.data.access_token);
+      
       login(response.data.access_token);
+      console.log("token guardado, navegando...");
+
+      navigate("/dashboard");
+      console.log("navigate ejecutado");
+
     } catch (err) {
+      console.log("Error en login:", err);
+      console.log("ERROR RESPONSE:", err.response);
       setError("Credenciales incorrectas");
     }
   }
@@ -35,7 +49,8 @@ export default function LoginPage() {
         <Typography variant="body2" color="text.secondary">
           Sistema de Gestión de Activos Tecnológicos
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+        <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: "16px" }}>
+
           <TextField
             label="Email"
             type="email"
@@ -56,7 +71,7 @@ export default function LoginPage() {
           <Button type="submit" variant="contained" fullWidth>
             Entrar
           </Button>
-        </Box>
+        </form>
       </Box>
     </Container>
   );
