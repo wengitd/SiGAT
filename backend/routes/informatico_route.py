@@ -17,7 +17,7 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 @router.get("/", response_model=list[InformaticoOut])
-def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def listar (db: Session = Depends(get_db)):
     "Muestra todos los Informáticos."
     #return.db.query(model.py)
     return db.query(Informatico).all()
@@ -33,7 +33,7 @@ def obtener (id_emp: int, db: Session = Depends(get_db), current_user=Depends(ge
     return inf
 
 @router.post("/", response_model=InformaticoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: InformaticoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def crear(payload: InformaticoCreate, db: Session = Depends(get_db)):
      
     #verificar que empleado existe 
     emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
