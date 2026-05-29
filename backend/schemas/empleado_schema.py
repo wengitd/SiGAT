@@ -3,19 +3,35 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class EmpleadoBase(BaseModel):
+class EmpleadoCreate(BaseModel):
     rut: str
     nombre: str
     email: str
-    id_cargo: int
-    id_planta: int
+    cargo: str = Field(max_length=100)
+    planta: str = Field(max_length=100)
+    nom_dpto: str | None = Field(default=None, max_length=100)
     operatividad: bool = True
-    id_dpto: int | None = None
-    id_sub: int | None = None
 
 
-class EmpleadoCreate(EmpleadoBase):
-    pass
+class EmpleadoUpdate(BaseModel):
+    rut: str | None = None
+    nombre: str | None = None
+    email: str | None = None
+    cargo: str | None = Field(default=None, max_length=100)
+    planta: str | None = Field(default=None, max_length=100)
+    nom_dpto: str | None = Field(default=None, max_length=100)
+    operatividad: bool | None = None
+
+
+class EmpleadoOut(BaseModel):
+    id_emp: int
+    rut: str
+    nombre: str
+    email: str
+    cargo: str
+    planta: str
+    nom_dpto: str | None = None
+    operatividad: bool
 
 
 class InformaticoCreate(BaseModel):
@@ -25,26 +41,10 @@ class InformaticoCreate(BaseModel):
     vigente: bool = True
 
 
-class EmpleadoUpdate(BaseModel):
-    rut: str | None = None
-    nombre: str | None = None
-    email: str | None = None
-    id_cargo: int | None = None
-    id_planta: int | None = None
-    operatividad: bool | None = None
-    id_dpto: int | None = None
-    id_sub: int | None = None
-
-
 class InformaticoUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=128)
     rol: Literal["editor", "auditor"] | None = None
     vigente: bool | None = None
-
-
-class EmpleadoOut(EmpleadoBase):
-    id_emp: int
-    model_config = ConfigDict(from_attributes=True)
 
 
 class InformaticoOut(BaseModel):

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import {
   Box, Button, Typography, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel
-
+  TableContainer, TableHead, TableRow, Paper,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel,
+  FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material";
 
 
@@ -12,6 +12,7 @@ import {
 */
 export default function EmpleadosPage() {
     const [empleados, setEmpleados] = useState([]);
+    const [departamentos, setDepartamentos] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [formData, setFormData] = useState({});
     const [editando, setEditando] = useState(false);
@@ -21,6 +22,7 @@ export default function EmpleadosPage() {
     react re-renderiza mostrando la lista */
     useEffect(() => {
       axiosClient.get("/empleado/").then((res) => setEmpleados(res.data));
+      axiosClient.get("/departamento/").then((res) => setDepartamentos(res.data));
     }, []);
 
     /* soft delete de empleado 
@@ -116,7 +118,28 @@ export default function EmpleadosPage() {
             <TextField label="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
             <TextField label="Cargo" value={formData.cargo} onChange={(e) => setFormData({ ...formData, cargo: e.target.value })} />
             <TextField label="Planta" value={formData.planta} onChange={(e) => setFormData({ ...formData, planta: e.target.value })} />
-            <TextField label="ID Departamento" type="number" value={formData.id_dpto} onChange={(e) => setFormData({ ...formData, id_dpto: e.target.value })} />
+            <FormControl>
+              <InputLabel>Departamento</InputLabel>
+              <Select
+                label="Departamento"
+                value={formData.id_dpto ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    id_dpto: e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+              >
+                <MenuItem value="">
+                  <em>Sin departamento</em>
+                </MenuItem>
+                {departamentos.map((d) => (
+                  <MenuItem key={d.id_dpto} value={d.id_dpto}>
+                    {d.nom_dpto}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <FormControlLabel control={<Switch checked={formData.operatividad} onChange={(e) => setFormData({ ...formData, operatividad: e.target.checked })} />} label="Operativo" />
           </DialogContent>
           <DialogActions>
