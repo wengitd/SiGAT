@@ -1,29 +1,24 @@
-from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
-#Clase base de pydantic
+from pydantic import BaseModel, ConfigDict, Field
+
+
 class DepartamentoBase(BaseModel):
-    empresa : str
-    zona    : str
-    subarea : str
-    nom_dpto: str
+    id_org: int
+    zona: Literal["Administracion", "Operaciones", "Produccion"]
+    nom_dpto: str = Field(max_length=100)
 
-#Hereda de Base, representa datos para crear
+
 class DepartamentoCreate(DepartamentoBase):
-    """Lo que el cliente manda al POST"""
     pass
 
-#No hereda base, todos los campos son opcionales
+
 class DepartamentoUpdate(BaseModel):
-    """PUT: todos los campos opcionales"""
-    empresa : str | None = None
-    zona    : str 
-    subarea : str 
-    nom_dpto: str
+    id_org: int | None = None
+    zona: Literal["Administracion", "Operaciones", "Produccion"] | None = None
+    nom_dpto: str | None = Field(default=None, max_length=100)
+
 
 class DepartamentoOut(DepartamentoBase):
-    """Lo que la API devuelve"""
     id_dpto: int
-
-    #Le dice a Pydantic "convierte un objeto SQLAlchemy a este schema leyendo sus atributos"
     model_config = ConfigDict(from_attributes=True)
-
