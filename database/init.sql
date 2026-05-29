@@ -2,71 +2,141 @@
 -- SiGAT 
 -- Script de inicialización de BD
 -- PostgreSQL 16
+-- v2- Tablas catálogos + CHECK constrains
+-- Se modifica para facilitar en el frontend ciertos requsitos.
 -- ===================================
 
+ 
+-- ========================================================
+-- ============== CATÁLOGOS SIMPLES =======================
+-- ========================================================
+-- Tablas de referencia independientes.
+-- El frontend usa "Creatable Select": el usuario elige de la
+-- lista o agrega una opción nueva sin salir del formulario.
+ 
+CREATE TABLE empresa (
+    id_org SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE cargo (
+    id_cargo SERIAL PRIMARY KEY,
+    nombre   VARCHAR(100) NOT NULL UNIQUE
+);
+ 
+CREATE TABLE planta (
+    id_planta SERIAL PRIMARY KEY,
+    nombre    VARCHAR(100) NOT NULL UNIQUE
+);
+ 
+CREATE TABLE tipo_equipo (
+    id_tipoeq SERIAL PRIMARY KEY,
+    nombre    VARCHAR(100) NOT NULL UNIQUE   -- 'Notebook', 'Tablet', 'NUC', etc.
+);
+ 
+CREATE TABLE sistema_operativo (
+    id_so  SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE      -- 'Windows 11 64 bits', etc.
+);
+ 
+CREATE TABLE tipo_periferico (
+    id_tipoper SERIAL PRIMARY KEY,
+    nombre     VARCHAR(100) NOT NULL UNIQUE  -- 'Monitor', 'Impresora', etc.
+);
+ 
+CREATE TABLE proveedor_licencia (
+    id_prov SERIAL PRIMARY KEY,
+    nombre  VARCHAR(100) NOT NULL UNIQUE     -- 'Office', 'Windows', 'Sophos'
+);
+ 
+CREATE TABLE proveedor_factura (
+    id_prov_fact SERIAL PRIMARY KEY,
+    nombre       VARCHAR(100) NOT NULL UNIQUE
+);
+ 
+
+-- ========================================================
+-- ============= CATÁLOGOS DEPENDIENTES ===================
+-- ========================================================
+-- Sus opciones dependen de otro catálogo.
+-- El frontend solo carga estas opciones DESPUÉS de elegir
+-- el catálogo padre (cascading / dropdown dependiente).
+ 
+-- version_licencia depende de proveedor_licencia
+-- Ej: "Office" → ["2019", "365"]  |  "Windows" → ["Enterprise", "Server"]
+CREATE TABLE version_licencia (
+    id_ver  SERIAL PRIMARY KEY,
+    id_prov INT NOT NULL REFERENCES proveedor_licencia(id_prov) ON DELETE CASCADE,
+    nombre  VARCHAR(100) NOT NULL,
+    UNIQUE (id_prov, nombre)   -- no puede existir la misma versión dos veces para el mismo proveedor
+);
+ 
+-- sub_area depende de departamento
+-- Ej: "TD" → ["Soporte", "Desarrollo", "BI"]
+-- Se crea DESPUÉS de la tabla departamento.
 
 
 --========================================================
 --======================= FACTURA ========================
 --========================================================
 
-CREATE TABLE factura (
-    id_fact         SERIAL PRIMARY KEY,
-    prov_fact       VARCHAR(50) NOT NULL,
-    fecha_em        DATE,
-    num_folio       INT NOT NULL UNIQUE,
-    ruta_pdf_fact   VARCHAR(200) NOT NULL
-);
 
+CREATE TABLE factura (
+    id_fact       SERIAL PRIMARY KEY,
+    fecha_em      DATE,
+    num_folio     INT  NOT NULL UNIQUE,
+    ruta_pdf_fact VARCHAR(200) NOT NULL,
+    
+    id_prov_fact  INT  NOT NULL REFERENCES proveedor_factura(id_prov_fact)
+);
 
 --========================================================
 --=================== DEPARTAMENTO =======================
 --========================================================
 CREATE TABLE departamento (
     id_dpto         SERIAL PRIMARY KEY,
-    empresa         VARCHAR(50) NOT NULL,
-    zona            VARCHAR(50) ,
-    subarea         VARCHAR(50),
-    nom_dpto        VARCHAR(50)
+    zona            VARCHAR(50) CHECK (zona IN ('Administracion', 'Operaciones', 'Produccion')),
+    nom_dpto        VARCHAR(100),
+
+    id_org          INT NOT NULL REFERENCES empresa(id_org)
 );
 
 
---========================================================
---======================= LICENCIA =======================
---========================================================
-
-CREATE TABLE licencia (
-    id_lic          SERIAL PRIMARY KEY,
-    fecha_ini       DATE, 
-    fecha_exp       DATE,
-    proveedor       VARCHAR(50) NOT NULL,
-    ver_licen        VARCHAR(50) NOT NULL
+--CATALOGO DEPENDIENTE
+CREATE TABLE sub_area (
+    id_sub  SERIAL PRIMARY KEY,
+    id_dpto INT NOT NULL REFERENCES departamento(id_dpto) ON DELETE CASCADE,
+    
+    nombre  VARCHAR(100) NOT NULL,
+    UNIQUE (id_dpto, nombre)
 );
+ 
+
 
 --========================================================
 --======================= EMPLEADO =======================
 --========================================================
 
 CREATE TABLE empleado (
-    id_emp          SERIAL PRIMARY KEY,
-    rut             VARCHAR(50) NOT NULL UNIQUE,
-    nombre          VARCHAR(50) NOT NULL,
-    email           VARCHAR(50) NOT NULL UNIQUE,
-    cargo           VARCHAR(50) NOT NULL,
-    planta          VARCHAR(50) NOT NULL,
-    operatividad    BOOLEAN NOT NULL DEFAULT TRUE,
+    id_emp       SERIAL PRIMARY KEY,
+    rut          VARCHAR(50) NOT NULL UNIQUE,
+    nombre       VARCHAR(50) NOT NULL,
+    email        VARCHAR(50) NOT NULL UNIQUE,
+    operatividad BOOLEAN NOT NULL DEFAULT TRUE,
 
-    id_dpto INT references departamento(id_dpto)
+    id_cargo  INT NOT NULL REFERENCES cargo(id_cargo),
+    id_planta INT NOT NULL REFERENCES planta(id_planta),
+    id_dpto   INT REFERENCES departamento(id_dpto),
+    id_sub    INT REFERENCES sub_area(id_sub)   -- opcional: no todos tienen subárea
 );
 
 CREATE TABLE informatico (
-    id_emp          INT PRIMARY KEY,
-    hash_pass       VARCHAR(255) NOT NULL,
-    rol             VARCHAR(50) NOT NULL,
-    vigente         BOOLEAN NOT NULL DEFAULT TRUE,
-
-    FOREIGN KEY (id_emp) references empleado (id_emp)
-
+    id_emp    INT PRIMARY KEY,
+    hash_pass VARCHAR(255) NOT NULL,
+    rol       VARCHAR(20)  NOT NULL CHECK (rol IN ('editor', 'auditor')),
+    vigente   BOOLEAN NOT NULL DEFAULT TRUE,
+ 
+    FOREIGN KEY (id_emp) REFERENCES empleado(id_emp)
 );
 
 --========================================================
@@ -91,12 +161,27 @@ CREATE TABLE plantilla (
 CREATE TABLE check_plantilla (
     id_check        INT NOT NULL, 
     id_ip           INT NOT NULL,
-    estado          VARCHAR(50) NOT NULL,
+    estado          VARCHAR(50) NOT NULL CHECK (estado IN ('pendiente', 'completado', 'no_aplica', 'en_proceso')),
     observacion     VARCHAR(255), 
 
     PRIMARY KEY (id_check, id_ip),
     FOREIGN KEY (id_check) references checklist(id_check),
     FOREIGN KEY (id_ip)    references plantilla(id_ip)
+);
+
+--========================================================
+--======================= LICENCIA =======================
+--========================================================
+-- fecha_ini y fecha_exp pertenecen a licencia:
+-- son fechas del contrato específico, no del catálogo.
+
+CREATE TABLE licencia (
+    id_lic          SERIAL PRIMARY KEY,
+    fecha_ini       DATE, 
+    fecha_exp       DATE,
+    
+    id_prov   INT NOT NULL REFERENCES proveedor_licencia(id_prov),
+    id_ver    INT NOT NULL REFERENCES version_licencia(id_ver)
 );
 
 --========================================================
@@ -113,7 +198,7 @@ CREATE TABLE emp_lic (
 );
 
 --========================================================
---============== Cambios de estado========================
+--============== TIPO ESTADO      ========================
 --========================================================
 
 
@@ -129,7 +214,7 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 ('en_preparacion','Activo en proceso de gestion por el técnico'),
 ('asignado',      'Activo entregado a empleado'),
 ('en_mantencion', 'Activo en revisión o reparación'),
-('de baja',       'Activo retirado del Inventario');
+('de_baja',       'Activo retirado del inventario');
 
 
 --========================================================
@@ -137,74 +222,138 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 --========================================================
 
 CREATE TABLE activo_ti (
-    id_act          SERIAL PRIMARY KEY,
-    modelo          VARCHAR(50) , 
-    marca           VARCHAR(50) , 
-    num_serie       VARCHAR(50) UNIQUE, 
-    disponibilidad  BOOLEAN NOT NULL DEFAULT TRUE,
-    tipo            VARCHAR(20) NOT NULL CHECK (tipo IN ('equipo_computo', 'periferico')), 
-    origen          VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
-    
-    id_fact         INT references factura (id_fact) NOT NULL,
-    id_tipoe        INT references tipo_estado (id_tipoe) NOT NULL      
+    id_act         SERIAL PRIMARY KEY,
+    modelo         VARCHAR(50),
+    marca          VARCHAR(50),
+    num_serie      VARCHAR(50) UNIQUE,
+    disponibilidad BOOLEAN NOT NULL DEFAULT TRUE,
+    tipo           VARCHAR(20) NOT NULL CHECK (tipo   IN ('equipo_computo', 'periferico')),
+    origen         VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
+ 
+    id_fact        INT NOT NULL REFERENCES factura(id_fact),
+    id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe)
 );
 
 CREATE TABLE equipo_computo (
-    id_act          INT NOT NULL,
-    ram_capac       INT,
-    ram_tipo        VARCHAR(10) ,
-    sist_op         VARCHAR(50) ,
-    cpu             VARCHAR(50) ,
-    mac_ethernet    VARCHAR(10) ,
-    mac_wifi        VARCHAR(10) ,
-    disco_un        VARCHAR(10) , --GB  MB
-    disco_tipo      VARCHAR(20) , --ssd hdd
-    disco_capac     INT, -- 500 250
-    host_name       VARCHAR(50) ,
-    tipo_equipo     VARCHAR(50) ,
-
+    id_act       INT NOT NULL,
+    ram_capac    INT,
+    ram_tipo     VARCHAR(10),
+    cpu          VARCHAR(50),
+    mac_ethernet VARCHAR(17),          -- formato AA:BB:CC:DD:EE:FF
+    mac_wifi     VARCHAR(17),
+    disco_capac  INT,
+    disco_tipo   VARCHAR(10) CHECK (disco_tipo   IN ('HDD', 'SSD', 'NVMe', 'eMMC')),
+    disco_unidad VARCHAR(5)  CHECK (disco_unidad IN ('MB', 'GB', 'TB')),
+    host_name    VARCHAR(50),
+ 
+    id_tipoeq INT REFERENCES tipo_equipo(id_tipoeq),
+    id_so     INT REFERENCES sistema_operativo(id_so),
+ 
     PRIMARY KEY (id_act),
-    FOREIGN KEY (id_act) references activo_ti(id_act)
+    FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
 
 );
 
 CREATE TABLE periferico (
-    id_act          INT NOT NULL,
-    tipo_per        VARCHAR(50) ,
-    valor_tec       decimal,
-    u_medida        VARCHAR(50) ,
-    obs_perif       TEXT,
-
-    PRIMARY KEY (id_act) ,
-    FOREIGN KEY (id_act) references activo_ti(id_act)
+    id_act     INT NOT NULL,
+    valor_tec  DECIMAL,
+    u_medida   VARCHAR(50),
+    obs_perif  TEXT,
+ 
+    id_tipoper INT REFERENCES tipo_periferico(id_tipoper),
+ 
+    PRIMARY KEY (id_act),
+    FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
 );
 
 
 
 CREATE TABLE historial_estado (
-    id_hes          SERIAL PRIMARY KEY,
-    fecha_reg       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    descr           TEXT,
-    causa           VARCHAR(50) NOT NULL,
-
-    id_tipoe        INT references tipo_estado(id_tipoe) NOT NULL,
-    id_act          INT references activo_ti(id_act) NOT NULL
+    id_hes    SERIAL PRIMARY KEY,
+    fecha_reg TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descr     TEXT,
+    causa     VARCHAR(50) NOT NULL,
+ 
+    id_tipoe    INT NOT NULL REFERENCES tipo_estado(id_tipoe),
+    id_act      INT NOT NULL REFERENCES activo_ti(id_act),
+    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién registró el cambio
+    
 );
 
 
 --========================================================
 --================== Asignacion ACT/EMP===================
 --========================================================
+--se elimina operatividad ya que con la fecha dev se identifica que el activo fue devuelto.
 
 CREATE TABLE asignacion (
-    id_asig             SERIAL PRIMARY KEY,
-    fecha_entr          DATE NOT NULL,
-    fecha_dev           DATE, 
-    ruta_acta_entr      VARCHAR(255),
-    operatividad        BOOLEAN NOT NULL DEFAULT TRUE,
+    id_asig        SERIAL PRIMARY KEY,
+    fecha_entr     DATE NOT NULL,
+    fecha_dev      DATE,        -- NULL = sigue asignado
+                                -- con fecha = fue devuelto
+    ruta_acta_entr VARCHAR(255),
+ 
+    id_act      INT NOT NULL REFERENCES activo_ti(id_act),
+    id_emp      INT NOT NULL REFERENCES empleado(id_emp), -- a quien se le asignó el equipo
+    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién procesó la asignación
 
-    id_act INT references activo_ti(id_act) NOT NULL,
-    id_emp INT references empleado (id_emp) NOT NULL   
 );
 
 
+
+ 
+-- ========================================================
+-- =================== SEEDS CATÁLOGOS ====================
+-- ========================================================
+ 
+-- Empresas del holding
+INSERT INTO empresa (nombre) VALUES
+('Holding'),
+('Comercializadora'),
+('Paneles'),
+('Servicios SPA');
+ 
+-- Cargos
+INSERT INTO cargo (nombre) VALUES
+('Administrativo'),
+('Informático'),
+('Analista'),
+('Jefatura'),
+('Técnico');
+ 
+-- Plantas
+INSERT INTO planta (nombre) VALUES
+('Batuco'),
+('Paneles');
+ 
+-- Tipos de equipo de cómputo
+INSERT INTO tipo_equipo (nombre) VALUES
+('Notebook'),
+('Tablet'),
+('Gabinete Slim'),
+('Gabinete'),
+('NUC');
+ 
+-- Sistemas operativos conocidos hasta ahora
+INSERT INTO sistema_operativo (nombre) VALUES
+('Windows 11 64 bits'),
+('Windows 10 64 bits');
+ 
+-- Tipos de periférico conocidos hasta ahora
+INSERT INTO tipo_periferico (nombre) VALUES
+('Monitor'),
+('Impresora');
+ 
+-- Proveedores de licencia + sus versiones
+INSERT INTO proveedor_licencia (nombre) VALUES
+('Office'),    -- id 1
+('Windows'),   -- id 2
+('Sophos');    -- id 3
+ 
+INSERT INTO version_licencia (id_prov, nombre) VALUES
+(1, '2019'),
+(1, '365'),
+(2, 'Enterprise'),
+(2, 'Server'),
+(2, 'Home'),
+(3, 'Intercept X');

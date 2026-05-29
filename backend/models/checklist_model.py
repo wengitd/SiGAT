@@ -22,10 +22,10 @@ class Checklist (Base):
 
     id_check    : Mapped[int]=mapped_column(primary_key=True)
     nombre      : Mapped[str]=mapped_column(String(50),nullable=False)
-    fecha_ini   : Mapped[date]=mapped_column()
-    fecha_ter   : Mapped[date]=mapped_column()
-
-    id_emp      :Mapped[int]= mapped_column(ForeignKey("informatico.id_emp"))
+    fecha_ini   : Mapped[date | None] = mapped_column()
+    fecha_ter   : Mapped[date | None] = mapped_column()
+    
+    id_emp    : Mapped[int | None]  = mapped_column(ForeignKey("informatico.id_emp"))
 
     #relacion inversa
     check_plantillas = relationship("CheckPlantilla", back_populates="checklist")

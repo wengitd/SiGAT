@@ -1,22 +1,19 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
-
-
+from typing import Literal   
 
 
 class ChecklistBase(BaseModel):
-    nombre      : str = Field(max_length=50)
+    nombre      :str  = Field(max_length=50)
     fecha_ini   :date | None = None 
     fecha_ter   :date | None = None
     id_emp      :int  | None = None
 
-class ChecklistCreate(BaseModel):
-    nombre      : str = Field(max_length=50)
-    fecha_ini   :date | None = None 
-    id_emp      :int  | None = None
+class ChecklistCreate(ChecklistBase):
+    pass
 
 class ChecklistUpdate(BaseModel):
-    nombre      : str | None = Field(default=None, max_length=50)
+    nombre      : str  | None = Field(default=None, max_length=50)
     fecha_ter   : date | None = None
 
 class ChecklistOut(ChecklistBase):
@@ -29,7 +26,7 @@ class ChecklistOut(ChecklistBase):
 #####################################################
 
 class CheckPlantillaBase(BaseModel):
-    estado      :str = Field(max_length=50)
+    estado      :Literal["pendiente", "completado", "no_aplica", "en_proceso"]
     observacion :str | None = Field(default=None, max_length=255)
 
     id_check    :int
@@ -39,11 +36,8 @@ class CheckPlantillaCreate(CheckPlantillaBase):
     pass
 
 class CheckPlantillaUpdate(BaseModel):
-    estado      : str | None = Field(default=None, max_length=50)
+    estado      : Literal["pendiente", "completado", "no_aplica", "en_proceso"] | None = None
     observacion : str | None = Field(default=None, max_length=255)
-
-
-
 
 #################################################
 #####################################################
