@@ -20,13 +20,12 @@ def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user
     return db.query(Asignacion).all()
 
 @router.get("/{id_asig}", response_model=AsignacionOut)
-def obtener (id_asig: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def obtener(id_asig: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve una Asignacion por id."""
-    
-    #variable = db.query(model).filter(model.id == id).first()
-    if db.query(Asignacion).filter(Asignacion.id_asig == id_asig).first() is None:
+    asig = db.query(Asignacion).filter(Asignacion.id_asig == id_asig).first()
+    if asig is None:
         raise HTTPException(status_code=404, detail="Asignacion no encontrada")
-    return 
+    return asig
 
 
 @router.post("/", response_model=AsignacionOut, status_code=status.HTTP_201_CREATED)
@@ -37,15 +36,14 @@ def crear(payload: AsignacionCreate, db: Session = Depends(get_db), current_user
     query_emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
     query_asig=db.query(Asignacion).filter(
         Asignacion.id_act == payload.id_act,
-        Asignacion.operatividad == True
+        Asignacion.fecha_dev.is_(None),  # sigue asignado
     ).first()
 
     #valida si existe el activo.
     if db.query(ActivoTi).filter(ActivoTi.id_act==payload.id_act).first() is None:
         raise HTTPException(status_code=400, detail="Activo no existe")
 
-    #valida si el activo ya esta designado a otro activo mediante 
-    #la operatividad e ID en la asignacion.
+    # valida si el activo ya tiene una asignación vigente (sin fecha de devolución)
     if query_asig is not None:
         raise HTTPException(status_code=400, detail="El activo ya está en uso")
     #valida si el empleado existe
@@ -74,12 +72,12 @@ def actualizar(id_asig:int, payload: AsignacionUpdate, db: Session = Depends(get
     if act_asig is None:
         raise HTTPException(status_code=404, detail="No encontrado")
 
-    datos= payload.model_dump(exclude_unset=True)
+    if act_asig.fecha_dev is not None:
+        raise HTTPException(status_code=400, detail="La devolución ya fue registrada")
+
+    datos = payload.model_dump(exclude_unset=True)
     for campo, valor in datos.items():
-        if act_asig.fecha_dev is not None:
-            raise HTTPException(status_code=400, detail="La devolución ya fue registrada")
-        operatividad = False
-        setattr(act_asig,campo,valor)
+        setattr(act_asig, campo, valor)
     
     db.commit()
     db.refresh(act_asig)

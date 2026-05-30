@@ -67,7 +67,10 @@ def crear(payload: CheckPlantillaCreate, db: Session = Depends(get_db), current_
 
 @router.put("/{id_check}/{id_ip}", response_model=CheckPlantillaOut)
 def actualizar(id_check: int, id_ip: int, payload: CheckPlantillaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    act_checkplantilla= db.query(CheckPlantilla).filter(CheckPlantilla.id_check == id_check).first()
+    act_checkplantilla= db.query(CheckPlantilla).filter(
+        CheckPlantilla.id_check == id_check,
+        CheckPlantilla.id_ip == id_ip
+    ).first()
 
     if act_checkplantilla is None:
         raise HTTPException(status_code=404, detail="No encontrado")
@@ -81,18 +84,19 @@ def actualizar(id_check: int, id_ip: int, payload: CheckPlantillaUpdate, db: Ses
 
     return act_checkplantilla
 
+##Delete no se usa porque rompe la trazabilidad. SI un item esta mal, se actualiza el estado
 
-@router.delete("/{id_check}/{id_ip}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_check: int, id_ip: int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    """Para eliminar necesitamos los DOS ids porque la PK es compuesta."""
-    eli_check = db.query(CheckPlantilla).filter(
-        CheckPlantilla.id_check == id_check,
-        CheckPlantilla.id_ip == id_ip
-    ).first()
+#@router.delete("/{id_check}/{id_ip}", status_code=status.HTTP_204_NO_CONTENT)
+#def eliminar(id_check: int, id_ip: int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+#    """Para eliminar necesitamos los DOS ids porque la PK es compuesta."""
+#    eli_check = db.query(CheckPlantilla).filter(
+#        CheckPlantilla.id_check == id_check,
+#        CheckPlantilla.id_ip == id_ip
+#    ).first()
     
-    if eli_check is None:
-        raise HTTPException(status_code=404, detail="No encontrada")
-    
-    
+#    if eli_check is None:
+#        raise HTTPException(status_code=404, detail="No encontrada")
 
-#DELETE /check-plantillas/{id_check}/{id_ip}  → quitar ítem del checklis
+#    db.delete(eli_check)
+#    db.commit()
+#    return None

@@ -4,7 +4,7 @@ from auth.dependencies import get_current_user, require_editor
 
 
 from database import get_db
-from models.licencia_model import Licencia
+from models.licencia_model import Licencia, ProveedorLicencia, VersionLicencia
 from schemas.licencia_schema import LicenciaCreate, LicenciaUpdate, LicenciaOut
 
 router=APIRouter(prefix="/licencia", tags=["Licencias"])
@@ -30,6 +30,18 @@ def obtener (id_lic: int, db: Session = Depends(get_db), current_user=Depends(ge
 
 @router.post("/", response_model=LicenciaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: LicenciaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+    if db.query(ProveedorLicencia).filter(ProveedorLicencia.id_prov == payload.id_prov).first() is None:
+        raise HTTPException(status_code=400, detail="Proveedor no existe")
+
+    if db.query(VersionLicencia).filter(VersionLicencia.id_ver == payload.id_ver).first() is None:
+        raise HTTPException(status_code=400, detail="Versión no existe")
+    #evita que se cree una licencia con un proveedor y una version que no coinciden
+    version = db.query(VersionLicencia).filter(
+        VersionLicencia.id_ver  == payload.id_ver,
+        VersionLicencia.id_prov == payload.id_prov
+    ).first()
+    if version is None:
+        raise HTTPException(status_code=400, detail="La versión no corresponde al proveedor seleccionado")
     #crear el objeto SQLAlchemy     
     #variable=model(**play.model_dump())
     nueva_lic = Licencia(**payload.model_dump())

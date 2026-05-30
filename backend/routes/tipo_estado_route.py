@@ -16,7 +16,7 @@ router = APIRouter(prefix="/tipos-estado", tags=["tipos_estado"])
 @router.get("/", response_model=list[TipoEstadoOut])
 def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """Devuelve todos los tipos de estado."""
-    return db.query(TipoEstado).all()
+    return db.query(TipoEstado).filter(TipoEstado.operatividad == True).all()
 
 
 #get por id

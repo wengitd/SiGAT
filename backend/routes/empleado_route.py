@@ -96,6 +96,10 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db), current_user=D
     id_planta = _obtener_o_crear_planta(db, datos.pop("planta")).id_planta
     id_dpto = _resolver_departamento(db, datos.pop("nom_dpto"))
 
+    if payload.id_sub is not None:
+        if db.query(SubArea).filter(SubArea.id_sub == payload.id_sub).first() is None:
+            raise HTTPException(status_code=400, detail="Subárea no existe")
+
     nuevo_emp = Empleado(**datos, id_cargo=id_cargo, id_planta=id_planta, id_dpto=id_dpto)
     db.add(nuevo_emp)
     db.commit()
@@ -105,18 +109,26 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db), current_user=D
 
 
 @router.put("/{id_emp}", response_model=EmpleadoOut)
-def actualizar(
-    id_emp: int,
-    payload: EmpleadoUpdate,
-    db: Session = Depends(get_db),
-    current_user=Depends(require_editor),
-):
+def actualizar(id_emp: int, payload: EmpleadoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+
     act_emp = db.query(Empleado).filter(Empleado.id_emp == id_emp).first()
     if act_emp is None:
         raise HTTPException(status_code=404, detail="No encontrado")
+    
+    if payload.id_sub is not None:
+        if db.query(SubArea).filter(SubArea.id_sub == payload.id_sub).first() is None:
+            raise HTTPException(status_code=400, detail="Subárea no existe")
 
     datos = payload.model_dump(exclude_unset=True)
     _aplicar_catalogos(db, act_emp, datos)
+
+    if payload.id_sub is not None and payload.id_dpto is not None:
+        sub = db.query(SubArea).filter(
+            SubArea.id_sub == payload.id_sub,
+            SubArea.id_dpto == payload.id_dpto
+        ).first()
+        if sub is None:
+            raise HTTPException(status_code=400, detail="La subárea no pertenece al departamento seleccionado")
 
     db.commit()
     emp = _query_empleados(db).filter(Empleado.id_emp == id_emp).first()

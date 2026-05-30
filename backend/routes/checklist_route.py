@@ -4,7 +4,7 @@ from database import get_db
 from sqlalchemy.orm import joinedload
 from auth.dependencies import get_current_user, require_editor
 
-from models.empleado_model import Empleado
+from models.empleado_model import Informatico
 from models.checklist_model import  Checklist
 from schemas.checklist_schema import ChecklistCreate, ChecklistUpdate, ChecklistOut
 
@@ -35,9 +35,10 @@ def obtener(id_check: int, db: Session = Depends(get_db), current_user=Depends(g
 @router.post("/", response_model=ChecklistOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: ChecklistCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
 
-    #para FK empleado
-    if db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first() is None:
-        raise HTTPException(status_code=400, detail="Empleado no existe")
+    #para FK Informatico
+    if payload.id_emp is not None:
+        if db.query(Informatico).filter(Informatico.id_emp == payload.id_emp).first() is None:
+            raise HTTPException(status_code=400, detail="Informatico no existe")
 
     nuevo_checklist = Checklist(**payload.model_dump())
     

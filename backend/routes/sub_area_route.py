@@ -30,6 +30,8 @@ def obtener(id_sub: int, db: Session = Depends(get_db), current_user=Depends(get
 
 @router.post("/", response_model=SubAreaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: SubAreaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+    if db.query(Departamento).filter(Departamento.id_dpto == payload.id_dpto).first() is None:
+        raise HTTPException(status_code=400, detail="Departamento no existe")
     nuevo = SubArea(**payload.model_dump())
     db.add(nuevo)
     db.commit()

@@ -4,7 +4,7 @@ from database import get_db
 from auth.dependencies import get_current_user, require_editor
 
 
-from models.factura_model import Factura
+from models.factura_model import Factura, ProveedorFactura
 from schemas.factura_schema import FacturaCreate, FacturaUpdate, FacturaOut
 
 router=APIRouter(prefix="/factura", tags=["Factura"])
@@ -30,7 +30,8 @@ def obtener (id_fact: int, db: Session = Depends(get_db), current_user=Depends(g
 
 @router.post("/", response_model=FacturaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: FacturaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-     
+    if db.query(ProveedorFactura).filter(ProveedorFactura.id_prov_fact == payload.id_prov_fact).first() is None:
+        raise HTTPException(status_code=400, detail="Proveedor no existe") 
     #crear el objeto SQLAlchemy     
     #variable=model(**play.model_dump())
     nueva_fact = Factura(**payload.model_dump())

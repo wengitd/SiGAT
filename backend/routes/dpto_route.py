@@ -4,7 +4,7 @@ from auth.dependencies import get_current_user, require_editor
 
 
 from database import get_db
-from models.dpto_model import Departamento
+from models.dpto_model import Departamento, Empresa
 from schemas.dpto_schema import DepartamentoCreate, DepartamentoUpdate, DepartamentoOut
 
 router=APIRouter(prefix="/departamento", tags=["departamento"])
@@ -26,6 +26,8 @@ def obtener (id_dpto: int, db: Session = Depends(get_db), current_user=Depends(g
 
 @router.post("/", response_model=DepartamentoOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: DepartamentoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+    if db.query(Empresa).filter(Empresa.id_org == payload.id_org).first() is None:
+        raise HTTPException(status_code=400, detail="Empresa no existe")
     #variable=model.py(**play.model_dump())
     nuevo_dptos = Departamento(**payload.model_dump())
     db.add(nuevo_dptos)

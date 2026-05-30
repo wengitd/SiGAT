@@ -4,7 +4,7 @@ from typing import Optional
 
 class HistorialEstadoBase(BaseModel):
     descr           :str | None = None
-    causa           :str |None = Field(default=None, max_length=50) 
+    causa           :str = Field(default=None, max_length=50) 
 
     id_tipoe        :int
     id_act          :int
