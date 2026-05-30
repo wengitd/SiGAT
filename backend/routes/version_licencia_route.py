@@ -29,6 +29,8 @@ def obtener(id_ver: int, db: Session = Depends(get_db), current_user=Depends(get
 
 @router.post("/", response_model=VersionLicenciaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: VersionLicenciaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+    if db.query(ProveedorLicencia).filter(ProveedorLicencia.id_prov == payload.id_prov).first() is None:
+        raise HTTPException(status_code=400, detail="Proveedor no existe")
     nuevo = VersionLicencia(**payload.model_dump())
     db.add(nuevo)
     db.commit()

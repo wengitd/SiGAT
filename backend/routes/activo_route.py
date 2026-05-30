@@ -102,13 +102,27 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
     if db.query(TipoEstado).filter(TipoEstado.id_tipoe == payload.id_tipoe).first() is None:
         raise HTTPException(status_code=404, detail="Tipo estado no encontrado")
     
+    # Verifica FKs de subtipo
+    if payload.tipo == "equipo_computo":
+        if payload.id_tipoeq is not None:
+            if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
+                raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
+        if payload.id_so is not None:
+            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
+                raise HTTPException(status_code=400, detail="Sistema operativo no existe")
+    elif payload.tipo == "periferico":
+        if payload.id_tipoper is not None:
+            if db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == payload.id_tipoper).first() is None:
+                raise HTTPException(status_code=400, detail="Tipo de periférico no existe")
+
+
     # ---------- RESOLUCIÓN DE SUBTIPO ----------
     
     # Obtiene dinámicamente la clase subtipo según el tipo de activo
     modelo_subtipo = SUBTIPOS.get(payload.tipo)
     if modelo_subtipo is None:
         raise HTTPException(status_code=400, detail=f"Tipo no soportado: {payload.tipo}")
-
+    
     # Convierte el payload a dict una sola vez
     payload_dict = payload.model_dump()
 
@@ -144,7 +158,20 @@ def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db),
 
     if not activo:
         raise HTTPException(status_code=404, detail="Activo no encontrado")
-
+    
+    # Verifica FKs de subtipo según tipo del activo
+    if activo.tipo == "equipo_computo":
+        if payload.id_tipoeq is not None:
+            if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
+                raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
+        if payload.id_so is not None:
+            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
+                raise HTTPException(status_code=400, detail="Sistema operativo no existe")
+    elif activo.tipo == "periferico":
+        if payload.id_tipoper is not None:
+            if db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == payload.id_tipoper).first() is None:
+                raise HTTPException(status_code=400, detail="Tipo de periférico no existe")
+    
     # Convierte el payload a dict excluyendo campos no enviado
     payload_dict = payload.model_dump(exclude_unset=True)
 

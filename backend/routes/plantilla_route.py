@@ -19,12 +19,10 @@ def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user
 
 @router.post("/", response_model=PlantillaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: PlantillaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-       
-    nueva_plantilla = Plantilla(**payload.model_dump())
 
     if db.query(Plantilla).filter(Plantilla.orden==payload.orden).first():
         raise HTTPException(status_code=400, detail="El numero de orden ya existe")
-
+    nueva_plantilla = Plantilla(**payload.model_dump()) 
     
     db.add(nueva_plantilla)
     db.commit()
@@ -36,6 +34,11 @@ def crear(payload: PlantillaCreate, db: Session = Depends(get_db), current_user=
 def actualizar(id_ip: int, payload: PlantillaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
     
     act_plantilla =db.query(Plantilla).filter(Plantilla.id_ip==id_ip).first()
+
+    if "orden" in datos and datos["orden"] != act_plantilla.orden:
+        duplicado = db.query(Plantilla).filter(Plantilla.orden == datos["orden"]).first()
+        if duplicado:
+            raise HTTPException(status_code=400, detail="Ya existe una plantilla con ese orden")
 
     if act_plantilla is None:
         raise HTTPException(status_code=404, detail="Plantilla no encontrada")

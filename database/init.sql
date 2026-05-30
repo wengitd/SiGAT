@@ -316,10 +316,10 @@ INSERT INTO empresa (nombre) VALUES
 -- Cargos
 INSERT INTO cargo (nombre) VALUES
 ('Administrativo'),
-('Informático'),
+('Informatico'),
 ('Analista'),
 ('Jefatura'),
-('Técnico');
+('Tecnico');
  
 -- Plantas
 INSERT INTO planta (nombre) VALUES

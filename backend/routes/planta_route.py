@@ -39,6 +39,11 @@ def actualizar(id_planta: int, payload: PlantaUpdate, db: Session = Depends(get_
     if registro is None:
         raise HTTPException(status_code=404, detail="Planta no encontrada")
 
+    #evita el fallo cuando se mande el mismo orden que ya tiene
+    if "orden" in datos and datos["orden"] != act_plantilla.orden:
+        duplicado = db.query(Plantilla).filter(Plantilla.orden == datos["orden"]).first()
+        if duplicado:
+            raise HTTPException(status_code=400, detail="Ya existe una plantilla con ese orden")
     datos = payload.model_dump(exclude_unset=True)
     for campo, valor in datos.items():
         setattr(registro, campo, valor)
