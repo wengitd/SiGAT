@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
 from models.empleado_model import Empleado, Cargo, Planta
 from schemas.empleado_schema import EmpleadoCreate, EmpleadoUpdate, EmpleadoOut
-from models.dpto_model import Departamento
+from models.dpto_model import Departamento, SubArea
 
 router = APIRouter(prefix="/empleado", tags=["Empleado"])
 
@@ -18,22 +19,9 @@ def _query_empleados(db: Session):
     )
 
 
-def _empleado_a_out(emp: Empleado) -> EmpleadoOut:
-    return EmpleadoOut(
-        id_emp=emp.id_emp,
-        rut=emp.rut,
-        nombre=emp.nombre,
-        email=emp.email,
-        operatividad=emp.operatividad,
-        cargo=emp.cargo.nombre,
-        planta=emp.planta.nombre,
-        nom_dpto=emp.departamento.nom_dpto if emp.departamento else None,
-    )
-
-
 def _obtener_o_crear_cargo(db: Session, nombre: str) -> Cargo:
     nombre = nombre.strip()
-    cargo = db.query(Cargo).filter(Cargo.nombre == nombre).first()
+    cargo = db.query(Cargo).filter(func.lower(Cargo.nombre) == nombre.lower()).first()
     if cargo is None:
         cargo = Cargo(nombre=nombre)
         db.add(cargo)
@@ -43,7 +31,7 @@ def _obtener_o_crear_cargo(db: Session, nombre: str) -> Cargo:
 
 def _obtener_o_crear_planta(db: Session, nombre: str) -> Planta:
     nombre = nombre.strip()
-    planta = db.query(Planta).filter(Planta.nombre == nombre).first()
+    planta = db.query(Planta).filter(func.lower(Planta.nombre) == nombre.lower()).first()
     if planta is None:
         planta = Planta(nombre=nombre)
         db.add(planta)
@@ -77,7 +65,11 @@ def _aplicar_catalogos(db: Session, emp: Empleado, datos: dict) -> None:
 @router.get("/", response_model=list[EmpleadoOut])
 def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los Empleados."
-    return [_empleado_a_out(e) for e in _query_empleados(db).all()]
+    return db.query(Empleado).options(
+        joinedload(Empleado.cargo),
+        joinedload(Empleado.planta),
+        joinedload(Empleado.departamento),
+    ).all()
 
 
 @router.get("/{id_emp}", response_model=EmpleadoOut)
@@ -86,7 +78,7 @@ def obtener(id_emp: int, db: Session = Depends(get_db), current_user=Depends(get
     emp = _query_empleados(db).filter(Empleado.id_emp == id_emp).first()
     if emp is None:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
-    return _empleado_a_out(emp)
+    return emp
 
 
 @router.post("/", response_model=EmpleadoOut, status_code=status.HTTP_201_CREATED)
@@ -105,7 +97,7 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db), current_user=D
     db.commit()
     db.refresh(nuevo_emp)
     emp = _query_empleados(db).filter(Empleado.id_emp == nuevo_emp.id_emp).first()
-    return _empleado_a_out(emp)
+    return emp
 
 
 @router.put("/{id_emp}", response_model=EmpleadoOut)
@@ -132,7 +124,7 @@ def actualizar(id_emp: int, payload: EmpleadoUpdate, db: Session = Depends(get_d
 
     db.commit()
     emp = _query_empleados(db).filter(Empleado.id_emp == id_emp).first()
-    return _empleado_a_out(emp)
+    return emp
 
 
 @router.delete("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
