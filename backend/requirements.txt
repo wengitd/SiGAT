@@ -9,6 +9,6 @@ passlib[argon2]==1.7.4		# Hash y verificacion segura de contrasenas con argon.
 argon2-cffi==23.1.0
 python-jose[cryptography]==3.3.0  # Creacion y validacion de tokens JWT.
 python-multipart==0.0.20          # Soporte para formularios y subida de archivos multipart.
-
+pydantic[email]			#para validar correos
 
 #pip install -r requirements.txt
