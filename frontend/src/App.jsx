@@ -7,6 +7,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ActivosPage from "./pages/ActivosPage";
 import EmpleadosPage from "./pages/EmpleadosPage";
 import InventarioPage from "./pages/InventarioPage";
+import DepartamentosPage from "./pages/DepartamentosPage";
 
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/activos" element={<ActivosPage />} />
           <Route path="/empleados" element={<EmpleadosPage />} />
           <Route path="/inventario" element={<InventarioPage/>} />
+          <Route path="/departamentos" element={<DepartamentosPage/>} />
         </Route>
       </Routes>
     </BrowserRouter>

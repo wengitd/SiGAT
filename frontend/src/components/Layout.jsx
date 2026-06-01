@@ -23,6 +23,9 @@ export default function Layout() {
           <ListItemButton onClick={() => navigate("/inventario")}>
             <ListItemText primary="Inventario Activos" />
           </ListItemButton>
+          <ListItemButton onClick={() => navigate("/departamentos")}>
+            <ListItemText primary="Departamentos" />
+          </ListItemButton>
 
 
         </List>
