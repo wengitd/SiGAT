@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
-from models.dpto_model import SubArea
+from models.dpto_model import SubArea, Departamento
 from models.empleado_model import Empleado
 from schemas.catalogos_schema import SubAreaCreate, SubAreaUpdate, SubAreaOut
 
