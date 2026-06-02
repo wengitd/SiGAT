@@ -12,6 +12,7 @@ class HistorialEstado(Base):
     descr       :Mapped[str|None] = mapped_column()
     causa       :Mapped[str] = mapped_column(String(50), nullable=False)
 
-    id_tipoe    :Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"),nullable=False)
-    id_act      :Mapped[int] = mapped_column(ForeignKey("activo_ti.id_act"), nullable=False)
+    id_tipoe    : Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"), nullable=False)
+    id_act      : Mapped[int] = mapped_column(ForeignKey("activo_ti.id_act"), nullable=False)
+    id_emp_reg  : Mapped[int | None] = mapped_column(ForeignKey("informatico.id_emp"))
 

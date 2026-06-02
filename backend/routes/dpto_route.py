@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload 
 from auth.dependencies import get_current_user, require_editor
 
 
 from database import get_db
-from models.dpto_model import Departamento
+from models.dpto_model import Departamento, Empresa
 from schemas.dpto_schema import DepartamentoCreate, DepartamentoUpdate, DepartamentoOut
 
 router=APIRouter(prefix="/departamento", tags=["departamento"])
@@ -13,7 +13,10 @@ router=APIRouter(prefix="/departamento", tags=["departamento"])
 def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los departamentos."
     #return.db.query(model.py)
-    return db.query(Departamento).all()
+    return db.query(Departamento).options(
+        joinedload(Departamento.empresa), 
+        joinedload(Departamento.subareas)
+    ).all()
 
 @router.get("/{id_dpto}", response_model=DepartamentoOut)
 def obtener (id_dpto: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -26,7 +29,18 @@ def obtener (id_dpto: int, db: Session = Depends(get_db), current_user=Depends(g
 
 @router.post("/", response_model=DepartamentoOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: DepartamentoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    #variable=model.py(**play.model_dump())
+    if db.query(Empresa).filter(Empresa.id_org == payload.id_org).first() is None:
+        raise HTTPException(status_code=400, detail="Empresa no existe")
+    
+    # Validar duplicado
+    existente = db.query(Departamento).filter(
+        Departamento.nom_dpto == payload.nom_dpto.strip().lower(),
+        Departamento.id_org == payload.id_org
+    ).first()
+    if existente:
+        raise HTTPException(status_code=400, detail="Ya existe un departamento con ese nombre en esta empresa")
+
+
     nuevo_dptos = Departamento(**payload.model_dump())
     db.add(nuevo_dptos)
     db.commit()

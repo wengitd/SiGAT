@@ -13,9 +13,15 @@ Proyecto de título - Forestal Leonera - 2026
 2. Copiar `.env.example` a `.env` y completar valores
 3. `docker compose up -d`
 
-## Frontend (React + Vite)
+#Una vez levantado
+Frontend → http://localhost:5173
+Backend → http://localhost:8000
+PostgreSQL → localhost:5432
+
+## Frontend (local sin Docker)
 1. Instalar Node.js 18+ (incluye npm)
-2. Ir a `frontend`
+2. Ir a `\frontend`
 3. Ejecutar `npm install`
 4. Ejecutar `npm run dev`
 5. Abrir `http://localhost:5173`
+

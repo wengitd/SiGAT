@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from config import settings
 from database import get_db
+from fastapi.middleware.cors import CORSMiddleware #CORS bloqueaba conexion con frontend
+
 
 from auth.router import router as auth_router #carpeta creada para jwt
 #de la carpeta auth/, del archivo router.py, importa la variable router
@@ -21,7 +23,17 @@ from routes import (
     asignacion_route,
     checklist_route,
     plantilla_route,
-    check_plantilla_route
+    check_plantilla_route,
+    empresa_route,
+    cargo_route,
+    planta_route,
+    tipo_equipo_route,
+    sistema_operativo_route,
+    tipo_periferico_route,
+    proveedor_licencia_route,
+    proveedor_factura_route,
+    version_licencia_route,
+    sub_area_route,
 )
 
 # Inicialización de la app  
@@ -44,8 +56,26 @@ app.include_router(asignacion_route.router)
 app.include_router(checklist_route.router)
 app.include_router(plantilla_route.router)
 app.include_router(check_plantilla_route.router)
+app.include_router(empresa_route.router)
+app.include_router(cargo_route.router)
+app.include_router(planta_route.router)
+app.include_router(tipo_equipo_route.router)
+app.include_router(sistema_operativo_route.router)
+app.include_router(tipo_periferico_route.router)
+app.include_router(proveedor_licencia_route.router)
+app.include_router(proveedor_factura_route.router)
+app.include_router(version_licencia_route.router)
+app.include_router(sub_area_route.router)
 app.include_router(auth_router)
 
+#middleware que responde con en el header access-control-allow-origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 

@@ -1,16 +1,16 @@
 from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
-from typing import Literal,Annotated, Union #para el check constraint
+from typing import Literal, Annotated, Union
 
 
 class ActivoBase(BaseModel):
-    modelo          : str 
-    marca           : str 
-    num_serie       : str 
-    disponibilidad  : bool
-    origen          : Literal["empresa", "personal"]
-    id_fact         : int 
-    id_tipoe        : int 
+    modelo         : str | None = None
+    marca          : str | None = None
+    num_serie      : str | None = None
+    disponibilidad : bool = True
+    origen         : Literal["empresa", "personal"]
+    id_fact        : int
+    id_tipoe       : int
 
 
 
@@ -18,68 +18,74 @@ class ActivoBase(BaseModel):
 #####              CREATE   ########################
 ####################################################
 
-#class ActivoCreate(ActivoBase):
 
 class EquipoComputoCreate(ActivoBase):
     tipo            : Literal["equipo_computo"]
+
     ram_capac       : int | None= None
     ram_tipo        : str | None= None
-    sist_op         : str | None= None
     cpu             : str | None= None
     mac_ethernet    : str | None= None
     mac_wifi        : str | None= None
-    disco_un        : str | None= None
-    disco_tipo      : str | None= None
+    disco_tipo      : Literal["HDD", "SSD", "NVMe", "eMMC"] | None = None
+    disco_unidad    : Literal["MB", "GB", "TB"]             | None = None
     disco_capac     : int | None= None
     host_name       : str | None= None
-    tipo_equipo     : str | None= None
+
+    id_tipoeq    : int | None = None   # FK → tipo_equipo
+    id_so        : int | None = None   # FK → sistema_operativo
+
 
 class PerifericoCreate(ActivoBase):
     tipo        : Literal["periferico"]
-    tipo_per    : str | None = None
-    valor_tec   : Decimal | None = None
-    u_medida    : str | None = None
-    obs_perif   : str | None = None
 
-#union discriminada
+    valor_tec  : Decimal | None = Field(default=None, max_digits=10, decimal_places=2)
+    u_medida   : str | None = None
+    obs_perif  : str | None = None
+    id_tipoper : int | None = None     # FK → tipo_periferico
 
+
+# Union discriminada por el campo "tipo"
 ActivoCreate = Annotated[
-    Union[
-        EquipoComputoCreate,
-        PerifericoCreate
-    ],    
+    Union[EquipoComputoCreate, PerifericoCreate],
     Field(discriminator="tipo")
 ]
 
 ####################################################
 #####              UPDATE   ########################
 ####################################################
+
+# IMPORTANTE: "tipo" no se expone en el update.
+# Cambiar equipo_computo ↔ periferico dejaría datos huérfanos
+# en las tablas hijas y requeriría lógica especial.
+
 class ActivoUpdate(BaseModel):
+    #ActivoTI
     modelo          : str | None = None
     marca           : str | None = None
     num_serie       : str | None = None
     disponibilidad  : bool| None = None
-    #tipo            : str | None = None  no debe modificarse el tipo, sino quedan datos huerfanos
     origen          : str | None = None
+    id_tipoe        : int | None = None
 
-#class EquipoComputoUpdate(BaseModel):
+    #Equipo Computo
     ram_capac       : int | None= None
     ram_tipo        : str | None= None
-    sist_op         : str | None= None
     cpu             : str | None= None
     mac_ethernet    : str | None= None
     mac_wifi        : str | None= None
-    disco_un        : str | None= None
-    disco_tipo      : str | None= None
+    disco_tipo      : Literal["HDD", "SSD", "NVMe", "eMMC"] | None = None
+    disco_unidad    : Literal["MB", "GB", "TB"]             | None = None
     disco_capac     : int | None= None
-    host_name       : str | None= None
-    tipo_equipo     : str | None= None
+    host_name       : str | None = None
+    id_tipoeq       : int | None = None
+    id_so           : int | None = None
 
-#class PerifericoUpdate(BaseModel):
-    tipo_per        :str | None= None
-    valor_tec       :Decimal |None = Field(default=None, max_digits=10, decimal_places=2) 
+    #Periferico
+    valor_tec       :Decimal |None = Field(default=None, max_digits=10, decimal_places=2)
     u_medida        :str | None= None
     obs_perif       :str | None= None
+    id_tipoper      :int | None = None
 
 
 ####################################################
@@ -90,35 +96,25 @@ class ActivoUpdate(BaseModel):
 class ActivoOut(ActivoBase):
     id_act  : int
 
-    modelo          : str | None = None
-    marca           : str | None = None
-    num_serie       : str | None = None
-    disponibilidad  : bool| None = None
-    tipo            : str | None = None
-    origen          : str | None = None
-    id_fact         : int | None= None
-    id_tipoe        : int | None= None
+    tipo            : str
 
-#class EquipoComputoOut(BaseModel):
+    #Equipo Computo
     ram_capac       : int | None= None
     ram_tipo        : str | None= None
-    sist_op         : str | None= None
     cpu             : str | None= None
     mac_ethernet    : str | None= None
     mac_wifi        : str | None= None
-    disco_un        : str | None= None
-    disco_tipo      : str | None= None
+    disco_unidad    : Literal["MB", "GB", "TB"] | None = None
+    disco_tipo      : Literal["HDD", "SSD", "NVMe", "eMMC"] | None = None
     disco_capac     : int | None= None
     host_name       : str | None= None
-    tipo_equipo     : str | None= None
+    id_tipoeq       : int | None= None
+    id_so           : int | None= None
 
-#class PerifericoOut(BaseModel):
-    tipo_per        :str | None= None
-    valor_tec       :Decimal |None = Field(default=None, max_digits=10, decimal_places=2) 
-    u_medida        :str | None= None
-    obs_perif       :str | None= None
-
+    #Periferico
+    valor_tec       : Decimal | None = None
+    u_medida        : str | None= None
+    obs_perif       : str | None= None
+    id_tipoper      : int | None = None
 
     model_config = ConfigDict(from_attributes=True)
-
-

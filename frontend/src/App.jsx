@@ -1,25 +1,68 @@
-import "./App.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-const API_URL = "http://localhost:8000";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
+
+import LoginPage           from "./pages/LoginPage";
+import DashboardPage       from "./pages/DashboardPage";
+import InventarioPage      from "./pages/InventarioPage";
+import ComputacionalesPage from "./pages/activos/ComputacionalesPage";
+import PerifericosPage     from "./pages/activos/PerifericosPage";
+import EstadisticasPage    from "./pages/EstadisticasPage";
+import TrazabilidadPage    from "./pages/TrazabilidadPage";
+import ConfiguracionPage   from "./pages/ConfiguracionPage";
+import DepartamentosPage   from "./pages/DepartamentosPage";
+import EmpleadosPage       from "./pages/EmpleadosPage";
+
+
+/*
+  ESTRUCTURA DE RUTAS
+  ─────────────────────────────────────────────
+  /login                        > pantalla de acceso (pública)
+  /                             > redirige a /dashboard
+  /dashboard                    > resumen general
+  /inventario                   > tabla de todos los activos
+  /equipos/computacionales      > equipos de cómputo
+  /equipos/perifericos          > equipos periféricos
+  /estadisticas                 > gráficos e informes
+  /trazabilidad                 > historial de estados
+  /configuracion                > catálogos y configuración
+  /Departamentos                >
+  /Activos                      >  
+
+  Las rutas protegidas están dentro de <ProtectedRoute> + <Layout>.
+  Si el usuario no tiene token, es redirigido a /login automáticamente.
+*/
 
 export default function App() {
   return (
-    <main className="app">
-      <section className="card">
-        <h1>SiGAT</h1>
-        <p>Sistema de Gestion de Activos Tecnologicos</p>
-        <p className="hint">
-          Frontend base creado con React + Vite.
-          <br />
-          API esperada en: <code>{API_URL}</code>
-        </p>
-        <button
-          type="button"
-          onClick={() => window.open(`${API_URL}/docs`, "_blank")}
+    <BrowserRouter>
+      <Routes>
+        {/* Ruta pública */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Redirige la raíz al dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Rutas protegidas — todas comparten el Layout (sidebar + header) */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
         >
-          Ver documentacion API
-        </button>
-      </section>
-    </main>
+          <Route path="/dashboard"               element={<DashboardPage />} />
+          <Route path="/inventario"              element={<InventarioPage />} />
+          <Route path="/activos/computacionales" element={<ComputacionalesPage />} />
+          <Route path="/activos/perifericos"     element={<PerifericosPage />} />
+          <Route path="/estadisticas"            element={<EstadisticasPage />} />
+          <Route path="/trazabilidad"            element={<TrazabilidadPage />} />
+          <Route path="/configuracion"           element={<ConfiguracionPage />} />
+          <Route path="/departamentos"           element={<DepartamentosPage />} />
+          <Route path="/empleados"               element={<EmpleadosPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }

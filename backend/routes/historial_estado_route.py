@@ -6,6 +6,8 @@ from database import get_db
 
 from models.tipo_estado_model import TipoEstado
 from models.activo_ti_model import ActivoTi
+from models.empleado_model import Informatico
+
 
 from models.historial_estado_model import HistorialEstado
 from schemas.historial_estado_schema import HistorialEstadoCreate, HistorialEstadoOut
@@ -54,12 +56,18 @@ def crear(payload: HistorialEstadoCreate, db: Session = Depends(get_db), current
         raise HTTPException(status_code=400, detail="Activo no existe")
 
 
+    if payload.id_emp_reg is not None:
+        if db.query(Informatico).filter(Informatico.id_emp == payload.id_emp_reg).first() is None:
+            raise HTTPException(status_code=400, detail="Informático no existe")
+
     #crear el objeto SQLAlchemy     
     #variable=model(**play.model_dump())
     nuevo_historial = HistorialEstado(**payload.model_dump())
     
     #guarda
     db.add(nuevo_historial)
+    activo = db.query(ActivoTi).filter(ActivoTi.id_act == payload.id_act).first()
+    activo.id_tipoe = payload.id_tipoe
     db.commit()
     db.refresh(nuevo_historial)
     return nuevo_historial

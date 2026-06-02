@@ -1,51 +1,76 @@
-from pydantic import BaseModel, ConfigDict, Field
-#field agrega validacion a un campo pydantic.
+from typing import Literal
 
-#clase base
-class EmpleadoBase (BaseModel):
-    rut         :str
-    nombre      :str
-    email       :str
-    cargo       :str
-    planta      :str
-    operatividad:bool = True
-    id_dpto     :int | None=None
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
-#hereda de base, representa datos para crear
-class EmpleadoCreate(EmpleadoBase):
-    pass
+#schema anidado 
+class CargoOut(BaseModel):
+    id_cargo: int
+    nombre: str
+    model_config = ConfigDict(from_attributes=True)
 
-class InformaticoCreate(BaseModel):
-    """Lo que el cliente manda: password en plano."""
-    id_emp  : int
-    password: str = Field(min_length=8, max_length=128) 
-    rol     : str
-    vigente : bool
+#schema anidado 
+class PlantaOut(BaseModel):
+    id_planta: int
+    nombre: str
+    model_config = ConfigDict(from_attributes=True)
+
+#schema anidado 
+class DepartamentoSimple(BaseModel):
+    id_dpto: int
+    nom_dpto: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+
+class EmpleadoCreate(BaseModel):
+    rut: str
+    nombre: str
+    email: EmailStr
+    cargo: str = Field(max_length=100)
+    planta: str = Field(max_length=100)
+    nom_dpto: str | None = Field(default=None, max_length=100)
+    operatividad: bool = True
+    id_sub: int | None = None
+
 
 class EmpleadoUpdate(BaseModel):
-    rut         :str | None = None
-    nombre      :str | None = None
-    email       :str | None = None
-    cargo       :str | None = None
-    planta      :str | None = None
-    operatividad:bool| None = None
-    id_dpto     :int | None=None
+    rut: str | None = None
+    nombre: str | None = None
+    email: EmailStr | None = None
+    cargo: str | None = Field(default=None, max_length=100)
+    planta: str | None = Field(default=None, max_length=100)
+    nom_dpto: str | None = Field(default=None, max_length=100)
+    operatividad: bool | None = None
+    id_dpto: int | None = None  
+    id_sub: int | None = None
+
+class EmpleadoOut(BaseModel):
+    id_emp: int
+    rut: str
+    nombre: str
+    email: str
+    operatividad: bool
+    cargo: CargoOut
+    planta: PlantaOut
+    departamento: DepartamentoSimple | None = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InformaticoCreate(BaseModel):
+    id_emp: int
+    password: str = Field(min_length=8, max_length=128)
+    rol: Literal["editor", "auditor"]
+    vigente: bool = True
+
 
 class InformaticoUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=128)
-    rol     : str | None = None
-    vigente : bool| None = None
-
-class EmpleadoOut(EmpleadoBase):
-    id_emp  : int
-    model_config = ConfigDict(from_attributes=True)
+    rol: Literal["editor", "auditor"] | None = None
+    vigente: bool | None = None
 
 
 class InformaticoOut(BaseModel):
-    id_emp  : int
-    rol     : str
-    vigente : bool
+    id_emp: int
+    rol: Literal["editor", "auditor"]
+    vigente: bool
     model_config = ConfigDict(from_attributes=True)
-
-
-
