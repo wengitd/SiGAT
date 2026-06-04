@@ -82,7 +82,7 @@ def obtener(id_emp: int, db: Session = Depends(get_db), current_user=Depends(get
 
 
 @router.post("/", response_model=EmpleadoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: EmpleadoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def crear(payload: EmpleadoCreate, db: Session = Depends(get_db)):
     datos = payload.model_dump()
     id_cargo = _obtener_o_crear_cargo(db, datos.pop("cargo")).id_cargo
     id_planta = _obtener_o_crear_planta(db, datos.pop("planta")).id_planta

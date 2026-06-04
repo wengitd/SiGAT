@@ -1,5 +1,6 @@
 import useActivos from "../hooks/useActivos"
-import {Box, Typography} from '@mui/material'
+
+import {Box, Typography, Chip, Link} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 
@@ -12,10 +13,28 @@ export default function InventarioPage() {
     { field: 'marca',     headerName: 'Marca', width: 150 },
     { field: 'modelo',    headerName: 'Modelo',   width: 150 },
     { field: 'num_serie', headerName: 'Numero de Serie',   width: 200 },
-    { field: 'disponibilidad', headerName: 'Disponibilidad',   width: 100 },
+    { field: 'disponibilidad', headerName: 'Disponibilidad',   width: 120, 
+      renderCell:(params) =>(<Chip  
+        label={params.value ? "Disponible" : "En uso"}
+        color={params.value ? "success" : "error"}
+        size="small"
+        />)  
+    },
     { field: 'origen',    headerName: 'Origen',   width: 80 },
-    { field: 'id_fact',   headerName: 'Factura',   width: 100 },
-    { field: 'tipo',      headerName: 'Tipo estado', width: 150}
+    { field: 'ruta_pdf_fact',   headerName: 'Factura',   width: 100,
+      renderCell: (params) => params.value
+        ? <Link href={params.value} target="_blank" rel="noreferrer" sx={{ fontSize: 14, textDecoration: 'none' }}>Ver PDF</Link>
+        : '—'
+    },
+
+    { field: 'tipo',      headerName: 'Tipo Equipo', width: 150, 
+      valueGetter: (value) => value === 'equipo_computo' ? 'Computacional' : 'Periférico' 
+    },
+    { field: 'nombre_so',         headerName:'Sistema Operativo', width:150},
+    { field: 'nombre_estado',     headerName: 'Estado', width: 120 },
+    { field: 'empleado_asignado', headerName: 'Asignado a', width: 180,
+      valueFormatter: (value) => value ?? '— Sin asignar'
+    },
   ]
 
 
@@ -32,12 +51,13 @@ export default function InventarioPage() {
         Total: {activos.length} activos
       </Typography>
 
-      <DataGrid
-        rows={activos}
-        columns={columns}
-        getRowId={(row) => row.id_act}
-      />
-      
+      <Box sx={{height:500, mt:2}}>
+        <DataGrid
+          rows={activos}
+          columns={columns}
+          getRowId={(row) => row.id_act}
+        />
+      </Box>
     
     </Box>
   )

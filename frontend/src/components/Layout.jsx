@@ -66,11 +66,18 @@ const NAV_ITEMS = [
     label: "Configuración",
     icon: <SettingsIcon />,
     children: [
-      {label:"Usuarios", icon: <SettingsIcon fontSize="smalll"/>, path:"/configuracion"},
-      {label:"Parámetros", icon: <SettingsIcon fontSize="smalll"/>, path:""},
+      { label: "Usuarios"  , icon: <SettingsIcon fontSize="small"/>, path:"/configuracion"},
+      { label: "Parámetros", icon: <SettingsIcon fontSize="small"/>, path:""},
       //{label:"", icon: </>, path:""}
     ],
   },
+
+  {
+    label: "Parametrización",
+    icon: <TuneIcon />,
+    path: "/parametros",
+  },
+
   {
     label: "Departamentos",
     icon: < ApartmentIcon/>,
@@ -158,7 +165,11 @@ export default function Layout() {
                     sx={sxItem(false, groupActive)}
                   >
                     <ListItemIcon sx={sxIcon}>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14 }} />
+                    <ListItemText primary={item.label} sx={{
+                      "& .MuiListItemText-primary": {
+                        fontSize: 14,
+                      },
+                    }}/>
                     {groupOpen
                       ? <ExpandLessIcon sx={{ color: "#fff", fontSize: 18 }} />
                       : <ExpandMoreIcon sx={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }} />
@@ -174,7 +185,11 @@ export default function Layout() {
                           sx={{ ...sxItem(isActive(child.path), false), pl: 4 }}
                         >
                           <ListItemIcon sx={sxIcon}>{child.icon}</ListItemIcon>
-                          <ListItemText primary={child.label} primaryTypographyProps={{ fontSize: 13 }} />
+                          <ListItemText primary={child.label} sx={{
+                            "& .MuiListItemText-primary": {
+                              fontSize: 13,
+                            },
+                          }} />
                         </ListItemButton>
                       ))}
                     </List>
@@ -191,7 +206,10 @@ export default function Layout() {
                 sx={sxItem(isActive(item.path), false)}
               >
                 <ListItemIcon sx={sxIcon}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14 }} />
+                <ListItemText primary={item.label} sx={{"& .MuiListItemText-primary": {fontSize: 14,
+                    },
+                  }}
+                />
               </ListItemButton>
             );
           })}
@@ -202,7 +220,10 @@ export default function Layout() {
         <Box sx={{ px: 1 }}>
           <ListItemButton onClick={handleLogout} sx={sxItem(false, false)}>
             <ListItemIcon sx={sxIcon}><LogoutIcon /></ListItemIcon>
-            <ListItemText primary="Cerrar sesión" primaryTypographyProps={{ fontSize: 14 }} />
+            <ListItemText primary="Cerrar sesión" sx={{"& .MuiListItemText-primary": {fontSize: 14,
+                },
+              }} 
+            />
           </ListItemButton>
         </Box>
       </Box>
@@ -231,7 +252,7 @@ function sxItem(active, groupActive) {
     bgcolor: active
       ? SIDEBAR_ACTIVE
       : groupActive
-        ? "rgba(255,255,255,0.05)"
+        ? "rgba(138, 52, 52, 0.05)"
         : "transparent",
     "&:hover": {
       bgcolor: active ? SIDEBAR_ACTIVE : SIDEBAR_HOVER,

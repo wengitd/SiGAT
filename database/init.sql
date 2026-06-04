@@ -53,6 +53,12 @@ CREATE TABLE proveedor_factura (
     id_prov_fact SERIAL PRIMARY KEY,
     nombre       VARCHAR(100) NOT NULL UNIQUE
 );
+
+CREATE TABLE disponibilidad (
+    id_dispo    SERIAL PRIMARY KEY,
+    nombre      VARCHAR (100) NOT NULL UNIQUE,
+    descr       VARCHAR (100) NOT NULL
+);
  
 
 -- ========================================================
@@ -209,12 +215,7 @@ CREATE TABLE tipo_estado (
     operatividad    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-INSERT INTO tipo_estado (nombre,descr) VALUES
-('disponible',    'Activo listo para asignar un empleado'),
-('en_preparacion','Activo en proceso de gestion por el técnico'),
-('asignado',      'Activo entregado a empleado'),
-('en_mantencion', 'Activo en revisión o reparación'),
-('de_baja',       'Activo retirado del inventario');
+
 
 
 --========================================================
@@ -226,12 +227,12 @@ CREATE TABLE activo_ti (
     modelo         VARCHAR(50),
     marca          VARCHAR(50),
     num_serie      VARCHAR(50) UNIQUE,
-    disponibilidad BOOLEAN NOT NULL DEFAULT TRUE,
     tipo           VARCHAR(20) NOT NULL CHECK (tipo   IN ('equipo_computo', 'periferico')),
     origen         VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
  
     id_fact        INT NOT NULL REFERENCES factura(id_fact),
-    id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe)
+    id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe),
+    id_dispo       INT NOT NULL REFERENCES disponibilidad(id_dispo)
 );
 
 CREATE TABLE equipo_computo (
@@ -357,3 +358,18 @@ INSERT INTO version_licencia (id_prov, nombre) VALUES
 (2, 'Server'),
 (2, 'Home'),
 (3, 'Intercept X');
+
+
+INSERT INTO disponibilidad (nombre,descr) VALUES
+('disponible',    'Activo listo para asignar un empleado'),
+('en_preparacion','Activo en proceso de gestion por el técnico'),
+('asignado',      'Activo entregado a empleado'),
+('en_mantencion', 'Activo en revisión o reparación'),
+('de_baja',       'Activo retirado del inventario');
+
+
+INSERT INTO tipo_estado (nombre,descr) VALUES
+('Bueno',   'Activo sin desperfectos fisicos ni internos'),
+('Regular', 'Activo con detalles esteticos o de funcionamiento'),
+('Malo',    'Activo con problemas de funcionamiento o piezas dañadas');
+

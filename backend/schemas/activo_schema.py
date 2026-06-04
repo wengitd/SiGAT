@@ -7,10 +7,10 @@ class ActivoBase(BaseModel):
     modelo         : str | None = None
     marca          : str | None = None
     num_serie      : str | None = None
-    disponibilidad : bool = True
     origen         : Literal["empresa", "personal"]
     id_fact        : int
     id_tipoe       : int
+    id_dispo       : int
 
 
 
@@ -64,9 +64,9 @@ class ActivoUpdate(BaseModel):
     modelo          : str | None = None
     marca           : str | None = None
     num_serie       : str | None = None
-    disponibilidad  : bool| None = None
     origen          : str | None = None
     id_tipoe        : int | None = None
+    id_dispo        : int | None = None
 
     #Equipo Computo
     ram_capac       : int | None= None
@@ -97,6 +97,11 @@ class ActivoOut(ActivoBase):
     id_act  : int
 
     tipo            : str
+    ruta_pdf_fact   : str | None = None
+    nombre_so       : str | None = None
+    nombre_estado   : str | None = None
+    empleado_asignado: str | None = None
+    nombre_dispo    : str | None = None
 
     #Equipo Computo
     ram_capac       : int | None= None
@@ -116,5 +121,6 @@ class ActivoOut(ActivoBase):
     u_medida        : str | None= None
     obs_perif       : str | None= None
     id_tipoper      : int | None = None
+    
 
     model_config = ConfigDict(from_attributes=True)
