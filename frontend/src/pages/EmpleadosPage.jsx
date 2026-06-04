@@ -199,7 +199,7 @@ export default function EmpleadosPage() {
           <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setErrores({}); }}>    
           <DialogTitle>{editando ? "Editar Empleado" : "Agregar Empleado"}</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-            <TextField label="RUT" value={formData.rut??""} 
+            <TextField sx={{mt:1}} label="RUT" value={formData.rut??""}  
                        onChange={(e) => setFormData({ ...formData, rut: formatearRut(e.target.value) })} 
                        error={!!errores.rut || (formData.rut?.length > 3 && !validarRut(formData.rut))} 
                        helperText={

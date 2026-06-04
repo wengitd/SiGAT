@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
-from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico
+from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, SistemaOperativo, TipoEquipo, TipoPeriferico
 from schemas.activo_schema  import ActivoBase, ActivoCreate, ActivoUpdate, ActivoOut
 
+from models.empleado_model import Empleado
+from models.asignacion_model import Asignacion
 from models.factura_model import Factura
 from models.tipo_estado_model import TipoEstado
 
@@ -16,8 +18,24 @@ SUBTIPOS = {
     "periferico": Periferico
 }
 
-#funcion helper
+#funcion helper para estado y disponibilidad
 
+def validar_dispo_estado(id_dispo: int, id_tipoe: int, db: Session):
+    dispo  = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == id_dispo).first()
+    estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
+
+    if not dispo or not estado:
+        return  # las FKs ya se validan antes
+
+    no_permitidas = REGLAS_INCOMPATIBLES.get(estado.nombre.lower(), set())
+
+    if dispo.nombre.lower() in no_permitidas:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Un activo '{estado.nombre}' no puede estar '{dispo.nombre}'"
+        )
+
+#funciones helper
 def to_dict(obj):
     """
     Convierte un objeto SQLAlchemy en un diccionario,
@@ -33,11 +51,14 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
     Construye un diccionario completo de un activo,
     combinando datos del modelo principal y su subtipo.
 
+    Ademas, se traen los atributos necesarios para un escenario completo 
+    de un activo
+
     Se reutiliza en: create, read, list.
     """
     # Convierte el modelo principal a dict
     data = to_dict(activo_model)
-    
+
     # Obtiene el modelo subtipo según el tipo de activo
     modelo_subtipo=SUBTIPOS.get(activo_model.tipo)
 
@@ -47,6 +68,35 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
         #Si existe subtipo, lo mezcla con el diccionario principal
         if sub:
             data.update(to_dict(sub))
+            #agregar sistema operativo
+            if sub and hasattr(sub, 'id_so') and sub.id_so is not None:
+                so = db.query(SistemaOperativo).filter(SistemaOperativo.id_so == sub.id_so).first()
+                if so:
+                    data["nombre_so"] = so.nombre
+
+    # Estado del activo
+    estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == activo_model.id_tipoe).first()
+    if estado:
+        data["nombre_estado"] = estado.nombre
+
+    # Empleado asignado (última asignación activa = sin fecha_dev)
+    asignacion = (db.query(Asignacion).filter(Asignacion.id_act == activo_model.id_act, Asignacion.fecha_dev == None).order_by(Asignacion.fecha_entr.desc()).first())
+    if asignacion:
+        empleado = db.query(Empleado).filter(Empleado.id_emp == asignacion.id_emp).first()
+        if empleado:
+            data["empleado_asignado"] = empleado.nombre
+
+    #Disponibilidad del activo
+    dispo = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == activo_model.id_dispo).first()
+    if dispo:
+        data["nombre_dispo"] = dispo.nombre
+
+
+    #Para obtener la ruta de la factura
+    if activo_model.id_fact is not None:
+        factura = db.query(Factura).filter(Factura.id_fact == activo_model.id_fact).first()
+        if factura:
+            data["ruta_pdf_fact"] = factura.ruta_pdf_fact
     
     return data
 
@@ -115,6 +165,8 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
             if db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == payload.id_tipoper).first() is None:
                 raise HTTPException(status_code=400, detail="Tipo de periférico no existe")
 
+    #------------REGLA DISPONIBLE - TIPOESTADO--
+    validar_dispo_estado(payload.id_dispo, payload.id_tipoe, db)
 
     # ---------- RESOLUCIÓN DE SUBTIPO ----------
     
@@ -191,6 +243,10 @@ def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db),
             # Actualiza únicamente los campos del subtipo
             for k, v in split_payload_por_model(payload_dict, modelo_subtipo).items():
                 setattr(sub, k, v)
+
+    nuevo_id_dispo = payload.id_dispo if payload.id_dispo is not None else activo.id_dispo
+    nuevo_id_tipoe = payload.id_tipoe if payload.id_tipoe is not None else activo.id_tipoe
+    validar_dispo_estado(nuevo_id_dispo, nuevo_id_tipoe, db)
 
     commit_or_rollback(db)
     return build_activo_data(activo, db)

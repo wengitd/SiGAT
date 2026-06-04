@@ -28,6 +28,12 @@ class TipoPeriferico(Base):
     nombre      : Mapped[str] = mapped_column(String(100))
     perifericos = relationship("Periferico", back_populates="tipo_periferico")
 
+class Disponibilidad(Base):
+    __tablename__="disponibilidad"
+
+    id_dispo    : Mapped[int] = mapped_column(primary_key=True)
+    nombre      : Mapped[str] = mapped_column(String(100))
+
 
 class ActivoTi(Base):
     __tablename__ = "activo_ti"
@@ -36,10 +42,10 @@ class ActivoTi(Base):
     modelo         : Mapped[str | None] = mapped_column(String(50))
     marca          : Mapped[str | None] = mapped_column(String(50))
     num_serie      : Mapped[str | None] = mapped_column(String(50), unique=True)
-    disponibilidad : Mapped[bool] = mapped_column(nullable=False, default=True)
     tipo           : Mapped[str] = mapped_column(String(20))
     origen         : Mapped[str] = mapped_column(String(20))
 
+    id_dispo : Mapped[int] = mapped_column(ForeignKey("disponibilidad.id_dispo"), nullable=False)
     id_fact  : Mapped[int] = mapped_column(ForeignKey("factura.id_fact"))
     id_tipoe : Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"), nullable=False)
 

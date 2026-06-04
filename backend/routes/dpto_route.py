@@ -28,7 +28,7 @@ def obtener (id_dpto: int, db: Session = Depends(get_db), current_user=Depends(g
     return dptos
 
 @router.post("/", response_model=DepartamentoOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: DepartamentoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def crear(payload: DepartamentoCreate, db: Session = Depends(get_db)):
     if db.query(Empresa).filter(Empresa.id_org == payload.id_org).first() is None:
         raise HTTPException(status_code=400, detail="Empresa no existe")
     
