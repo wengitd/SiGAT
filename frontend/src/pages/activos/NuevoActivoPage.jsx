@@ -1,0 +1,418 @@
+import { useState, useEffect  } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import axiosClient from "../../api/axiosClient"
+
+import { Stepper, Step, StepLabel, Button, Box, Typography,
+    Card, CardActionArea, CardContent, TextField, FormControl, 
+    InputLabel, Select, MenuItem, InputAdornment} from "@mui/material"
+
+import ComputerIcon     from "@mui/icons-material/Computer"
+import DevicesOtherIcon from "@mui/icons-material/DevicesOther"
+
+//Stepper
+const PASOS = ["Tipo de activo", "Datos generales", "Estado", "Datos técnicos", "Resumen"]
+
+//Opciones de el tipo de activo
+const TIPOS = [
+    { valor: "equipo_computo", label: "Computacional", icon: <ComputerIcon sx={{ fontSize: 48 }} /> },
+    { valor: "periferico",     label: "Periférico",    icon: <DevicesOtherIcon sx={{ fontSize: 48 }} /> },
+]
+
+
+
+function PasoTipo({ form, setForm }) {
+    return (
+        <Box>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+                ¿Qué tipo de activo deseas registrar?
+            </Typography>
+
+            <Box sx={{ display: "flex", gap: 3 }}>
+                {TIPOS.map(t => (
+                    <Card
+                        key={t.valor}
+                        variant="outlined"
+                        sx={{
+                            flex: 1,
+                            border: form.tipo === t.valor ? "2px solid" : "1px solid",
+                            borderColor: form.tipo === t.valor ? "primary.main" : "divider",
+                            bgcolor: form.tipo === t.valor ? "primary.50" : "background.paper",
+                        }}
+                    >
+                        <CardActionArea
+                            onClick={() => setForm({ ...form, tipo: t.valor })}
+                            sx={{ p: 3, textAlign: "center" }}
+                        >
+                            <CardContent>
+                                {t.icon}
+                                <Typography variant="h6" sx={{ mt: 1 }}>{t.label}</Typography>
+                            </CardContent>
+                        </CardActionArea>
+                    </Card>
+                ))}
+            </Box>
+        </Box>
+    )
+}
+
+function PasoGenerales({ form, setForm, facturas }) {
+    function handle(e) {
+        setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    return (
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <TextField label="Marca"         name="marca"     value={form.marca}     onChange={handle} />
+            <TextField label="Modelo"        name="modelo"    value={form.modelo}    onChange={handle} />
+            <TextField label="Número serie"  name="num_serie" value={form.num_serie} onChange={handle} />
+            <TextField label="Fecha recepción" name="fecha_recep" value={form.fecha_recep} 
+                onChange={handle} type="date" 
+                slotProps={{ inputLabel: { shrink: true } }} />
+
+            <FormControl>
+                <InputLabel>Origen</InputLabel>
+                <Select name="origen" label="Origen" value={form.origen} onChange={handle}>
+                    <MenuItem value="empresa">Empresa</MenuItem>
+                    <MenuItem value="personal">Personal</MenuItem>
+                </Select>
+            </FormControl>
+
+            <FormControl fullWidth sx={{ gridColumn: "span 2" }}>
+                <InputLabel>Factura</InputLabel>
+                <Select name="id_fact" label="Factura" value={form.id_fact} onChange={handle}>
+                    <MenuItem value=""><em>Sin factura</em></MenuItem>
+                    {facturas.map(f => (
+                        <MenuItem key={f.id_fact} value={f.id_fact}>
+                            Folio # {f.num_folio}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+        </Box>
+    )
+}
+
+//------------------------------------------------------------------
+//-----------------PASO 3 ESTADO------------------------------------
+////////////////////////////////////////////////////////////////////
+function PasoEstado({ form, setForm, tiposEstado }) {
+    const [dispoPermitidas, setDispoPermitidas] = useState([])
+
+    useEffect(() => {
+        if (!form.id_tipoe) { setDispoPermitidas([]); return }
+        axiosClient.get(`/disponibilidades/por-estado/${form.id_tipoe}`)
+            .then(r => setDispoPermitidas(r.data))
+            .catch(() => setDispoPermitidas([]))
+    }, [form.id_tipoe])
+
+    function handle(e) {
+        if (e.target.name === "id_tipoe") {
+            setForm({ ...form, id_tipoe: e.target.value, id_dispo: "" })
+            return
+        }
+        setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    return (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+
+            {/*Dropdown estado del equipo */}
+            <FormControl fullWidth>
+                <InputLabel>Condición del equipo</InputLabel>
+                <Select name="id_tipoe" label="Condición del equipo" value={form.id_tipoe} onChange={handle}>
+                    {tiposEstado.map(t => (
+                        <MenuItem key={t.id_tipoe} value={t.id_tipoe}>{t.nombre}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+            
+            {/*Dropdown de disponibilidad */}
+            <FormControl fullWidth disabled={!form.id_tipoe}>
+                <InputLabel>Disponibilidad</InputLabel>
+                <Select name="id_dispo" label="Disponibilidad" value={form.id_dispo} onChange={handle}>
+                    {dispoPermitidas.map(d => (
+                        <MenuItem key={d.id_dispo} value={d.id_dispo}>{d.nombre}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+        </Box>
+    )
+}
+
+//------------------------------------------------------------------
+//-----------------PASO 4 DATOS TECNICOS------------------------------------
+////////////////////////////////////////////////////////////////////
+
+function PasoTecnico({ form, setForm, tiposEquipo, sistemasOp, tiposPerif }) {
+    function handle(e) {
+        setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    if (form.tipo === "equipo_computo") return (
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+
+            <FormControl>
+                <InputLabel>Tipo equipo</InputLabel>
+                <Select name="id_tipoeq" label="Tipo equipo" value={form.id_tipoeq} onChange={handle}>
+                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {tiposEquipo.map(t => <MenuItem key={t.id_tipoeq} value={t.id_tipoeq}>{t.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <TextField label="CPU"        name="cpu"       value={form.cpu}       onChange={handle} />
+            <TextField label="Host name"  name="host_name" value={form.host_name} onChange={handle} />
+            <TextField label="RAM (capacidad)" name="ram_capac" value={form.ram_capac} onChange={handle} type="number" 
+                slotProps={{ input: { endAdornment: <InputAdornment position="end">GB</InputAdornment> } }}/>
+            <TextField label="RAM (tipo)"      name="ram_tipo"  value={form.ram_tipo}  onChange={handle} placeholder="DDR4, DDR5..." />
+
+            <FormControl>
+                <InputLabel>Tipo de disco</InputLabel>
+                <Select name="disco_tipo" label="Tipo de disco" value={form.disco_tipo} onChange={handle}>
+                    {["HDD","SSD","NVMe","eMMC"].map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <TextField label="Capacidad disco" name="disco_capac" value={form.disco_capac} onChange={handle} type="number" 
+                slotProps={{ input: { endAdornment: <InputAdornment position="end">GB</InputAdornment> } }}/>
+
+            <FormControl>
+                <InputLabel>Unidad disco</InputLabel>
+                <Select name="disco_unidad" label="Unidad disco" value={form.disco_unidad} onChange={handle}>
+                    {["MB","GB","TB"].map(u => <MenuItem key={u} value={u}>{u}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <TextField label="MAC Ethernet" name="mac_ethernet" value={form.mac_ethernet} onChange={handle} />
+            <TextField label="MAC Wifi"     name="mac_wifi"     value={form.mac_wifi}     onChange={handle} />
+            
+
+            
+            <FormControl sx={{ gridColumn: "span 2" }}>
+                <InputLabel>Sistema operativo</InputLabel>
+                <Select name="id_so" label="Sistema operativo" value={form.id_so} onChange={handle}>
+                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {sistemasOp.map(s => <MenuItem key={s.id_so} value={s.id_so}>{s.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+        </Box>
+    )
+
+    if (form.tipo === "periferico") return (
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+
+            <FormControl sx={{ gridColumn: "span 2" }}>
+                <InputLabel>Tipo de periférico</InputLabel>
+                <Select name="id_tipoper" label="Tipo de periférico" value={form.id_tipoper} onChange={handle}>
+                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {tiposPerif.map(t => <MenuItem key={t.id_tipoper} value={t.id_tipoper}>{t.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <TextField label="Valor técnico" name="valor_tec" value={form.valor_tec} onChange={handle} type="number" />
+            <TextField label="Unidad medida" name="u_medida"  value={form.u_medida}  onChange={handle} />
+            <TextField label="Observaciones" name="obs_perif" value={form.obs_perif} onChange={handle} 
+                multiline rows={3} sx={{ gridColumn: "span 2" }} />
+
+        </Box>
+    )
+}
+
+
+//------------------------------------------------------------------
+//-----------------PASO 5 RESUMEN-----------------------------------
+////////////////////////////////////////////////////////////////////
+
+function FilaResumen({ label, valor }) {
+    return (
+        <Box sx={{ display: "flex", gap: 2 }}>
+            <Typography sx={{ fontWeight: 600, minWidth: 170 }}>{label}:</Typography>
+            <Typography color="text.secondary">{valor || "—"}</Typography>
+        </Box>
+    )
+}
+
+function SeccionResumen({ titulo, filas }) {
+    return (
+        <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" color="primary" sx={{ mb: 1, textTransform: "uppercase", letterSpacing: 1 }}>
+                {titulo}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8, pl: 1 }}>
+                {filas.map(([label, valor]) => (
+                    <FilaResumen key={label} label={label} valor={valor} />
+                ))}
+            </Box>
+        </Box>
+    )
+}
+
+function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, sistemasOp, tiposPerif, facturas }) {
+    const nombreEstado  = tiposEstado.find(t => t.id_tipoe  === form.id_tipoe)?.nombre
+    const nombreDispo   = tiposDispo .find(d => d.id_dispo  === form.id_dispo )?.nombre
+    const nombreFactura = facturas   .find(f => f.id_fact   === form.id_fact  )
+        ? `Folio #${facturas.find(f => f.id_fact === form.id_fact).num_folio}` : null
+
+    const seccionGeneral = [
+        ["Tipo",             form.tipo === "equipo_computo" ? "Computacional" : "Periférico"],
+        ["Marca",            form.marca],
+        ["Modelo",           form.modelo],
+        ["Número de serie",  form.num_serie],
+        ["Fecha recepción",  form.fecha_recep],
+        ["Origen",           form.origen],
+        ["Factura",          nombreFactura],
+    ]
+
+    const seccionEstado = [
+        ["Condición",        nombreEstado],
+        ["Disponibilidad",   nombreDispo],
+    ]
+
+    const seccionComputacional = [
+        ["Tipo de equipo",   tiposEquipo.find(t => t.id_tipoeq === form.id_tipoeq)?.nombre],
+        ["Sistema operativo",sistemasOp .find(s => s.id_so    === form.id_so    )?.nombre],
+        ["CPU",              form.cpu],
+        ["RAM (capacidad)",  form.ram_capac ? `${form.ram_capac} GB` : null],
+        ["RAM (tipo)",       form.ram_tipo],
+        ["Disco (tipo)",     form.disco_tipo],
+        ["Disco (capacidad)",form.disco_capac ? `${form.disco_capac} ${form.disco_unidad || ""}`.trim() : null],
+        ["Host name",        form.host_name],
+        ["MAC Ethernet",     form.mac_ethernet],
+        ["MAC Wi-Fi",        form.mac_wifi],
+    ]
+
+    const seccionPeriferico = [
+        ["Tipo de periférico",tiposPerif.find(t => t.id_tipoper === form.id_tipoper)?.nombre],
+        ["Valor técnico",    form.valor_tec ? `${form.valor_tec} ${form.u_medida || ""}`.trim() : null],
+        ["Observaciones",    form.obs_perif],
+    ]
+
+    return (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Resumen del activo</Typography>
+            <SeccionResumen titulo="Datos generales" filas={seccionGeneral} />
+            <SeccionResumen titulo="Estado"          filas={seccionEstado} />
+            {form.tipo === "equipo_computo"
+                ? <SeccionResumen titulo="Datos técnicos — Computacional" filas={seccionComputacional} />
+                : <SeccionResumen titulo="Datos técnicos — Periférico"    filas={seccionPeriferico} />
+            }
+        </Box>
+    )
+}
+
+
+
+export default function NuevoActivoPage() {
+    const navigate  = useNavigate()
+    const location  = useLocation()
+    const paginaOrigen = location.state?.paginaOrigen ?? "/activos/computacionales"
+    const [paso, setPaso]   = useState(0)
+
+    //Paso 2 - Datos generales
+    const [facturas, setFacturas] = useState([])
+
+    useEffect(() => {
+        axiosClient.get("/factura/").then(r => setFacturas(r.data))
+    }, [])
+
+    //Paso 3 -  Tipo estado y disponibilidad
+    const [tiposEstado, setTiposEstado] = useState([])
+    const [tiposDispo,  setTiposDispo]  = useState([])
+
+    //Paso 4 - Datos técnicos
+    const [tiposEquipo,  setTiposEquipo]  = useState([])
+    const [sistemasOp,   setSistemasOp]   = useState([])
+    const [tiposPerif,   setTiposPerif]   = useState([])
+
+    useEffect(() => {
+        axiosClient.get("/factura/").then(r => setFacturas(r.data))
+        axiosClient.get("/tipos-estado/").then(r => setTiposEstado(r.data))
+        axiosClient.get("/disponibilidades/").then(r => setTiposDispo(r.data))
+        axiosClient.get("/tipos-equipo/").then(r => setTiposEquipo(r.data))
+        axiosClient.get("/sistemas-operativos/").then(r => setSistemasOp(r.data))
+        axiosClient.get("/tipos-periferico/").then(r => setTiposPerif(r.data))
+    }, [])
+
+
+    async function enviar() {
+        const payload = Object.fromEntries(
+            Object.entries(form).filter(([_, v]) => v !== "" && v !== null)
+        )
+        try {
+            await axiosClient.post("/ActivoTi/", payload)
+            navigate(paginaOrigen)
+        } catch (err) {
+            console.log(err.response?.data) 
+            alert("Error al guardar el activo")
+        }
+    }
+
+
+    const [form, setForm]   = useState({
+        tipo: "",
+        // generales
+        marca: "", modelo: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "", 
+        // estado
+        id_tipoe: "", id_dispo: "",
+        // equipo_computo
+        cpu: "", ram_capac: "", ram_tipo: "",
+        disco_tipo: "", disco_unidad: "", disco_capac: "",
+        host_name: "", mac_ethernet: "", mac_wifi: "",
+        id_tipoeq: "", id_so: "",
+        // periferico
+        valor_tec: "", u_medida: "", obs_perif: "", id_tipoper: ""
+    })
+
+    function siguiente() { 
+        if (paso === 1 && !form.origen) {
+            alert("El origen es obligatorio")
+            return
+        }
+        if (paso === 2 && (!form.id_tipoe || !form.id_dispo)) {
+            alert("Debes seleccionar la condición y la disponibilidad")
+            return
+        }
+        setPaso(p => p + 1)
+    }
+
+
+    function anterior()  { setPaso(p => p - 1) }
+
+    return (
+        <Box sx={{ p: 3, maxWidth: 700, mx: "auto" }}>
+            <Typography variant="h5" sx={{ mb: 3 }}>Agregar Activo</Typography>
+
+            <Stepper activeStep={paso} sx={{ mb: 4 }}>
+                {PASOS.map(label => (
+                    <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+                    </Step>
+                ))}
+            </Stepper>
+
+            <Box>
+                {paso === 0 && <PasoTipo        form={form} setForm={setForm} />}
+                {paso === 1 && <PasoGenerales   form={form} setForm={setForm} facturas={facturas} />}
+                {paso === 2 && <PasoEstado      form={form} setForm={setForm} tiposEstado={tiposEstado} />}              
+                {paso === 3 && <PasoTecnico form={form} setForm={setForm} 
+                    tiposEquipo={tiposEquipo} sistemasOp={sistemasOp} tiposPerif={tiposPerif} />}                
+                
+                {paso === 4 && <PasoResumen   form={form}
+                    tiposEstado={tiposEstado} tiposDispo={tiposDispo}
+                    tiposEquipo={tiposEquipo} sistemasOp={sistemasOp}
+                    tiposPerif={tiposPerif}   facturas={facturas} />}
+            </Box>
+
+            {/* Navegación */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+                <Button onClick={anterior} disabled={paso === 0}>Atrás</Button>
+                {paso < PASOS.length - 1
+                    ? <Button variant="contained" onClick={siguiente}  disabled={paso === 0 && form.tipo === ""}>Siguiente</Button>
+                    : <Button variant="contained" color="success" onClick={enviar}>Confirmar</Button>
+                }
+            </Box>
+        </Box>
+    )
+}
+

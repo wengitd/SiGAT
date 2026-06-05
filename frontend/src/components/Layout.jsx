@@ -18,6 +18,7 @@ import LogoutIcon       from "@mui/icons-material/Logout";
 import ApartmentIcon    from '@mui/icons-material/Apartment';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import TuneIcon         from '@mui/icons-material/Tune';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
 import { useAuth } from "../context/AuthContext";
 
@@ -50,6 +51,7 @@ const NAV_ITEMS = [
     children: [
       { label: "Computacionales", icon: <ComputerIcon fontSize="small" />, path: "/activos/computacionales" },
       { label: "Periféricos",     icon: <ComputerIcon fontSize="small" />, path: "/activos/perifericos" },
+      { label: "Nuevo Activo",    icon: <ComputerIcon fontSize="small" />, path: "/activos/nuevoActivo" },
     ],
   },
   {
@@ -66,29 +68,14 @@ const NAV_ITEMS = [
     label: "Configuración",
     icon: <SettingsIcon />,
     children: [
-      { label: "Usuarios"  , icon: <SettingsIcon fontSize="small"/>, path:"/configuracion"},
-      { label: "Parámetros", icon: <SettingsIcon fontSize="small"/>, path:""},
-      //{label:"", icon: </>, path:""}
+      { label: "Usuarios"    , icon: <SettingsIcon    fontSize="small"/>, path: "/configuracion" },
+      { label: "Mantenedor" , icon: <LibraryBooksIcon fontSize="small"/>, path: "/mantenedor" },
+      { label: "Departamentos", icon: < ApartmentIcon fontSize="small"/>, path: "/departamentos"},
     ],
   },
-
-  {
-    label: "Parametrización",
-    icon: <TuneIcon />,
-    path: "/parametros",
-  },
-
-  {
-    label: "Departamentos",
-    icon: < ApartmentIcon/>,
-    path: "/departamentos",
-  },
-  {
-    label: "Colaboradores",
-    icon: < ApartmentIcon/>,
-    path: "/empleados",
-  },
-];
+]
+  
+ 
 
 // Colores del sidebar
 const SIDEBAR_BG     = "#1A2744"; // azul marino

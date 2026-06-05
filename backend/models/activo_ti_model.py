@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from decimal import Decimal
+from datetime import date
 
 from database import Base
 
@@ -28,11 +29,39 @@ class TipoPeriferico(Base):
     nombre      : Mapped[str] = mapped_column(String(100))
     perifericos = relationship("Periferico", back_populates="tipo_periferico")
 
+
+class Marca(Base):
+    __tablename__ = "marca"
+
+    id_marca : Mapped[int] = mapped_column(primary_key=True)
+    nombre   : Mapped[str] = mapped_column(String(100))
+    modelos  = relationship("Modelo", back_populates="marca")
+
+
+class Modelo(Base):
+    __tablename__ = "modelo"
+
+    id_modelo : Mapped[int] = mapped_column(primary_key=True)
+    id_marca  : Mapped[int] = mapped_column(ForeignKey("marca.id_marca"))
+    nombre    : Mapped[str] = mapped_column(String(100))
+    marca     = relationship("Marca", back_populates="modelos")
+
 class Disponibilidad(Base):
     __tablename__="disponibilidad"
 
     id_dispo    : Mapped[int] = mapped_column(primary_key=True)
     nombre      : Mapped[str] = mapped_column(String(100))
+    descr       : Mapped[str|None] = mapped_column()
+    color       : Mapped[str|None] = mapped_column(String(20))  # ej: "success", "warning", "error", "info", "primary"
+
+
+class EstadoDispo(Base):
+    """Tabla relacional: qué disponibilidades permite cada estado."""
+    __tablename__ = "estado_dispo"
+
+    id_tipoe    : Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"), primary_key=True)
+    id_dispo    : Mapped[int] = mapped_column(ForeignKey("disponibilidad.id_dispo"), primary_key=True)
+
 
 
 class ActivoTi(Base):
@@ -44,6 +73,7 @@ class ActivoTi(Base):
     num_serie      : Mapped[str | None] = mapped_column(String(50), unique=True)
     tipo           : Mapped[str] = mapped_column(String(20))
     origen         : Mapped[str] = mapped_column(String(20))
+    fecha_recep    : Mapped[date | None] = mapped_column()
 
     id_dispo : Mapped[int] = mapped_column(ForeignKey("disponibilidad.id_dispo"), nullable=False)
     id_fact  : Mapped[int] = mapped_column(ForeignKey("factura.id_fact"))

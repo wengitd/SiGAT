@@ -43,6 +43,18 @@ CREATE TABLE tipo_periferico (
     id_tipoper SERIAL PRIMARY KEY,
     nombre     VARCHAR(100) NOT NULL UNIQUE  -- 'Monitor', 'Impresora', etc.
 );
+
+CREATE TABLE marca (
+    id_marca SERIAL PRIMARY KEY,
+    nombre   VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE modelo (
+    id_modelo SERIAL PRIMARY KEY,
+    id_marca  INT NOT NULL REFERENCES marca(id_marca) ON DELETE CASCADE,
+    nombre    VARCHAR(100) NOT NULL,
+    UNIQUE (id_marca, nombre)
+);
  
 CREATE TABLE proveedor_licencia (
     id_prov SERIAL PRIMARY KEY,
@@ -58,6 +70,7 @@ CREATE TABLE disponibilidad (
     id_dispo    SERIAL PRIMARY KEY,
     nombre      VARCHAR (100) NOT NULL UNIQUE,
     descr       VARCHAR (100) NOT NULL
+    color       VARCHAR (20)
 );
  
 
@@ -229,8 +242,9 @@ CREATE TABLE activo_ti (
     num_serie      VARCHAR(50) UNIQUE,
     tipo           VARCHAR(20) NOT NULL CHECK (tipo   IN ('equipo_computo', 'periferico')),
     origen         VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
+    fecha_recep    DATE,
  
-    id_fact        INT NOT NULL REFERENCES factura(id_fact),
+    id_fact        INT REFERENCES factura(id_fact),
     id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe),
     id_dispo       INT NOT NULL REFERENCES disponibilidad(id_dispo)
 );
@@ -358,15 +372,6 @@ INSERT INTO version_licencia (id_prov, nombre) VALUES
 (2, 'Server'),
 (2, 'Home'),
 (3, 'Intercept X');
-
-
-INSERT INTO disponibilidad (nombre,descr) VALUES
-('disponible',    'Activo listo para asignar un empleado'),
-('en_preparacion','Activo en proceso de gestion por el técnico'),
-('asignado',      'Activo entregado a empleado'),
-('en_mantencion', 'Activo en revisión o reparación'),
-('de_baja',       'Activo retirado del inventario');
-
 
 INSERT INTO tipo_estado (nombre,descr) VALUES
 ('Bueno',   'Activo sin desperfectos fisicos ni internos'),
