@@ -34,6 +34,9 @@ from routes import (
     proveedor_factura_route,
     version_licencia_route,
     sub_area_route,
+    disponibilidad_route,
+    marca_route,
+    modelo_route,
 )
 
 # Inicialización de la app  
@@ -67,6 +70,9 @@ app.include_router(proveedor_factura_route.router)
 app.include_router(version_licencia_route.router)
 app.include_router(sub_area_route.router)
 app.include_router(auth_router)
+app.include_router(disponibilidad_route.router)
+app.include_router(marca_route.router)
+app.include_router(modelo_route.router)
 
 #middleware que responde con en el header access-control-allow-origin
 app.add_middleware(

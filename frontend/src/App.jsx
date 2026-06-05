@@ -13,6 +13,8 @@ import TrazabilidadPage    from "./pages/TrazabilidadPage";
 import ConfiguracionPage   from "./pages/ConfiguracionPage";
 import DepartamentosPage   from "./pages/DepartamentosPage";
 import EmpleadosPage       from "./pages/EmpleadosPage";
+import NuevoActivoPage     from "./pages/activos/NuevoActivoPage";
+import MantenedorPage      from "./pages/MantenedorPage";
 
 
 /*
@@ -56,11 +58,13 @@ export default function App() {
           <Route path="/inventario"              element={<InventarioPage />} />
           <Route path="/activos/computacionales" element={<ComputacionalesPage />} />
           <Route path="/activos/perifericos"     element={<PerifericosPage />} />
+          <Route path="/activos/nuevoActivo"     element={<NuevoActivoPage />} />
           <Route path="/estadisticas"            element={<EstadisticasPage />} />
           <Route path="/trazabilidad"            element={<TrazabilidadPage />} />
           <Route path="/configuracion"           element={<ConfiguracionPage />} />
           <Route path="/departamentos"           element={<DepartamentosPage />} />
           <Route path="/empleados"               element={<EmpleadosPage />} />
+          <Route path="/mantenedor"              element={<MantenedorPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

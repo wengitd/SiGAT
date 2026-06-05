@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
 from typing import Literal, Annotated, Union
+from datetime import date
 
 
 class ActivoBase(BaseModel):
@@ -8,7 +9,8 @@ class ActivoBase(BaseModel):
     marca          : str | None = None
     num_serie      : str | None = None
     origen         : Literal["empresa", "personal"]
-    id_fact        : int
+    fecha_recep    : date| None = None
+    id_fact        : int | None = None
     id_tipoe       : int
     id_dispo       : int
 
@@ -65,6 +67,7 @@ class ActivoUpdate(BaseModel):
     marca           : str | None = None
     num_serie       : str | None = None
     origen          : str | None = None
+    fecha_recep     : date| None = None
     id_tipoe        : int | None = None
     id_dispo        : int | None = None
 
@@ -100,8 +103,13 @@ class ActivoOut(ActivoBase):
     ruta_pdf_fact   : str | None = None
     nombre_so       : str | None = None
     nombre_estado   : str | None = None
+    nombre_tipoeq   : str | None = None
+    nombre_tipoper  : str | None = None
     empleado_asignado: str | None = None
-    nombre_dispo    : str | None = None
+    nombre_dispo    : str  | None = None
+    dispo_color     : str  | None = None
+    fecha_recep     : date | None = None
+    
 
     #Equipo Computo
     ram_capac       : int | None= None

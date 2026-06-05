@@ -13,10 +13,10 @@ export default function InventarioPage() {
     { field: 'marca',     headerName: 'Marca', width: 150 },
     { field: 'modelo',    headerName: 'Modelo',   width: 150 },
     { field: 'num_serie', headerName: 'Numero de Serie',   width: 200 },
-    { field: 'disponibilidad', headerName: 'Disponibilidad',   width: 120, 
+    { field: 'nombre_dispo', headerName: 'Disponibilidad',   width: 120, 
       renderCell:(params) =>(<Chip  
-        label={params.value ? "Disponible" : "En uso"}
-        color={params.value ? "success" : "error"}
+        label={params.value ?? "Sin datos"}
+        color={params.value === "disponible" ? "success" : "warning"}
         size="small"
         />)  
     },

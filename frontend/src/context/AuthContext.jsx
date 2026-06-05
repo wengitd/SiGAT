@@ -1,12 +1,23 @@
 import { createContext, useContext, useState } from "react";
 
-/* contenedor global donde se guarda el token */
 const AuthContext = createContext();
 
-/* componente que envuelve la APP */
+function parseJWT(token) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return {};
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("token")); /* funciones que modifican estado */ 
-  /* Con el login exitoso llama a login */ 
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  const payload = token ? parseJWT(token) : {};
+  const rol     = payload.rol ?? null;   // "editor" | "auditor" | null
+  const isEditor  = rol === "editor";
+  const isAuditor = rol === "auditor";
+
   function login(newToken) {
     setToken(newToken);
     localStorage.setItem("token", newToken);
@@ -18,13 +29,12 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ token, rol, isEditor, isAuditor, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-/* hook personalizado */ 
 export function useAuth() {
   return useContext(AuthContext);
 }

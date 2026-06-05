@@ -142,6 +142,42 @@ class ProveedorFacturaOut(ProveedorFacturaBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MarcaBase(BaseModel):
+    nombre: str = Field(max_length=100)
+
+
+class MarcaCreate(MarcaBase):
+    pass
+
+
+class MarcaUpdate(BaseModel):
+    nombre: str | None = Field(default=None, max_length=100)
+
+
+class MarcaOut(MarcaBase):
+    id_marca: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ModeloBase(BaseModel):
+    nombre  : str = Field(max_length=100)
+    id_marca: int
+
+
+class ModeloCreate(ModeloBase):
+    pass
+
+
+class ModeloUpdate(BaseModel):
+    nombre  : str | None = Field(default=None, max_length=100)
+    id_marca: int | None = None
+
+
+class ModeloOut(ModeloBase):
+    id_modelo: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 ###############################
 ## CATALOGOS CON DEPENDENCIA
 ##############################

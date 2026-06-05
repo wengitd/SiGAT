@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
-from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, SistemaOperativo, TipoEquipo, TipoPeriferico
+from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, SistemaOperativo, TipoEquipo, TipoPeriferico, Disponibilidad
 from schemas.activo_schema  import ActivoBase, ActivoCreate, ActivoUpdate, ActivoOut
 
 from models.empleado_model import Empleado
@@ -16,6 +16,12 @@ router=APIRouter(prefix="/ActivoTi", tags=["Activos"])
 SUBTIPOS = {
     "equipo_computo": EquipoComputo,
     "periferico": Periferico
+}
+
+REGLAS_INCOMPATIBLES = {
+    "bueno":   {"de_baja", "en_mantencion"},
+    "regular": {"de_baja"},
+    "malo":    set(),
 }
 
 #funcion helper para estado y disponibilidad
@@ -73,6 +79,17 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
                 so = db.query(SistemaOperativo).filter(SistemaOperativo.id_so == sub.id_so).first()
                 if so:
                     data["nombre_so"] = so.nombre
+            
+            # agregar el tipo de equipo segun periferico o computacional
+            if sub and hasattr(sub, 'id_tipoeq') and sub.id_tipoeq is not None:
+                tipoeq = db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == sub.id_tipoeq).first()
+                if tipoeq:
+                    data["nombre_tipoeq"] = tipoeq.nombre
+
+            if sub and hasattr(sub, 'id_tipoper') and sub.id_tipoper is not None:
+                tipoper = db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == sub.id_tipoper).first()
+                if tipoper:
+                    data["nombre_tipoper"] = tipoper.nombre
 
     # Estado del activo
     estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == activo_model.id_tipoe).first()
@@ -90,6 +107,7 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
     dispo = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == activo_model.id_dispo).first()
     if dispo:
         data["nombre_dispo"] = dispo.nombre
+        data["dispo_color"]  = dispo.color or "default"
 
 
     #Para obtener la ruta de la factura

@@ -1,15 +1,22 @@
-import { Navigate } from "react-router-dom"; /* Componente de React para redirigir */
-import { useAuth } from "../context/AuthContext"; /* Se importa el Hook para acceder al token */
+import { Navigate } from "react-router-dom";
+import { useAuth }   from "../context/AuthContext";
 
-/* Se define el componente
-   Se recibe children, como pagina que va dentro a proteger */
-export default function ProtectedRoute({ children }) {
+/*
+  ProtectedRoute — protege rutas por autenticación y opcionalmente por rol.
 
-    const { token } = useAuth();
+  Props:
+    requiredRole?: "editor" | "auditor"
+      Si se indica, solo ese rol puede acceder.
+      Sin prop, cualquier usuario autenticado puede entrar.
+*/
+export default function ProtectedRoute({ children, requiredRole }) {
+  const { token, rol } = useAuth();
 
-    /* Si no hay token redirige al Login*/
-    if (!token) return <Navigate to="/login" />;
+  if (!token) return <Navigate to="/login" replace />;
 
-    return children;
+  if (requiredRole && rol !== requiredRole)
+    return <Navigate to="/dashboard" replace />;
+
+  return children;
 }
 
