@@ -69,7 +69,8 @@ const NAV_ITEMS = [
     icon: <SettingsIcon />,
     children: [
       { label: "Usuarios"    , icon: <SettingsIcon    fontSize="small"/>, path: "/configuracion" },
-      { label: "Mantenedor" , icon: <LibraryBooksIcon fontSize="small"/>, path: "/mantenedor" },
+      { label: "Mantenedor" ,       icon: <LibraryBooksIcon fontSize="small"/>, path: "/mantenedor" },
+      { label: "Sistemas Operativos", icon: <ComputerIcon    fontSize="small"/>, path: "/sistemas-operativos" },
       { label: "Departamentos", icon: < ApartmentIcon fontSize="small"/>, path: "/departamentos"},
     ],
   },

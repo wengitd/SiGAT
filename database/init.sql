@@ -34,10 +34,27 @@ CREATE TABLE tipo_equipo (
     nombre    VARCHAR(100) NOT NULL UNIQUE   -- 'Notebook', 'Tablet', 'NUC', etc.
 );
  
-CREATE TABLE sistema_operativo (
-    id_so  SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE      -- 'Windows 11 64 bits', etc.
+
+CREATE TABLE familia_so (
+    id_fam_so SERIAL PRIMARY KEY,
+    nombre    VARCHAR(100) NOT NULL UNIQUE      -- 'Windows', 'Linux', 'MacOS'
 );
+
+CREATE TABLE version_so (
+    id_ver_so  SERIAL PRIMARY KEY,
+    nombre     VARCHAR(100) NOT NULL,      -- '11', 'Ubuntu', '10'
+    UNIQUE (id_ver_so, nombre),
+
+    id_fam_so   INT NOT NULL REFERENCES familia_so(id_fam_so) ON DELETE CASCADE
+);
+
+CREATE TABLE edicion_so (
+    id_edicion_so   SERIAL PRIMARY KEY,
+    nombre          VARCHAR(100) NOT NULL,     --'Pro x64', 'Home', 'LTS'
+    
+    id_ver_so INT NOT NULL REFERENCES version_so(id_ver_so) ON DELETE CASCADE
+);
+
  
 CREATE TABLE tipo_periferico (
     id_tipoper SERIAL PRIMARY KEY,
@@ -69,7 +86,7 @@ CREATE TABLE proveedor_factura (
 CREATE TABLE disponibilidad (
     id_dispo    SERIAL PRIMARY KEY,
     nombre      VARCHAR (100) NOT NULL UNIQUE,
-    descr       VARCHAR (100) NOT NULL
+    descr       VARCHAR (100) NOT NULL,
     color       VARCHAR (20)
 );
  
@@ -228,7 +245,12 @@ CREATE TABLE tipo_estado (
     operatividad    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-
+-- Relación N:M: qué disponibilidades permite cada estado (condición del equipo)
+CREATE TABLE estado_dispo (
+    id_tipoe    INT NOT NULL REFERENCES tipo_estado(id_tipoe) ON DELETE CASCADE,
+    id_dispo    INT NOT NULL REFERENCES disponibilidad(id_dispo) ON DELETE CASCADE,
+    PRIMARY KEY (id_tipoe, id_dispo)
+);
 
 
 --========================================================
@@ -261,8 +283,8 @@ CREATE TABLE equipo_computo (
     disco_unidad VARCHAR(5)  CHECK (disco_unidad IN ('MB', 'GB', 'TB')),
     host_name    VARCHAR(50),
  
-    id_tipoeq INT REFERENCES tipo_equipo(id_tipoeq),
-    id_so     INT REFERENCES sistema_operativo(id_so),
+    id_tipoeq       INT REFERENCES tipo_equipo(id_tipoeq),
+    id_edicion_so   INT REFERENCES edicion_so(id_edicion_so),
  
     PRIMARY KEY (id_act),
     FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
@@ -349,10 +371,6 @@ INSERT INTO tipo_equipo (nombre) VALUES
 ('Gabinete'),
 ('NUC');
  
--- Sistemas operativos conocidos hasta ahora
-INSERT INTO sistema_operativo (nombre) VALUES
-('Windows 11 64 bits'),
-('Windows 10 64 bits');
  
 -- Tipos de periférico conocidos hasta ahora
 INSERT INTO tipo_periferico (nombre) VALUES
@@ -378,3 +396,26 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 ('Regular', 'Activo con detalles esteticos o de funcionamiento'),
 ('Malo',    'Activo con problemas de funcionamiento o piezas dañadas');
 
+-- Departamentos
+INSERT INTO departamento (id_org, zona, nom_dpto) VALUES
+(1, 'Administracion', 'Contabilidad'),
+(1, 'Administracion', 'Tesoreria'),
+(2, 'Administracion', 'TD'),
+(2, 'Operaciones',    'Mantencion');
+
+-- Sub areas
+INSERT INTO sub_area (id_dpto, nombre) VALUES
+(3, 'Soporte'),
+(3, 'Desarrollo'),
+(3, 'BI'),
+(4, 'Electrica'),
+(4, 'Mecanica');
+
+-- Empleados
+INSERT INTO empleado (rut, nombre, email, id_cargo, id_planta, id_dpto, id_sub) VALUES
+('12345678-9', 'Juan Pérez',  'juan@empresa.cl',  1, 1, 1, NULL),
+('98765432-1', 'Ana García',  'ana@empresa.cl',   2, 1, 3, 1);
+
+-- Informático (el empleado ya debe existir)
+INSERT INTO informatico (id_emp, hash_pass, rol, vigente) VALUES
+(2, 'hash_temporal', 'editor', TRUE);
