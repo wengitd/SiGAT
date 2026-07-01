@@ -101,7 +101,7 @@ class ActivoOut(ActivoBase):
 
     tipo            : str
     ruta_pdf_fact   : str | None = None
-    nombre_so       : str | None = None
+    detalles_so     : dict | None = None
     nombre_estado   : str | None = None
     nombre_tipoeq   : str | None = None
     nombre_tipoper  : str | None = None
@@ -122,7 +122,7 @@ class ActivoOut(ActivoBase):
     disco_capac     : int | None= None
     host_name       : str | None= None
     id_tipoeq       : int | None= None
-    id_so           : int | None= None
+    id_edicion_so   : int | None= None
 
     #Periferico
     valor_tec       : Decimal | None = None

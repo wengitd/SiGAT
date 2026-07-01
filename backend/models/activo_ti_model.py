@@ -6,12 +6,24 @@ from datetime import date
 from database import Base
 
 
-class SistemaOperativo(Base):
-    __tablename__ = "sistema_operativo"
+class FamiliaSO(Base):
+    __tablename__ = "familia_so"
+    id_fam_so : Mapped[int] = mapped_column(primary_key=True)
+    nombre    : Mapped[str] = mapped_column(String(100))
+    
+class VersionSO(Base):
+    __tablename__ ="version_so"
+    id_ver_so   :Mapped[int] = mapped_column(primary_key=True)
+    id_fam_so  :Mapped[int] = mapped_column(ForeignKey("familia_so.id_fam_so"))
+    nombre      :Mapped[str] = mapped_column(String(100))
 
-    id_so   : Mapped[int] = mapped_column(primary_key=True)
-    nombre  : Mapped[str] = mapped_column(String(100))
-    equipos = relationship("EquipoComputo", back_populates="sistema_operativo")
+
+class EdicionSO(Base):
+    __tablename__ ="edicion_so"
+    id_edicion_so:Mapped[int] = mapped_column(primary_key=True)
+    id_ver_so   : Mapped[int] = mapped_column(ForeignKey("version_so.id_ver_so"))
+    nombre      : Mapped[str] = mapped_column(String(100))
+    equipos     = relationship("EquipoComputo", back_populates="edicion_so")
 
 
 class TipoEquipo(Base):
@@ -55,8 +67,8 @@ class Disponibilidad(Base):
     color       : Mapped[str|None] = mapped_column(String(20))  # ej: "success", "warning", "error", "info", "primary"
 
 
+#Tabla relacional: qué disponibilidades permite cada estado
 class EstadoDispo(Base):
-    """Tabla relacional: qué disponibilidades permite cada estado."""
     __tablename__ = "estado_dispo"
 
     id_tipoe    : Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"), primary_key=True)
@@ -93,12 +105,12 @@ class EquipoComputo(Base):
     disco_capac  : Mapped[int | None] = mapped_column()
     host_name    : Mapped[str | None] = mapped_column(String(50))
 
-    id_act    : Mapped[int] = mapped_column(ForeignKey("activo_ti.id_act"), primary_key=True)
-    id_tipoeq : Mapped[int | None] = mapped_column(ForeignKey("tipo_equipo.id_tipoeq"))
-    id_so     : Mapped[int | None] = mapped_column(ForeignKey("sistema_operativo.id_so"))
+    id_act          : Mapped[int] = mapped_column(ForeignKey("activo_ti.id_act"), primary_key=True)
+    id_tipoeq       : Mapped[int | None] = mapped_column(ForeignKey("tipo_equipo.id_tipoeq"))
+    id_edicion_so   : Mapped[int | None] = mapped_column(ForeignKey("edicion_so.id_edicion_so"))
 
     tipo_equipo       = relationship("TipoEquipo", back_populates="equipos")
-    sistema_operativo = relationship("SistemaOperativo", back_populates="equipos")
+    edicion_so        = relationship("EdicionSO", back_populates="equipos")
 
 
 class Periferico(Base):

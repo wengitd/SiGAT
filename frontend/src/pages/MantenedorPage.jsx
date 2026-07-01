@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Tabs, Tab, Typography, Paper } from "@mui/material";
 import MantenedorCatalogo from "../components/mantenedor/MantenedorCatalogo";
+import MantenedorEstadoDispo from "../components/mantenedor/MantenedorEstadoDispo";
 
 // ── Definición de catálogos por grupo ────────────────────────────────────────
 
@@ -61,6 +62,10 @@ const GRUPOS = [
           { name: "descr",  label: "Descripción" },
           { name: "color",  label: "Asignale un color", type: "colorselect", required: true },
         ],
+      },
+      {
+        title: "Estado ↔ Disponibilidad",
+        custom: "estadoDispo",
       },
     ],
   },
@@ -193,13 +198,17 @@ export default function MantenedorPage() {
 
       {/* Tabla CRUD del catálogo seleccionado */}
       <Paper sx={{ p: 3 }}>
-        <MantenedorCatalogo
-          key={`${grupoIdx}-${catalogoIdx}`}
-          title={catalogo.title}
-          endpoint={catalogo.endpoint}
-          idField={catalogo.idField}
-          fields={catalogo.fields}
-        />
+        {catalogo.custom === "estadoDispo" ? (
+          <MantenedorEstadoDispo key={`${grupoIdx}-${catalogoIdx}`} />
+        ) : (
+          <MantenedorCatalogo
+            key={`${grupoIdx}-${catalogoIdx}`}
+            title={catalogo.title}
+            endpoint={catalogo.endpoint}
+            idField={catalogo.idField}
+            fields={catalogo.fields}
+          />
+        )}
       </Paper>
     </Box>
   );

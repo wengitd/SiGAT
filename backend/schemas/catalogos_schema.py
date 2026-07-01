@@ -74,20 +74,52 @@ class TipoEquipoOut(TipoEquipoBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class SistemaOperativoBase(BaseModel):
+# FAMILIA SO ----------------------------
+class FamiliaSOBase(BaseModel):
     nombre: str = Field(max_length=100)
 
-
-class SistemaOperativoCreate(SistemaOperativoBase):
+class FamiliaSOCreate(FamiliaSOBase):
     pass
 
-
-class SistemaOperativoUpdate(BaseModel):
+class FamiliaSOUpdate(BaseModel):
     nombre: str | None = Field(default=None, max_length=100)
 
+class FamiliaSOOut(FamiliaSOBase):
+    id_fam_so: int
+    model_config = ConfigDict(from_attributes=True)
 
-class SistemaOperativoOut(SistemaOperativoBase):
-    id_so: int
+
+# VERSION SO ----------------------------
+class VersionSOBase(BaseModel):
+    nombre   : str = Field(max_length=100)
+    id_fam_so: int
+
+class VersionSOCreate(VersionSOBase):
+    pass
+
+class VersionSOUpdate(BaseModel):
+    nombre   : str | None = Field(default=None, max_length=100)
+    id_fam_so: int | None = None
+
+class VersionSOOut(VersionSOBase):
+    id_ver_so: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+# EDICION SO ----------------------------
+class EdicionSOBase(BaseModel):
+    nombre   : str = Field(max_length=100)
+    id_ver_so: int
+
+class EdicionSOCreate(EdicionSOBase):
+    pass
+
+class EdicionSOUpdate(BaseModel):
+    nombre   : str | None = Field(default=None, max_length=100)
+    id_ver_so: int | None = None
+
+class EdicionSOOut(EdicionSOBase):
+    id_edicion_so: int
     model_config = ConfigDict(from_attributes=True)
 
 

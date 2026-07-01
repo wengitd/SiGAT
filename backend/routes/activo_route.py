@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
-from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, SistemaOperativo, TipoEquipo, TipoPeriferico, Disponibilidad
+from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, FamiliaSO, VersionSO, EdicionSO, TipoEquipo, TipoPeriferico, Disponibilidad
 from schemas.activo_schema  import ActivoBase, ActivoCreate, ActivoUpdate, ActivoOut
 
 from models.empleado_model import Empleado
@@ -74,11 +74,18 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
         #Si existe subtipo, lo mezcla con el diccionario principal
         if sub:
             data.update(to_dict(sub))
+            
             #agregar sistema operativo
-            if sub and hasattr(sub, 'id_so') and sub.id_so is not None:
-                so = db.query(SistemaOperativo).filter(SistemaOperativo.id_so == sub.id_so).first()
-                if so:
-                    data["nombre_so"] = so.nombre
+            if sub and hasattr(sub, 'id_edicion_so') and sub.id_edicion_so is not None:
+                edicion = db.query(EdicionSO).filter(EdicionSO.id_edicion_so == sub.id_edicion_so).first()
+                if edicion:
+                    version = db.query(VersionSO).filter(VersionSO.id_ver_so == edicion.id_ver_so).first()
+                    familia = db.query(FamiliaSO).filter(FamiliaSO.id_fam_so == version.id_fam_so).first() if version else None
+                    data["detalles_so"] = {
+                        "familia":  familia.nombre  if familia  else None,
+                        "version":  version.nombre  if version  else None,
+                        "edicion":  edicion.nombre,
+                    }
             
             # agregar el tipo de equipo segun periferico o computacional
             if sub and hasattr(sub, 'id_tipoeq') and sub.id_tipoeq is not None:

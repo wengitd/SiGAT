@@ -16,7 +16,7 @@ export default function InventarioPage() {
     { field: 'nombre_dispo', headerName: 'Disponibilidad',   width: 120, 
       renderCell:(params) =>(<Chip  
         label={params.value ?? "Sin datos"}
-        color={params.value === "disponible" ? "success" : "warning"}
+        color={params.row.dispo_color ?? "default"}
         size="small"
         />)  
     },

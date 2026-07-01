@@ -14,7 +14,8 @@ import ConfiguracionPage   from "./pages/ConfiguracionPage";
 import DepartamentosPage   from "./pages/DepartamentosPage";
 import EmpleadosPage       from "./pages/EmpleadosPage";
 import NuevoActivoPage     from "./pages/activos/NuevoActivoPage";
-import MantenedorPage      from "./pages/MantenedorPage";
+import MantenedorPage        from "./pages/MantenedorPage"
+import SistemaOperativoPage  from "./pages/SistemaOperativoPage";
 
 
 /*
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/departamentos"           element={<DepartamentosPage />} />
           <Route path="/empleados"               element={<EmpleadosPage />} />
           <Route path="/mantenedor"              element={<MantenedorPage />} />
+          <Route path="/sistemas-operativos"    element={<SistemaOperativoPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

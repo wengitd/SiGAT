@@ -144,7 +144,30 @@ function PasoEstado({ form, setForm, tiposEstado }) {
 //-----------------PASO 4 DATOS TECNICOS------------------------------------
 ////////////////////////////////////////////////////////////////////
 
-function PasoTecnico({ form, setForm, tiposEquipo, sistemasOp, tiposPerif }) {
+function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
+    // Cascada SO
+    const [familias,  setFamilias]  = useState([])
+    const [versiones, setVersiones] = useState([])
+    const [ediciones, setEdiciones] = useState([])
+    const [selFam,    setSelFam]    = useState("")
+    const [selVer,    setSelVer]    = useState("")
+
+    useEffect(() => {
+        axiosClient.get("/sistemas-operativos/familias").then(r => setFamilias(r.data))
+    }, [])
+
+    useEffect(() => {
+        if (!selFam) { setVersiones([]); setEdiciones([]); setSelVer(""); setForm(p => ({ ...p, id_edicion_so: "" })); return }
+        axiosClient.get(`/sistemas-operativos/versiones/por-familia/${selFam}`)
+            .then(r => { setVersiones(r.data); setEdiciones([]); setSelVer(""); setForm(p => ({ ...p, id_edicion_so: "" })) })
+    }, [selFam])
+
+    useEffect(() => {
+        if (!selVer) { setEdiciones([]); setForm(p => ({ ...p, id_edicion_so: "" })); return }
+        axiosClient.get(`/sistemas-operativos/ediciones/por-version/${selVer}`)
+            .then(r => { setEdiciones(r.data); setForm(p => ({ ...p, id_edicion_so: "" })) })
+    }, [selVer])
+
     function handle(e) {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
@@ -188,11 +211,28 @@ function PasoTecnico({ form, setForm, tiposEquipo, sistemasOp, tiposPerif }) {
             
 
             
-            <FormControl sx={{ gridColumn: "span 2" }}>
-                <InputLabel>Sistema operativo</InputLabel>
-                <Select name="id_so" label="Sistema operativo" value={form.id_so} onChange={handle}>
+            {/* SO en cascada */}
+            <FormControl>
+                <InputLabel>Familia SO</InputLabel>
+                <Select label="Familia SO" value={selFam} onChange={e => setSelFam(e.target.value)}>
                     <MenuItem value=""><em>Sin especificar</em></MenuItem>
-                    {sistemasOp.map(s => <MenuItem key={s.id_so} value={s.id_so}>{s.nombre}</MenuItem>)}
+                    {familias.map(f => <MenuItem key={f.id_fam_so} value={f.id_fam_so}>{f.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <FormControl disabled={!selFam}>
+                <InputLabel>Versión</InputLabel>
+                <Select label="Versión" value={selVer} onChange={e => setSelVer(e.target.value)}>
+                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {versiones.map(v => <MenuItem key={v.id_ver_so} value={v.id_ver_so}>{v.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <FormControl sx={{ gridColumn: "span 2" }} disabled={!selVer}>
+                <InputLabel>Edición</InputLabel>
+                <Select name="id_edicion_so" label="Edición" value={form.id_edicion_so} onChange={handle}>
+                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {ediciones.map(e => <MenuItem key={e.id_edicion_so} value={e.id_edicion_so}>{e.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
 
@@ -248,11 +288,17 @@ function SeccionResumen({ titulo, filas }) {
     )
 }
 
-function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, sistemasOp, tiposPerif, facturas }) {
+function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, familiasSO, versionesSO, edicionesSO }) {
     const nombreEstado  = tiposEstado.find(t => t.id_tipoe  === form.id_tipoe)?.nombre
     const nombreDispo   = tiposDispo .find(d => d.id_dispo  === form.id_dispo )?.nombre
     const nombreFactura = facturas   .find(f => f.id_fact   === form.id_fact  )
         ? `Folio #${facturas.find(f => f.id_fact === form.id_fact).num_folio}` : null
+
+    // Resuelve el SO desde los 3 niveles
+    const edicion = edicionesSO.find(e => e.id_edicion_so === form.id_edicion_so)
+    const version = versionesSO.find(v => v.id_ver_so     === edicion?.id_ver_so)
+    const familia = familiasSO .find(f => f.id_fam_so     === version?.id_fam_so)
+    const nombreSO = edicion ? `${familia?.nombre ?? ""} ${version?.nombre ?? ""} ${edicion.nombre}`.trim() : null
 
     const seccionGeneral = [
         ["Tipo",             form.tipo === "equipo_computo" ? "Computacional" : "Periférico"],
@@ -271,7 +317,7 @@ function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, sistemasOp, t
 
     const seccionComputacional = [
         ["Tipo de equipo",   tiposEquipo.find(t => t.id_tipoeq === form.id_tipoeq)?.nombre],
-        ["Sistema operativo",sistemasOp .find(s => s.id_so    === form.id_so    )?.nombre],
+        ["Sistema operativo", nombreSO],
         ["CPU",              form.cpu],
         ["RAM (capacidad)",  form.ram_capac ? `${form.ram_capac} GB` : null],
         ["RAM (tipo)",       form.ram_tipo],
@@ -322,16 +368,22 @@ export default function NuevoActivoPage() {
 
     //Paso 4 - Datos técnicos
     const [tiposEquipo,  setTiposEquipo]  = useState([])
-    const [sistemasOp,   setSistemasOp]   = useState([])
     const [tiposPerif,   setTiposPerif]   = useState([])
+
+    // SO en cascada — solo para el resumen
+    const [familiasSO,   setFamiliasSO]   = useState([])
+    const [versionesSO,  setVersionesSO]  = useState([])
+    const [edicionesSO,  setEdicionesSO]  = useState([])
 
     useEffect(() => {
         axiosClient.get("/factura/").then(r => setFacturas(r.data))
         axiosClient.get("/tipos-estado/").then(r => setTiposEstado(r.data))
         axiosClient.get("/disponibilidades/").then(r => setTiposDispo(r.data))
         axiosClient.get("/tipos-equipo/").then(r => setTiposEquipo(r.data))
-        axiosClient.get("/sistemas-operativos/").then(r => setSistemasOp(r.data))
         axiosClient.get("/tipos-periferico/").then(r => setTiposPerif(r.data))
+        axiosClient.get("/sistemas-operativos/familias").then(r => setFamiliasSO(r.data))
+        axiosClient.get("/sistemas-operativos/versiones").then(r => setVersionesSO(r.data))
+        axiosClient.get("/sistemas-operativos/ediciones").then(r => setEdicionesSO(r.data))
     }, [])
 
 
@@ -359,7 +411,7 @@ export default function NuevoActivoPage() {
         cpu: "", ram_capac: "", ram_tipo: "",
         disco_tipo: "", disco_unidad: "", disco_capac: "",
         host_name: "", mac_ethernet: "", mac_wifi: "",
-        id_tipoeq: "", id_so: "",
+        id_tipoeq: "", id_edicion_so: "",
         // periferico
         valor_tec: "", u_medida: "", obs_perif: "", id_tipoper: ""
     })
@@ -395,13 +447,14 @@ export default function NuevoActivoPage() {
                 {paso === 0 && <PasoTipo        form={form} setForm={setForm} />}
                 {paso === 1 && <PasoGenerales   form={form} setForm={setForm} facturas={facturas} />}
                 {paso === 2 && <PasoEstado      form={form} setForm={setForm} tiposEstado={tiposEstado} />}              
-                {paso === 3 && <PasoTecnico form={form} setForm={setForm} 
-                    tiposEquipo={tiposEquipo} sistemasOp={sistemasOp} tiposPerif={tiposPerif} />}                
+                {paso === 3 && <PasoTecnico form={form} setForm={setForm}
+                    tiposEquipo={tiposEquipo} tiposPerif={tiposPerif} />}              
                 
                 {paso === 4 && <PasoResumen   form={form}
                     tiposEstado={tiposEstado} tiposDispo={tiposDispo}
-                    tiposEquipo={tiposEquipo} sistemasOp={sistemasOp}
-                    tiposPerif={tiposPerif}   facturas={facturas} />}
+                    tiposEquipo={tiposEquipo} tiposPerif={tiposPerif}
+                    facturas={facturas}
+                    familiasSO={familiasSO} versionesSO={versionesSO} edicionesSO={edicionesSO} />}
             </Box>
 
             {/* Navegación */}
