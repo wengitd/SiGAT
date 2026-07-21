@@ -25,7 +25,7 @@ class Checklist (Base):
     fecha_ini   : Mapped[date | None] = mapped_column()
     fecha_ter   : Mapped[date | None] = mapped_column()
     
-    id_emp    : Mapped[int | None]  = mapped_column(ForeignKey("informatico.id_emp"))
+    id_emp    : Mapped[int | None]  = mapped_column(ForeignKey("usuario_sistema.id_emp"))
 
     #relacion inversa
     check_plantillas = relationship("CheckPlantilla", back_populates="checklist")

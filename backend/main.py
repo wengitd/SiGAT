@@ -14,7 +14,7 @@ from routes import (
     tipo_estado_route,
     dpto_route,
     empleado_route,
-    informatico_route,
+    usuario_sistema_route,
     licencia_route,
     emp_lic_route,
     factura_route,
@@ -49,7 +49,7 @@ app = FastAPI(
 app.include_router(tipo_estado_route.router)
 app.include_router(dpto_route.router)
 app.include_router(empleado_route.router)
-app.include_router(informatico_route.router)
+app.include_router(usuario_sistema_route.router)
 app.include_router(licencia_route.router)
 app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)

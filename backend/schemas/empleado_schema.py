@@ -56,21 +56,21 @@ class EmpleadoOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class InformaticoCreate(BaseModel):
+class UsuarioSistemaCreate(BaseModel):
     id_emp: int
     password: str = Field(min_length=8, max_length=128)
-    rol: Literal["editor", "auditor"]
+    rol: Literal["editor", "auditor", "admin"]
     vigente: bool = True
 
 
-class InformaticoUpdate(BaseModel):
+class UsuarioSistemaUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=128)
-    rol: Literal["editor", "auditor"] | None = None
+    rol: Literal["editor", "auditor", "admin"] | None = None
     vigente: bool | None = None
 
 
-class InformaticoOut(BaseModel):
+class UsuarioSistemaOut(BaseModel):
     id_emp: int
-    rol: Literal["editor", "auditor"]
+    rol: Literal["editor", "auditor", "admin"]
     vigente: bool
     model_config = ConfigDict(from_attributes=True)

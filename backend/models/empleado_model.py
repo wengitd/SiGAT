@@ -40,8 +40,8 @@ class Empleado(Base):
     subarea     = relationship("SubArea", back_populates="empleados")
 
 
-class Informatico(Base):
-    __tablename__ = "informatico"
+class UsuarioSistema(Base):
+    __tablename__ = "usuario_sistema"
 
     id_emp    : Mapped[int] = mapped_column(ForeignKey("empleado.id_emp"), primary_key=True)
     hash_pass : Mapped[str] = mapped_column(String(255), nullable=False)

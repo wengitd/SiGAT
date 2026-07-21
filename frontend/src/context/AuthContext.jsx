@@ -14,9 +14,10 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("token"));
 
   const payload = token ? parseJWT(token) : {};
-  const rol     = payload.rol ?? null;   // "editor" | "auditor" | null
-  const isEditor  = rol === "editor";
+  const rol     = payload.rol ?? null;   // "editor" | "auditor" | "admin" | null
+  const isEditor  = rol === "editor" || rol === "admin";
   const isAuditor = rol === "auditor";
+  const isAdmin   = rol === "admin";
 
   function login(newToken) {
     setToken(newToken);
@@ -29,7 +30,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, rol, isEditor, isAuditor, login, logout }}>
+    <AuthContext.Provider value={{ token, rol, isEditor, isAuditor, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

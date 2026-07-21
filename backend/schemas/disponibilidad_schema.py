@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 class DisponibilidadBase(BaseModel):
     nombre: str
-    descr:  str | None = None
+    descr:  str
     color:  str | None = None   # valor MUI: "success", "warning", "error", "info", "primary", "default"
 
 class DisponibilidadCreate(DisponibilidadBase):

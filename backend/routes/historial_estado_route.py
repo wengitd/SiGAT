@@ -6,7 +6,7 @@ from database import get_db
 
 from models.tipo_estado_model import TipoEstado
 from models.activo_ti_model import ActivoTi
-from models.empleado_model import Informatico
+from models.empleado_model import UsuarioSistema
 
 
 from models.historial_estado_model import HistorialEstado
@@ -57,7 +57,7 @@ def crear(payload: HistorialEstadoCreate, db: Session = Depends(get_db), current
 
 
     if payload.id_emp_reg is not None:
-        if db.query(Informatico).filter(Informatico.id_emp == payload.id_emp_reg).first() is None:
+        if db.query(UsuarioSistema).filter(UsuarioSistema.id_emp == payload.id_emp_reg).first() is None:
             raise HTTPException(status_code=400, detail="Informático no existe")
 
     #crear el objeto SQLAlchemy     
