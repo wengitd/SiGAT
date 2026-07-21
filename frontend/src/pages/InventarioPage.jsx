@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import useActivos from "../hooks/useActivos"
 
-import {Box, Typography, Chip, Link} from '@mui/material'
+import {Box, Typography, Chip, Link, Button} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import AsignacionModal from '../components/AsignacionModal'
 
 
 
 export default function InventarioPage() {
-  const { activos, loading } = useActivos()
-  
+  const { activos, loading, refetch } = useActivos()
+  const [activoAAsignar, setActivoAAsignar] = useState(null)
+
   const columns = [
     { field: 'id_act',    headerName: 'ID',    width: 20  },
     { field: 'marca',     headerName: 'Marca', width: 150 },
@@ -35,6 +38,15 @@ export default function InventarioPage() {
     { field: 'empleado_asignado', headerName: 'Asignado a', width: 180,
       valueFormatter: (value) => value ?? '— Sin asignar'
     },
+    { field: 'acciones', headerName: 'Acciones', width: 120, sortable: false, filterable: false,
+      renderCell: (params) => (
+        params.row.empleado_asignado
+          ? null
+          : <Button size="small" variant="outlined" onClick={() => setActivoAAsignar(params.row)}>
+              Asignar
+            </Button>
+      )
+    },
   ]
 
 
@@ -58,7 +70,16 @@ export default function InventarioPage() {
           getRowId={(row) => row.id_act}
         />
       </Box>
-    
+
+      <AsignacionModal
+        open={!!activoAAsignar}
+        onClose={() => setActivoAAsignar(null)}
+        activoFijo={activoAAsignar
+          ? { id_act: activoAAsignar.id_act, label: `${activoAAsignar.marca ?? ""} ${activoAAsignar.modelo ?? ""} — N° serie ${activoAAsignar.num_serie ?? "s/n"}` }
+          : null}
+        onAsignado={refetch}
+      />
+
     </Box>
   )
 }

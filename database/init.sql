@@ -166,12 +166,12 @@ CREATE TABLE empleado (
     id_sub    INT REFERENCES sub_area(id_sub)   -- opcional: no todos tienen subárea
 );
 
-CREATE TABLE informatico (
+CREATE TABLE usuario_sistema (
     id_emp    INT PRIMARY KEY,
     hash_pass VARCHAR(255) NOT NULL,
-    rol       VARCHAR(20)  NOT NULL CHECK (rol IN ('editor', 'auditor')),
+    rol       VARCHAR(20)  NOT NULL CHECK (rol IN ('editor', 'auditor', 'admin')),
     vigente   BOOLEAN NOT NULL DEFAULT TRUE,
- 
+
     FOREIGN KEY (id_emp) REFERENCES empleado(id_emp)
 );
 
@@ -185,7 +185,7 @@ CREATE TABLE checklist(
     fecha_ini       DATE,
     fecha_ter       DATE,
     
-    id_emp INT references informatico(id_emp)
+    id_emp INT references usuario_sistema(id_emp)
 );
 
 CREATE TABLE plantilla (
@@ -313,7 +313,7 @@ CREATE TABLE historial_estado (
  
     id_tipoe    INT NOT NULL REFERENCES tipo_estado(id_tipoe),
     id_act      INT NOT NULL REFERENCES activo_ti(id_act),
-    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién registró el cambio
+    id_emp_reg  INT REFERENCES usuario_sistema(id_emp)   -- quién registró el cambio
     
 );
 
@@ -332,7 +332,7 @@ CREATE TABLE asignacion (
  
     id_act      INT NOT NULL REFERENCES activo_ti(id_act),
     id_emp      INT NOT NULL REFERENCES empleado(id_emp), -- a quien se le asignó el equipo
-    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién procesó la asignación
+    id_emp_reg  INT REFERENCES usuario_sistema(id_emp)   -- quién procesó la asignación
 
 );
 
@@ -416,6 +416,6 @@ INSERT INTO empleado (rut, nombre, email, id_cargo, id_planta, id_dpto, id_sub) 
 ('12345678-9', 'Juan Pérez',  'juan@empresa.cl',  1, 1, 1, NULL),
 ('98765432-1', 'Ana García',  'ana@empresa.cl',   2, 1, 3, 1);
 
--- Informático (el empleado ya debe existir)
-INSERT INTO informatico (id_emp, hash_pass, rol, vigente) VALUES
+-- Usuario del sistema (el empleado ya debe existir)
+INSERT INTO usuario_sistema (id_emp, hash_pass, rol, vigente) VALUES
 (2, 'hash_temporal', 'editor', TRUE);

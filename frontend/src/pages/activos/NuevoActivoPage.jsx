@@ -3,11 +3,18 @@ import { useNavigate, useLocation } from "react-router-dom"
 import axiosClient from "../../api/axiosClient"
 
 import { Stepper, Step, StepLabel, Button, Box, Typography,
-    Card, CardActionArea, CardContent, TextField, FormControl, 
-    InputLabel, Select, MenuItem, InputAdornment} from "@mui/material"
+    Card, CardActionArea, CardContent, TextField, FormControl,
+    InputLabel, Select, MenuItem, InputAdornment, Checkbox, FormControlLabel} from "@mui/material"
 
 import ComputerIcon     from "@mui/icons-material/Computer"
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther"
+
+import AsignacionForm from "../../components/AsignacionForm"
+import { crearAsignacion } from "../../services/asignacionService"
+
+function hoy() {
+    return new Date().toISOString().slice(0, 10)
+}
 
 //Stepper
 const PASOS = ["Tipo de activo", "Datos generales", "Estado", "Datos técnicos", "Resumen"]
@@ -288,7 +295,8 @@ function SeccionResumen({ titulo, filas }) {
     )
 }
 
-function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, familiasSO, versionesSO, edicionesSO }) {
+function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, familiasSO, versionesSO, edicionesSO,
+    asignarAhora, setAsignarAhora, asignacion, setAsignacion, empleadosOpciones }) {
     const nombreEstado  = tiposEstado.find(t => t.id_tipoe  === form.id_tipoe)?.nombre
     const nombreDispo   = tiposDispo .find(d => d.id_dispo  === form.id_dispo )?.nombre
     const nombreFactura = facturas   .find(f => f.id_fact   === form.id_fact  )
@@ -343,6 +351,20 @@ function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, f
                 ? <SeccionResumen titulo="Datos técnicos — Computacional" filas={seccionComputacional} />
                 : <SeccionResumen titulo="Datos técnicos — Periférico"    filas={seccionPeriferico} />
             }
+
+            <FormControlLabel
+                sx={{ mt: 2 }}
+                control={<Checkbox checked={asignarAhora} onChange={(e) => setAsignarAhora(e.target.checked)} />}
+                label="Asignar este activo a un empleado ahora"
+            />
+            {asignarAhora &&
+                <AsignacionForm
+                    value={asignacion}
+                    onChange={setAsignacion}
+                    empleadosOpciones={empleadosOpciones}
+                    ocultarActivo
+                />
+            }
         </Box>
     )
 }
@@ -375,6 +397,11 @@ export default function NuevoActivoPage() {
     const [versionesSO,  setVersionesSO]  = useState([])
     const [edicionesSO,  setEdicionesSO]  = useState([])
 
+    // Paso 5 - Asignación opcional a un empleado
+    const [empleadosOpciones, setEmpleadosOpciones] = useState([])
+    const [asignarAhora, setAsignarAhora] = useState(false)
+    const [asignacion, setAsignacion] = useState({ id_emp: "", fecha_entr: hoy(), ruta_acta_entr: "" })
+
     useEffect(() => {
         axiosClient.get("/factura/").then(r => setFacturas(r.data))
         axiosClient.get("/tipos-estado/").then(r => setTiposEstado(r.data))
@@ -384,18 +411,31 @@ export default function NuevoActivoPage() {
         axiosClient.get("/sistemas-operativos/familias").then(r => setFamiliasSO(r.data))
         axiosClient.get("/sistemas-operativos/versiones").then(r => setVersionesSO(r.data))
         axiosClient.get("/sistemas-operativos/ediciones").then(r => setEdicionesSO(r.data))
+        axiosClient.get("/empleado/").then(r => setEmpleadosOpciones(r.data.filter(e => e.operatividad)))
     }, [])
 
 
     async function enviar() {
+        if (asignarAhora && (!asignacion.id_emp || !asignacion.fecha_entr)) {
+            alert("Selecciona el empleado y la fecha de entrega para la asignación")
+            return
+        }
         const payload = Object.fromEntries(
             Object.entries(form).filter(([_, v]) => v !== "" && v !== null)
         )
         try {
-            await axiosClient.post("/ActivoTi/", payload)
+            const { data: nuevoActivo } = await axiosClient.post("/ActivoTi/", payload)
+            if (asignarAhora) {
+                await crearAsignacion({
+                    id_act: nuevoActivo.id_act,
+                    id_emp: asignacion.id_emp,
+                    fecha_entr: asignacion.fecha_entr,
+                    ruta_acta_entr: asignacion.ruta_acta_entr || null,
+                })
+            }
             navigate(paginaOrigen)
         } catch (err) {
-            console.log(err.response?.data) 
+            console.log(err.response?.data)
             alert("Error al guardar el activo")
         }
     }
@@ -454,7 +494,10 @@ export default function NuevoActivoPage() {
                     tiposEstado={tiposEstado} tiposDispo={tiposDispo}
                     tiposEquipo={tiposEquipo} tiposPerif={tiposPerif}
                     facturas={facturas}
-                    familiasSO={familiasSO} versionesSO={versionesSO} edicionesSO={edicionesSO} />}
+                    familiasSO={familiasSO} versionesSO={versionesSO} edicionesSO={edicionesSO}
+                    asignarAhora={asignarAhora} setAsignarAhora={setAsignarAhora}
+                    asignacion={asignacion} setAsignacion={setAsignacion}
+                    empleadosOpciones={empleadosOpciones} />}
             </Box>
 
             {/* Navegación */}

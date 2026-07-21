@@ -59,7 +59,7 @@ const GRUPOS = [
         idField: "id_dispo",
         fields: [
           { name: "nombre", label: "Nombre",      required: true },
-          { name: "descr",  label: "Descripción" },
+          { name: "descr",  label: "Descripción", required: true },
           { name: "color",  label: "Asignale un color", type: "colorselect", required: true },
         ],
       },

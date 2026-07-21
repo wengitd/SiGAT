@@ -6,6 +6,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel,
   FormControl, InputLabel, Select, MenuItem, Autocomplete
 } from "@mui/material";
+import AsignacionModal from "../components/AsignacionModal";
 
 function formatearRut(rut) {
   const limpio = rut.replace(/[^0-9kK]/g, "");
@@ -51,6 +52,7 @@ export default function EmpleadosPage() {
     const [plantas, setPlantas] = useState([]);
     const [subareas, setSubareas] = useState([]);
     const [errores, setErrores] = useState({});
+    const [empleadoAAsignar, setEmpleadoAAsignar] = useState(null);
 
     
     /*useeffect llama al get/empleado -> la respuesta se guarda en /empleados
@@ -188,6 +190,9 @@ export default function EmpleadosPage() {
                     <TableCell>
                       <Button size="small" variant="outlined" onClick={()=>abrirEditar(emp)}>Editar</Button>
                       <Button size="small" variant="outlined" color={emp.operatividad ? "error" : "success"} sx={{ ml: 1 }} onClick={() => toggleOperatividad(emp.id_emp, emp.operatividad)}>{emp.operatividad ? "Desactivar" : "Activar"}</Button>
+                      {emp.operatividad &&
+                        <Button size="small" variant="outlined" sx={{ ml: 1 }} onClick={() => setEmpleadoAAsignar(emp)}>Asignar activo</Button>
+                      }
                     </TableCell>
                   </TableRow>
                 ))}
@@ -298,8 +303,12 @@ export default function EmpleadosPage() {
             <Button variant="contained" onClick={editando ? actualizarEmpleado : crearEmpleado}>Guardar</Button>
             </DialogActions>
         </Dialog>
-      
 
+        <AsignacionModal
+          open={!!empleadoAAsignar}
+          onClose={() => setEmpleadoAAsignar(null)}
+          empleadoFijo={empleadoAAsignar ? { id_emp: empleadoAAsignar.id_emp, label: empleadoAAsignar.nombre } : null}
+        />
 
         </Box>
       );

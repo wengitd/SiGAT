@@ -53,9 +53,11 @@ def crear(payload: AsignacionCreate, db: Session = Depends(get_db), current_user
     if query_emp.operatividad == False:
         raise HTTPException(status_code=400, detail="Empleado inactivo") 
 
-    #crear el objeto SQLAlchemy     
+    #crear el objeto SQLAlchemy
     #variable=model(**play.model_dump())
-    nueva_asig = Asignacion(**payload.model_dump())
+    datos = payload.model_dump()
+    datos["id_emp_reg"] = current_user.id_emp  # quien registra la asignación es siempre el usuario autenticado
+    nueva_asig = Asignacion(**datos)
     
     #guarda
     db.add(nueva_asig)

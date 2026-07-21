@@ -63,7 +63,7 @@ class Disponibilidad(Base):
 
     id_dispo    : Mapped[int] = mapped_column(primary_key=True)
     nombre      : Mapped[str] = mapped_column(String(100))
-    descr       : Mapped[str|None] = mapped_column()
+    descr       : Mapped[str] = mapped_column(String(100))
     color       : Mapped[str|None] = mapped_column(String(20))  # ej: "success", "warning", "error", "info", "primary"
 
 
