@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
 
   const payload = token ? parseJWT(token) : {};
   const rol     = payload.rol ?? null;   // "editor" | "auditor" | "admin" | null
+  const idEmp   = payload.sub ? Number(payload.sub) : null;
   const isEditor  = rol === "editor" || rol === "admin";
   const isAuditor = rol === "auditor";
   const isAdmin   = rol === "admin";
@@ -30,7 +31,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, rol, isEditor, isAuditor, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ token, rol, idEmp, isEditor, isAuditor, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

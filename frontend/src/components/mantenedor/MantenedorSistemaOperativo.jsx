@@ -9,8 +9,8 @@ import { DataGrid } from "@mui/x-data-grid"
 import AddIcon    from "@mui/icons-material/Add"
 import EditIcon   from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import axiosClient from "../api/axiosClient"
-import { useAuth } from "../context/AuthContext"
+import axiosClient from "../../api/axiosClient"
+import { useAuth } from "../../context/AuthContext"
 
 // ── FAMILIA ──────────────────────────────────────────────────────────────────
 
@@ -318,15 +318,15 @@ function TabEdiciones({ isEditor }) {
     )
 }
 
-// ── PÁGINA PRINCIPAL ──────────────────────────────────────────────────────────
+// ── COMPONENTE EMBEBIDO EN EL MANTENEDOR ────────────────────────────────────
 
-export default function SistemaOperativoPage() {
+export default function MantenedorSistemaOperativo() {
     const { isEditor } = useAuth()
     const [tab, setTab] = useState(0)
 
     return (
         <Box>
-            <Typography variant="h5" fontWeight={700} mb={3}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
                 Sistemas Operativos
             </Typography>
 
@@ -338,11 +338,9 @@ export default function SistemaOperativoPage() {
                 </Tabs>
             </Paper>
 
-            <Paper sx={{ p: 3 }}>
-                {tab === 0 && <TabFamilias  isEditor={isEditor} />}
-                {tab === 1 && <TabVersiones isEditor={isEditor} />}
-                {tab === 2 && <TabEdiciones isEditor={isEditor} />}
-            </Paper>
+            {tab === 0 && <TabFamilias  isEditor={isEditor} />}
+            {tab === 1 && <TabVersiones isEditor={isEditor} />}
+            {tab === 2 && <TabEdiciones isEditor={isEditor} />}
         </Box>
     )
 }

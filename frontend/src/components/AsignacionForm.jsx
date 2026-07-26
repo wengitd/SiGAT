@@ -1,5 +1,9 @@
 import { Box, TextField, FormControl, InputLabel, Select, MenuItem, Typography } from "@mui/material"
 
+function hoy() {
+    return new Date().toISOString().slice(0, 10)
+}
+
 // Etiqueta legible para un activo en el dropdown
 function labelActivo(a) {
     return `${a.nombre_marca ?? ""} ${a.nombre_modelo ?? ""} — N° serie ${a.num_serie ?? "s/n"}`.trim()
@@ -74,7 +78,7 @@ export default function AsignacionForm({
                 type="date"
                 value={value.fecha_entr}
                 onChange={(e) => set("fecha_entr", e.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoy() } }}
                 fullWidth
             />
 

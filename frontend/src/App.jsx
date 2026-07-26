@@ -10,12 +10,11 @@ import ComputacionalesPage from "./pages/activos/ComputacionalesPage";
 import PerifericosPage     from "./pages/activos/PerifericosPage";
 import EstadisticasPage    from "./pages/EstadisticasPage";
 import TrazabilidadPage    from "./pages/TrazabilidadPage";
-import ConfiguracionPage   from "./pages/ConfiguracionPage";
+import UsuariosSistemaPage from "./pages/UsuariosSistemaPage";
 import DepartamentosPage   from "./pages/DepartamentosPage";
 import EmpleadosPage       from "./pages/EmpleadosPage";
 import NuevoActivoPage     from "./pages/activos/NuevoActivoPage";
 import MantenedorPage        from "./pages/MantenedorPage"
-import SistemaOperativoPage  from "./pages/SistemaOperativoPage";
 import SolicitudesBajaPage   from "./pages/SolicitudesBajaPage";
 
 
@@ -65,11 +64,10 @@ export default function App() {
           <Route path="/estadisticas"            element={<EstadisticasPage />} />
           <Route path="/trazabilidad"            element={<TrazabilidadPage />} />
           <Route path="/solicitudes-baja"        element={<SolicitudesBajaPage />} />
-          <Route path="/configuracion"           element={<ConfiguracionPage />} />
+          <Route path="/configuracion"           element={<UsuariosSistemaPage />} />
           <Route path="/departamentos"           element={<DepartamentosPage />} />
           <Route path="/empleados"               element={<EmpleadosPage />} />
           <Route path="/mantenedor"              element={<MantenedorPage />} />
-          <Route path="/sistemas-operativos"    element={<SistemaOperativoPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -20,6 +20,7 @@ import ApartmentIcon    from '@mui/icons-material/Apartment';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import TuneIcon         from '@mui/icons-material/Tune';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import PersonIcon       from '@mui/icons-material/Person';
 
 import { useAuth } from "../context/AuthContext";
 
@@ -76,8 +77,8 @@ const NAV_ITEMS = [
     children: [
       { label: "Usuarios"    , icon: <SettingsIcon    fontSize="small"/>, path: "/configuracion" },
       { label: "Mantenedor" ,       icon: <LibraryBooksIcon fontSize="small"/>, path: "/mantenedor" },
-      { label: "Sistemas Operativos", icon: <ComputerIcon    fontSize="small"/>, path: "/sistemas-operativos" },
       { label: "Departamentos", icon: < ApartmentIcon fontSize="small"/>, path: "/departamentos"},
+      { label: "Empleados", icon: < PersonIcon fontSize="small"/>, path: "/empleados"},
     ],
   },
 ]

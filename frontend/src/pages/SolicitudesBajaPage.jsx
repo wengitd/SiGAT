@@ -49,8 +49,9 @@ export default function SolicitudesBajaPage() {
     return (id) => id ? (map.get(id) ?? `#${id}`) : "—"
   }, [empleados])
 
+  // bloquean una nueva solicitud sobre el mismo activo hasta que se resuelva o se rechace
   const solicitudesPendientes = useMemo(
-    () => solicitudes.filter(s => s.estado_sol === "pendiente"),
+    () => solicitudes.filter(s => s.estado_sol !== "rechazada"),
     [solicitudes]
   )
 

@@ -24,6 +24,8 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         if emp_inf:
             if not pwd_context.verify(form.password, emp_inf.hash_pass):
                 raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+            if not emp_inf.vigente:
+                raise HTTPException(status_code=403, detail="Usuario desactivado")
             token = create_access_token({"sub": str(emp_inf.id_emp), "rol": emp_inf.rol})
             return {"access_token": token, "token_type": "bearer"}
         else:
