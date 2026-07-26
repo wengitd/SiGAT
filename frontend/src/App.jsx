@@ -16,6 +16,7 @@ import EmpleadosPage       from "./pages/EmpleadosPage";
 import NuevoActivoPage     from "./pages/activos/NuevoActivoPage";
 import MantenedorPage        from "./pages/MantenedorPage"
 import SistemaOperativoPage  from "./pages/SistemaOperativoPage";
+import SolicitudesBajaPage   from "./pages/SolicitudesBajaPage";
 
 
 /*
@@ -29,6 +30,7 @@ import SistemaOperativoPage  from "./pages/SistemaOperativoPage";
   /equipos/perifericos          > equipos periféricos
   /estadisticas                 > gráficos e informes
   /trazabilidad                 > historial de estados
+  /solicitudes-baja             > solicitar y resolver bajas de activos
   /configuracion                > catálogos y configuración
   /Departamentos                >
   /Activos                      >  
@@ -62,6 +64,7 @@ export default function App() {
           <Route path="/activos/nuevoActivo"     element={<NuevoActivoPage />} />
           <Route path="/estadisticas"            element={<EstadisticasPage />} />
           <Route path="/trazabilidad"            element={<TrazabilidadPage />} />
+          <Route path="/solicitudes-baja"        element={<SolicitudesBajaPage />} />
           <Route path="/configuracion"           element={<ConfiguracionPage />} />
           <Route path="/departamentos"           element={<DepartamentosPage />} />
           <Route path="/empleados"               element={<EmpleadosPage />} />

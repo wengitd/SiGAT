@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
 
 from database import get_db
-from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, FamiliaSO, VersionSO, EdicionSO, TipoEquipo, TipoPeriferico, Disponibilidad
+from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, FamiliaSO, VersionSO, EdicionSO, TipoEquipo, TipoPeriferico, Disponibilidad, Marca, Modelo
 from schemas.activo_schema  import ActivoBase, ActivoCreate, ActivoUpdate, ActivoOut
 
 from models.empleado_model import Empleado
@@ -98,6 +98,15 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
                 if tipoper:
                     data["nombre_tipoper"] = tipoper.nombre
 
+    # Marca / modelo del activo (vía catálogo)
+    if activo_model.id_modelo is not None:
+        modelo = db.query(Modelo).filter(Modelo.id_modelo == activo_model.id_modelo).first()
+        if modelo:
+            data["nombre_modelo"] = modelo.nombre
+            marca = db.query(Marca).filter(Marca.id_marca == modelo.id_marca).first()
+            if marca:
+                data["nombre_marca"] = marca.nombre
+
     # Estado del activo
     estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == activo_model.id_tipoe).first()
     if estado:
@@ -172,7 +181,12 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
     if payload.id_fact is not None:
         if db.query(Factura).filter(Factura.id_fact == payload.id_fact).first() is None:
             raise HTTPException(status_code=400, detail="Factura no existe")
-    
+
+    # Verifica existencia del modelo (marca/modelo) si fue enviado
+    if payload.id_modelo is not None:
+        if db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first() is None:
+            raise HTTPException(status_code=400, detail="Modelo no existe")
+
     # Verifica existencia del tipo de estado
     if db.query(TipoEstado).filter(TipoEstado.id_tipoe == payload.id_tipoe).first() is None:
         raise HTTPException(status_code=404, detail="Tipo estado no encontrado")
@@ -235,7 +249,12 @@ def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db),
 
     if not activo:
         raise HTTPException(status_code=404, detail="Activo no encontrado")
-    
+
+    # Verifica existencia del modelo (marca/modelo) si fue enviado
+    if payload.id_modelo is not None:
+        if db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first() is None:
+            raise HTTPException(status_code=400, detail="Modelo no existe")
+
     # Verifica FKs de subtipo según tipo del activo
     if activo.tipo == "equipo_computo":
         if payload.id_tipoeq is not None:

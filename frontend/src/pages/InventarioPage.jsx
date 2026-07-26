@@ -13,8 +13,8 @@ export default function InventarioPage() {
 
   const columns = [
     { field: 'id_act',    headerName: 'ID',    width: 20  },
-    { field: 'marca',     headerName: 'Marca', width: 150 },
-    { field: 'modelo',    headerName: 'Modelo',   width: 150 },
+    { field: 'nombre_marca',  headerName: 'Marca',  width: 150 },
+    { field: 'nombre_modelo', headerName: 'Modelo', width: 150 },
     { field: 'num_serie', headerName: 'Numero de Serie',   width: 200 },
     { field: 'nombre_dispo', headerName: 'Disponibilidad',   width: 120, 
       renderCell:(params) =>(<Chip  
@@ -75,7 +75,7 @@ export default function InventarioPage() {
         open={!!activoAAsignar}
         onClose={() => setActivoAAsignar(null)}
         activoFijo={activoAAsignar
-          ? { id_act: activoAAsignar.id_act, label: `${activoAAsignar.marca ?? ""} ${activoAAsignar.modelo ?? ""} — N° serie ${activoAAsignar.num_serie ?? "s/n"}` }
+          ? { id_act: activoAAsignar.id_act, label: `${activoAAsignar.nombre_marca ?? ""} ${activoAAsignar.nombre_modelo ?? ""} — N° serie ${activoAAsignar.num_serie ?? "s/n"}` }
           : null}
         onAsignado={refetch}
       />

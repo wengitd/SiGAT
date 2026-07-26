@@ -5,8 +5,7 @@ from datetime import date
 
 
 class ActivoBase(BaseModel):
-    modelo         : str | None = None
-    marca          : str | None = None
+    id_modelo      : int | None = None
     num_serie      : str | None = None
     origen         : Literal["empresa", "personal"]
     fecha_recep    : date| None = None
@@ -63,8 +62,7 @@ ActivoCreate = Annotated[
 
 class ActivoUpdate(BaseModel):
     #ActivoTI
-    modelo          : str | None = None
-    marca           : str | None = None
+    id_modelo       : int | None = None
     num_serie       : str | None = None
     origen          : str | None = None
     fecha_recep     : date| None = None
@@ -102,6 +100,8 @@ class ActivoOut(ActivoBase):
     tipo            : str
     ruta_pdf_fact   : str | None = None
     detalles_so     : dict | None = None
+    nombre_marca    : str | None = None
+    nombre_modelo   : str | None = None
     nombre_estado   : str | None = None
     nombre_tipoeq   : str | None = None
     nombre_tipoper  : str | None = None

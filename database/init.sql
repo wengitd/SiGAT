@@ -85,7 +85,8 @@ CREATE TABLE proveedor_factura (
 
 CREATE TABLE disponibilidad (
     id_dispo    SERIAL PRIMARY KEY,
-    nombre      VARCHAR (100) NOT NULL UNIQUE,
+    nombre      VARCHAR (100) NOT NULL UNIQUE
+                CHECK (nombre IN ('disponible', 'asignado', 'mantencion', 'de_baja')),
     descr       VARCHAR (100) NOT NULL,
     color       VARCHAR (20)
 );
@@ -240,7 +241,8 @@ CREATE TABLE emp_lic (
 
 CREATE TABLE tipo_estado (
     id_tipoe        SERIAL PRIMARY KEY,
-    nombre          VARCHAR(50) NOT NULL UNIQUE,
+    nombre          VARCHAR(50) NOT NULL UNIQUE
+                    CHECK (nombre IN ('Bueno', 'Regular', 'Malo')),
     descr           TEXT,
     operatividad    BOOLEAN NOT NULL DEFAULT TRUE
 );
@@ -259,13 +261,12 @@ CREATE TABLE estado_dispo (
 
 CREATE TABLE activo_ti (
     id_act         SERIAL PRIMARY KEY,
-    modelo         VARCHAR(50),
-    marca          VARCHAR(50),
     num_serie      VARCHAR(50) UNIQUE,
     tipo           VARCHAR(20) NOT NULL CHECK (tipo   IN ('equipo_computo', 'periferico')),
     origen         VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
     fecha_recep    DATE,
- 
+
+    id_modelo      INT NOT NULL REFERENCES modelo(id_modelo),
     id_fact        INT REFERENCES factura(id_fact),
     id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe),
     id_dispo       INT NOT NULL REFERENCES disponibilidad(id_dispo)
@@ -303,7 +304,9 @@ CREATE TABLE periferico (
     FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
 );
 
-
+--========================================================
+--================== Historial del estado ================
+--========================================================
 
 CREATE TABLE historial_estado (
     id_hes    SERIAL PRIMARY KEY,
@@ -337,8 +340,32 @@ CREATE TABLE asignacion (
 );
 
 
+--========================================================
+--=================== SOLICITUD DE BAJA ===================
+--========================================================
+-- Flujo: el solicitante (usuario_sistema) crea la solicitud; 
+-- la aprobación de jefatura ocurre por fuera del sistema (correo) 
+--se deja constancia con ref_aprob/fecha_resolucion; el borrado seguro lo cierra un técnico.
 
- 
+CREATE TABLE solicitud_baja (
+    id_solbaja        SERIAL PRIMARY KEY,
+    motivo_baja       VARCHAR(200) NOT NULL,
+    fecha_solicitud   DATE NOT NULL DEFAULT CURRENT_DATE,
+    fecha_resolucion  DATE,
+    ref_aprob         VARCHAR(200),           -- referencia del correo de aprobación 
+    estado_sol        VARCHAR(20) NOT NULL DEFAULT 'pendiente'
+                       CHECK (estado_sol IN ('pendiente', 'aprobada', 'rechazada')),
+    ruta_acta_baja    VARCHAR(255),           -- PDF acta de baja en Drive 
+    fecha_borrado     DATE,                   -- formateo de datos
+
+    id_act          INT NOT NULL REFERENCES activo_ti(id_act),
+    id_emp_sol      INT NOT NULL REFERENCES usuario_sistema(id_emp), -- solicitante
+    id_emp_aprob    INT REFERENCES usuario_sistema(id_emp),          -- jefatura aprobadora
+    id_emp_borrado  INT REFERENCES usuario_sistema(id_emp)           -- técnico responsable del formateo
+);
+
+
+
 -- ========================================================
 -- =================== SEEDS CATÁLOGOS ====================
 -- ========================================================
@@ -395,6 +422,13 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 ('Bueno',   'Activo sin desperfectos fisicos ni internos'),
 ('Regular', 'Activo con detalles esteticos o de funcionamiento'),
 ('Malo',    'Activo con problemas de funcionamiento o piezas dañadas');
+
+-- Disponibilidad
+INSERT INTO disponibilidad (nombre, descr, color) VALUES
+('disponible', 'Activo libre para ser asignado',        'success'),
+('asignado',   'Activo actualmente asignado a un empleado', 'info'),
+('mantencion', 'Activo en proceso de mantencion',        'warning'),
+('de_baja',    'Activo dado de baja del inventario',     'error');
 
 -- Departamentos
 INSERT INTO departamento (id_org, zona, nom_dpto) VALUES

@@ -15,6 +15,7 @@ import SettingsIcon     from "@mui/icons-material/Settings";
 import ExpandLessIcon   from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon   from "@mui/icons-material/ExpandMore";
 import LogoutIcon       from "@mui/icons-material/Logout";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ApartmentIcon    from '@mui/icons-material/Apartment';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import TuneIcon         from '@mui/icons-material/Tune';
@@ -63,6 +64,11 @@ const NAV_ITEMS = [
     label: "Trazabilidad",
     icon: <HistoryIcon />,
     path: "/trazabilidad",
+  },
+  {
+    label: "Solicitudes de baja",
+    icon: <DeleteOutlineIcon />,
+    path: "/solicitudes-baja",
   },
   {
     label: "Configuración",
