@@ -52,10 +52,12 @@ A continuación se documenta cada tabla del esquema en el orden lógico de creac
 
 El esquema distingue dos familias de tablas de catálogo:
 
-- **Catálogos simples**: listas de valores independientes, sin dependencia de otro catálogo (`empresa`, `cargo`, `planta`, `tipo_equipo`, `familia_so`, `tipo_periferico`, `marca`, `proveedor_licencia`, `proveedor_factura`, `disponibilidad`).
+- **Catálogos simples**: listas de valores independientes, sin dependencia de otro catálogo (`empresa`, `cargo`, `planta`, `tipo_equipo`, `familia_so`, `tipo_periferico`, `marca`, `proveedor_licencia`, `proveedor_factura`).
 - **Catálogos dependientes**: sus opciones sólo tienen sentido en el contexto de un catálogo padre y se cargan en el frontend mediante listas desplegables en cascada (`version_so` depende de `familia_so`; `edicion_so` depende de `version_so`; `modelo` depende de `marca`; `version_licencia` depende de `proveedor_licencia`; `sub_area` depende de `departamento`).
 
 En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usuario elige una opción existente del catálogo o crea una nueva sin salir del formulario, lo que mantiene los catálogos vivos sin requerir mantenimiento manual previo.
+
+- **Catálogos cerrados**: `tipo_estado` y `disponibilidad` no siguen este patrón. Representan un conjunto fijo y acotado de valores de negocio (la condición física de un activo y su disponibilidad operativa), por lo que se restringen mediante `CHECK` a nivel de base de datos y se presentan en el frontend como listas desplegables de solo selección, sin opción de crear un valor nuevo.
 
 ---
 
@@ -179,7 +181,7 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 ### 4.9 `marca`
 
-**Descripción**: catálogo simple con las marcas de fabricantes de activos tecnológicos. Es el catálogo padre de `modelo`. El valor efectivo de marca de un activo se almacena de forma denormalizada como texto libre en `activo_ti.marca`; este catálogo alimenta las sugerencias del "Creatable Select" del frontend.
+**Descripción**: catálogo simple con las marcas de fabricantes de activos tecnológicos. Es el catálogo padre de `modelo`. `activo_ti` referencia la marca de forma indirecta, a través de `activo_ti.id_modelo → modelo.id_marca`; el frontend permite crear una marca nueva en línea ("Creatable Select") cuando no existe en el catálogo.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
@@ -192,7 +194,7 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 ### 4.10 `modelo`
 
-**Descripción**: catálogo dependiente de `marca`, con los modelos conocidos por marca. Al igual que `marca`, alimenta las sugerencias del frontend; el valor efectivo del activo se almacena como texto libre en `activo_ti.modelo`.
+**Descripción**: catálogo dependiente de `marca`, con los modelos conocidos por marca. `activo_ti.id_modelo` referencia directamente esta tabla; si el modelo escrito por el usuario no existe, el frontend lo crea en línea (y su marca, si tampoco existe) antes de guardar el activo.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
@@ -240,11 +242,13 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_dispo` | SERIAL | PK | auto | Identificador único de la disponibilidad |
-| `nombre` | VARCHAR(100) | NOT NULL, UNIQUE | — | Nombre del estado de disponibilidad |
+| `nombre` | VARCHAR(100) | NOT NULL, UNIQUE, CHECK | — | Nombre del estado de disponibilidad. Valores: `'disponible'`, `'asignado'`, `'mantencion'`, `'de_baja'` |
 | `descr` | VARCHAR(100) | NOT NULL | — | Descripción del estado de disponibilidad |
 | `color` | VARCHAR(20) | — | — | Color de la etiqueta en el frontend (token MUI: `success`, `warning`, `error`, `info`, `primary`, `default`) |
 
 **Claves foráneas**: ninguna.
+
+**Datos semilla cargados**: `disponible` (success), `asignado` (info), `mantencion` (warning), `de_baja` (error).
 
 ---
 
@@ -450,7 +454,7 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_tipoe` | SERIAL | PK | auto | Identificador único de la condición |
-| `nombre` | VARCHAR(50) | NOT NULL, UNIQUE | — | Nombre de la condición |
+| `nombre` | VARCHAR(50) | NOT NULL, UNIQUE, CHECK | — | Nombre de la condición. Valores: `'Bueno'`, `'Regular'`, `'Malo'` |
 | `descr` | TEXT | — | — | Descripción del significado de la condición |
 | `operatividad` | BOOLEAN | NOT NULL | TRUE | Indica si la condición sigue siendo utilizada (soft-delete) |
 
@@ -479,22 +483,22 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 ### 4.27 `activo_ti`
 
-**Descripción**: tabla central del sistema. Registra los activos tecnológicos administrados por el área de Soporte e Infraestructura. Constituye la entidad padre de la jerarquía de especialización (`equipo_computo` y `periferico`). Los atributos `id_tipoe` (condición física) e `id_dispo` (disponibilidad operativa) denotan el estado actual del activo (denormalización para acceso rápido en consultas), mientras que el historial completo de cambios de condición se mantiene en la tabla `historial_estado`. `marca` y `modelo` se almacenan como texto libre siguiendo el patrón "Creatable Select"; los catálogos `marca` y `modelo` sólo alimentan las sugerencias del frontend.
+**Descripción**: tabla central del sistema. Registra los activos tecnológicos administrados por el área de Soporte e Infraestructura. Constituye la entidad padre de la jerarquía de especialización (`equipo_computo` y `periferico`). Los atributos `id_tipoe` (condición física) e `id_dispo` (disponibilidad operativa) denotan el estado actual del activo (denormalización para acceso rápido en consultas), mientras que el historial completo de cambios de condición se mantiene en la tabla `historial_estado`. La marca y el modelo del activo se referencian mediante `id_modelo → modelo.id_modelo` (que a su vez referencia `modelo.id_marca`); si el valor escrito por el usuario no existe en el catálogo, el frontend lo crea antes de guardar el activo ("Creatable Select").
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_act` | SERIAL | PK | auto | Identificador único del activo |
-| `modelo` | VARCHAR(50) | — | — | Modelo del equipo (texto libre) |
-| `marca` | VARCHAR(50) | — | — | Marca del fabricante (texto libre) |
 | `num_serie` | VARCHAR(50) | UNIQUE | — | Número de serie del fabricante |
 | `tipo` | VARCHAR(20) | NOT NULL, CHECK | — | Discriminador del subtipo. Valores: `'equipo_computo'`, `'periferico'` |
 | `origen` | VARCHAR(20) | NOT NULL, CHECK | — | Origen del activo. Valores: `'empresa'`, `'personal'` |
 | `fecha_recep` | DATE | — | — | Fecha de recepción del activo |
+| `id_modelo` | INT | FK, NOT NULL | — | Modelo (y, transitivamente, marca) del activo |
 | `id_fact` | INT | FK | — | Factura de adquisición (NULL si origen = `'personal'`) |
 | `id_tipoe` | INT | FK, NOT NULL | — | Condición física actual del activo |
 | `id_dispo` | INT | FK, NOT NULL | — | Disponibilidad operativa actual del activo |
 
 **Claves foráneas**:
+- `activo_ti.id_modelo → modelo.id_modelo`
 - `activo_ti.id_fact → factura.id_fact`
 - `activo_ti.id_tipoe → tipo_estado.id_tipoe`
 - `activo_ti.id_dispo → disponibilidad.id_dispo`
@@ -587,6 +591,33 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 ---
 
+### 4.32 `solicitud_baja`
+
+**Descripción**: registra el flujo de baja de un activo tecnológico. El solicitante (un usuario del sistema) crea la solicitud indicando el motivo; la aprobación de jefatura ocurre por fuera del sistema (vía correo) y se deja constancia mediante `ref_aprob` y `fecha_resolucion` al registrar la resolución. Una vez aprobada, un técnico cierra el proceso registrando el borrado seguro de datos del activo (`fecha_borrado`) y el acta de baja correspondiente.
+
+| Atributo | Tipo | Restricciones | Default | Descripción |
+| --- | --- | --- | --- | --- |
+| `id_solbaja` | SERIAL | PK | auto | Identificador único de la solicitud |
+| `motivo_baja` | VARCHAR(200) | NOT NULL | — | Motivo por el cual se solicita dar de baja el activo |
+| `fecha_solicitud` | DATE | NOT NULL | CURRENT_DATE | Fecha en que se registró la solicitud |
+| `fecha_resolucion` | DATE | — | — | Fecha en que se registró la aprobación/rechazo |
+| `ref_aprob` | VARCHAR(200) | — | — | Referencia del correo de aprobación (RF-MAA_07) |
+| `estado_sol` | VARCHAR(20) | NOT NULL, CHECK (`pendiente`\|`aprobada`\|`rechazada`) | `pendiente` | Estado actual de la solicitud |
+| `ruta_acta_baja` | VARCHAR(255) | — | — | Ruta del PDF con el acta de baja en Drive (IS_03) |
+| `fecha_borrado` | DATE | — | — | Fecha del borrado seguro de datos del activo (RF-MGI_13) |
+| `id_act` | INT | FK, NOT NULL | — | Activo cuya baja se solicita |
+| `id_emp_sol` | INT | FK, NOT NULL | — | Usuario del sistema que solicita la baja |
+| `id_emp_aprob` | INT | FK | — | Usuario del sistema (jefatura/consultor) que aprobó/rechazó la solicitud |
+| `id_emp_borrado` | INT | FK | — | Usuario del sistema (técnico) que ejecutó el borrado seguro |
+
+**Claves foráneas**:
+- `solicitud_baja.id_act → activo_ti.id_act`
+- `solicitud_baja.id_emp_sol → usuario_sistema.id_emp`
+- `solicitud_baja.id_emp_aprob → usuario_sistema.id_emp`
+- `solicitud_baja.id_emp_borrado → usuario_sistema.id_emp`
+
+---
+
 ## 5. Resumen de relaciones del modelo
 
 | Relación | Cardinalidad | Tabla con FK |
@@ -612,6 +643,7 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | emp_lic → licencia | N:1 | emp_lic.id_lic |
 | estado_dispo → tipo_estado | N:1 | estado_dispo.id_tipoe |
 | estado_dispo → disponibilidad | N:1 | estado_dispo.id_dispo |
+| activo_ti → modelo | N:1 | activo_ti.id_modelo |
 | activo_ti → factura | N:1 | activo_ti.id_fact |
 | activo_ti → tipo_estado | N:1 | activo_ti.id_tipoe |
 | activo_ti → disponibilidad | N:1 | activo_ti.id_dispo |
@@ -626,6 +658,10 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | asignacion → activo_ti | N:1 | asignacion.id_act |
 | asignacion → empleado | N:1 | asignacion.id_emp |
 | asignacion → usuario_sistema | N:1 | asignacion.id_emp_reg |
+| solicitud_baja → activo_ti | N:1 | solicitud_baja.id_act |
+| solicitud_baja → usuario_sistema (solicitante) | N:1 | solicitud_baja.id_emp_sol |
+| solicitud_baja → usuario_sistema (aprobador) | N:1 | solicitud_baja.id_emp_aprob |
+| solicitud_baja → usuario_sistema (borrado) | N:1 | solicitud_baja.id_emp_borrado |
 
 ---
 
@@ -633,7 +669,7 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 **Herencia tabla por subclase.** Las jerarquías `activo_ti → {equipo_computo, periferico}` y `empleado → usuario_sistema` se modelan mediante el patrón "tabla por subclase" (table-per-subclass), donde la PK del hijo es a la vez FK al padre [4]. Este patrón evita la duplicación de atributos y permite aplicar restricciones e índices a la entidad padre.
 
-**Catálogos con creación en línea ("Creatable Select").** Los atributos que antes eran texto libre (empresa, cargo, planta, tipo de equipo, tipo de periférico, sistema operativo, proveedores y versiones de licencia y factura) se normalizaron en tablas de catálogo dedicadas. El frontend permite elegir un valor existente o crear uno nuevo sin salir del formulario, lo que mantiene la consistencia terminológica sin exigir un mantenimiento previo de catálogos por parte de un administrador. Como excepción, `activo_ti.marca` y `activo_ti.modelo` se mantienen como texto libre denormalizado: los catálogos `marca` y `modelo` sólo alimentan las sugerencias de autocompletado, sin FK directa desde `activo_ti`.
+**Catálogos con creación en línea ("Creatable Select").** Los atributos que antes eran texto libre (empresa, cargo, planta, tipo de equipo, tipo de periférico, sistema operativo, marca, modelo, proveedores y versiones de licencia y factura) se normalizaron en tablas de catálogo dedicadas, todas referenciadas por FK desde la tabla que las usa. El frontend permite elegir un valor existente o crear uno nuevo sin salir del formulario (creando primero el catálogo padre si tampoco existe, como ocurre con marca → modelo), lo que mantiene la consistencia terminológica sin exigir un mantenimiento previo de catálogos por parte de un administrador.
 
 **Catálogos dependientes en cascada.** Algunos catálogos sólo tienen sentido en el contexto de un catálogo padre y se cargan en el frontend de forma escalonada: `familia_so → version_so → edicion_so` (sistema operativo), `marca → modelo`, `proveedor_licencia → version_licencia` y `departamento → sub_area`. Esto evita listas planas de cientos de combinaciones y refleja la jerarquía real del dominio.
 
@@ -643,7 +679,7 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 **Soft-delete.** Las entidades sensibles a desactivación (`empleado.operatividad`, `tipo_estado.operatividad`, `usuario_sistema.vigente`) implementan borrado lógico para preservar la integridad referencial y la auditabilidad histórica, en lugar de borrado físico. La vigencia de una `asignacion` ya no depende de un flag booleano, sino de si `fecha_dev` es NULL.
 
-**Restricciones CHECK para enumeraciones.** Los campos discriminadores y de rol con un conjunto cerrado y estable de valores (`activo_ti.tipo`, `activo_ti.origen`, `usuario_sistema.rol`, `departamento.zona`, `check_plantilla.estado`, `equipo_computo.disco_tipo`, `equipo_computo.disco_unidad`) utilizan restricciones CHECK con listas de valores permitidos, en lugar de tipos ENUM nativos de PostgreSQL. Esto facilita la portabilidad del esquema y la modificación de los valores admitidos mediante migraciones.
+**Restricciones CHECK para enumeraciones.** Los campos discriminadores y de rol con un conjunto cerrado y estable de valores (`activo_ti.tipo`, `activo_ti.origen`, `usuario_sistema.rol`, `departamento.zona`, `check_plantilla.estado`, `equipo_computo.disco_tipo`, `equipo_computo.disco_unidad`, `tipo_estado.nombre`, `disponibilidad.nombre`, `solicitud_baja.estado_sol`) utilizan restricciones CHECK con listas de valores permitidos, en lugar de tipos ENUM nativos de PostgreSQL. Esto facilita la portabilidad del esquema y la modificación de los valores admitidos mediante migraciones. A diferencia de los demás catálogos del sistema, `tipo_estado` y `disponibilidad` no siguen el patrón "Creatable Select": representan un vocabulario de negocio cerrado y no se espera que crezca desde el frontend.
 
 ---
 

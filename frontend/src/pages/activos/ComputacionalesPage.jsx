@@ -12,7 +12,7 @@ export default function ComputacionalesPage() {
   const { activos, loading } = useActivosPorTipo("equipo_computo")
   const navigate = useNavigate()
   const { busqueda, setBusqueda, filtros, setFiltro, limpiarFiltros, filasFiltradas } =
-    useBuscador(activos, ["marca", "modelo", "num_serie", "host_name", "cpu", "nombre_dispo", "nombre_tipoeq"])
+    useBuscador(activos, ["nombre_marca", "nombre_modelo", "num_serie", "host_name", "cpu", "nombre_dispo", "nombre_tipoeq"])
 
   // Opciones únicas extraídas de los datos
   const opcionesTipo  = useMemo(() => [...new Set(activos.map(a => a.nombre_tipoeq).filter(Boolean))], [activos])
@@ -21,8 +21,8 @@ export default function ComputacionalesPage() {
   const columns = [
     { field: 'id_act',    headerName: 'ID',    width: 10  },
     {field:'host_name',   headerName:'Nombre Host',width:120},
-    { field: 'marca',     headerName: 'Marca', width: 150 },
-    { field: 'modelo',    headerName: 'Modelo',   width: 150 },
+    { field: 'nombre_marca',  headerName: 'Marca',  width: 150 },
+    { field: 'nombre_modelo', headerName: 'Modelo', width: 150 },
     { field: 'num_serie', headerName: 'Numero de Serie',   width: 200 },
     { field: 'nombre_dispo', headerName: 'Disponibilidad',   width: 120,
       renderCell:(params) =>(<Chip

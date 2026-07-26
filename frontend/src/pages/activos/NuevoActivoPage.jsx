@@ -4,7 +4,8 @@ import axiosClient from "../../api/axiosClient"
 
 import { Stepper, Step, StepLabel, Button, Box, Typography,
     Card, CardActionArea, CardContent, TextField, FormControl,
-    InputLabel, Select, MenuItem, InputAdornment, Checkbox, FormControlLabel} from "@mui/material"
+    InputLabel, Select, MenuItem, InputAdornment, Checkbox, FormControlLabel,
+    Autocomplete} from "@mui/material"
 
 import ComputerIcon     from "@mui/icons-material/Computer"
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther"
@@ -14,6 +15,29 @@ import { crearAsignacion } from "../../services/asignacionService"
 
 function hoy() {
     return new Date().toISOString().slice(0, 10)
+}
+
+// Resuelve (o crea, estilo "Creatable Select") la marca y el modelo
+// escritos por el usuario, y devuelve el id_modelo a enviar en el activo.
+async function resolverIdModelo(marcaNombre, modeloNombre) {
+    const marcaLimpia  = (marcaNombre  ?? "").trim()
+    const modeloLimpio = (modeloNombre ?? "").trim()
+    if (!marcaLimpia || !modeloLimpio) return null
+
+    const { data: marcas } = await axiosClient.get("/marcas/")
+    let marca = marcas.find(m => m.nombre.trim().toLowerCase() === marcaLimpia.toLowerCase())
+    if (!marca) {
+        const { data: nuevaMarca } = await axiosClient.post("/marcas/", { nombre: marcaLimpia })
+        marca = nuevaMarca
+    }
+
+    const { data: modelos } = await axiosClient.get("/modelos/", { params: { id_marca: marca.id_marca } })
+    let modelo = modelos.find(m => m.nombre.trim().toLowerCase() === modeloLimpio.toLowerCase())
+    if (!modelo) {
+        const { data: nuevoModelo } = await axiosClient.post("/modelos/", { id_marca: marca.id_marca, nombre: modeloLimpio })
+        modelo = nuevoModelo
+    }
+    return modelo.id_modelo
 }
 
 //Stepper
@@ -62,15 +86,36 @@ function PasoTipo({ form, setForm }) {
     )
 }
 
-function PasoGenerales({ form, setForm, facturas }) {
+function PasoGenerales({ form, setForm, facturas, marcas, modelos }) {
     function handle(e) {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
+    const opcionesMarca = marcas.map(m => m.nombre)
+
+    const opcionesModelo = modelos
+        .filter(m => {
+            const marca = marcas.find(mk => mk.id_marca === m.id_marca)
+            return marca?.nombre.trim().toLowerCase() === (form.marcaNombre || "").trim().toLowerCase()
+        })
+        .map(m => m.nombre)
+
     return (
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <TextField label="Marca"         name="marca"     value={form.marca}     onChange={handle} />
-            <TextField label="Modelo"        name="modelo"    value={form.modelo}    onChange={handle} />
+            <Autocomplete
+                freeSolo
+                options={opcionesMarca}
+                inputValue={form.marcaNombre}
+                onInputChange={(_, valor) => setForm({ ...form, marcaNombre: valor, modeloNombre: "" })}
+                renderInput={(params) => <TextField {...params} label="Marca" />}
+            />
+            <Autocomplete
+                freeSolo
+                options={opcionesModelo}
+                inputValue={form.modeloNombre}
+                onInputChange={(_, valor) => setForm({ ...form, modeloNombre: valor })}
+                renderInput={(params) => <TextField {...params} label="Modelo" />}
+            />
             <TextField label="Número serie"  name="num_serie" value={form.num_serie} onChange={handle} />
             <TextField label="Fecha recepción" name="fecha_recep" value={form.fecha_recep} 
                 onChange={handle} type="date" 
@@ -310,8 +355,8 @@ function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, f
 
     const seccionGeneral = [
         ["Tipo",             form.tipo === "equipo_computo" ? "Computacional" : "Periférico"],
-        ["Marca",            form.marca],
-        ["Modelo",           form.modelo],
+        ["Marca",            form.marcaNombre],
+        ["Modelo",           form.modeloNombre],
         ["Número de serie",  form.num_serie],
         ["Fecha recepción",  form.fecha_recep],
         ["Origen",           form.origen],
@@ -379,10 +424,8 @@ export default function NuevoActivoPage() {
 
     //Paso 2 - Datos generales
     const [facturas, setFacturas] = useState([])
-
-    useEffect(() => {
-        axiosClient.get("/factura/").then(r => setFacturas(r.data))
-    }, [])
+    const [marcas,   setMarcas]   = useState([])
+    const [modelos,  setModelos]  = useState([])
 
     //Paso 3 -  Tipo estado y disponibilidad
     const [tiposEstado, setTiposEstado] = useState([])
@@ -404,6 +447,8 @@ export default function NuevoActivoPage() {
 
     useEffect(() => {
         axiosClient.get("/factura/").then(r => setFacturas(r.data))
+        axiosClient.get("/marcas/").then(r => setMarcas(r.data))
+        axiosClient.get("/modelos/").then(r => setModelos(r.data))
         axiosClient.get("/tipos-estado/").then(r => setTiposEstado(r.data))
         axiosClient.get("/disponibilidades/").then(r => setTiposDispo(r.data))
         axiosClient.get("/tipos-equipo/").then(r => setTiposEquipo(r.data))
@@ -420,10 +465,12 @@ export default function NuevoActivoPage() {
             alert("Selecciona el empleado y la fecha de entrega para la asignación")
             return
         }
-        const payload = Object.fromEntries(
-            Object.entries(form).filter(([_, v]) => v !== "" && v !== null)
-        )
         try {
+            const id_modelo = await resolverIdModelo(form.marcaNombre, form.modeloNombre)
+            const { marcaNombre, modeloNombre, ...datosActivo } = form
+            const payload = Object.fromEntries(
+                Object.entries({ ...datosActivo, id_modelo }).filter(([_, v]) => v !== "" && v !== null)
+            )
             const { data: nuevoActivo } = await axiosClient.post("/ActivoTi/", payload)
             if (asignarAhora) {
                 await crearAsignacion({
@@ -444,7 +491,7 @@ export default function NuevoActivoPage() {
     const [form, setForm]   = useState({
         tipo: "",
         // generales
-        marca: "", modelo: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "", 
+        marcaNombre: "", modeloNombre: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "",
         // estado
         id_tipoe: "", id_dispo: "",
         // equipo_computo
@@ -485,7 +532,7 @@ export default function NuevoActivoPage() {
 
             <Box>
                 {paso === 0 && <PasoTipo        form={form} setForm={setForm} />}
-                {paso === 1 && <PasoGenerales   form={form} setForm={setForm} facturas={facturas} />}
+                {paso === 1 && <PasoGenerales   form={form} setForm={setForm} facturas={facturas} marcas={marcas} modelos={modelos} />}
                 {paso === 2 && <PasoEstado      form={form} setForm={setForm} tiposEstado={tiposEstado} />}              
                 {paso === 3 && <PasoTecnico form={form} setForm={setForm}
                     tiposEquipo={tiposEquipo} tiposPerif={tiposPerif} />}              

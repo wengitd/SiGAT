@@ -2,7 +2,7 @@ import { Box, TextField, FormControl, InputLabel, Select, MenuItem, Typography }
 
 // Etiqueta legible para un activo en el dropdown
 function labelActivo(a) {
-    return `${a.marca ?? ""} ${a.modelo ?? ""} — N° serie ${a.num_serie ?? "s/n"}`.trim()
+    return `${a.nombre_marca ?? ""} ${a.nombre_modelo ?? ""} — N° serie ${a.num_serie ?? "s/n"}`.trim()
 }
 
 /**

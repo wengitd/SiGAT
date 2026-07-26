@@ -80,13 +80,12 @@ class ActivoTi(Base):
     __tablename__ = "activo_ti"
 
     id_act         : Mapped[int] = mapped_column(primary_key=True)
-    modelo         : Mapped[str | None] = mapped_column(String(50))
-    marca          : Mapped[str | None] = mapped_column(String(50))
     num_serie      : Mapped[str | None] = mapped_column(String(50), unique=True)
     tipo           : Mapped[str] = mapped_column(String(20))
     origen         : Mapped[str] = mapped_column(String(20))
     fecha_recep    : Mapped[date | None] = mapped_column()
 
+    id_modelo: Mapped[int | None] = mapped_column(ForeignKey("modelo.id_modelo"))
     id_dispo : Mapped[int] = mapped_column(ForeignKey("disponibilidad.id_dispo"), nullable=False)
     id_fact  : Mapped[int] = mapped_column(ForeignKey("factura.id_fact"))
     id_tipoe : Mapped[int] = mapped_column(ForeignKey("tipo_estado.id_tipoe"), nullable=False)

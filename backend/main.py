@@ -37,6 +37,7 @@ from routes import (
     disponibilidad_route,
     marca_route,
     modelo_route,
+    solicitud_baja_route,
 )
 
 # Inicialización de la app  
@@ -73,6 +74,7 @@ app.include_router(auth_router)
 app.include_router(disponibilidad_route.router)
 app.include_router(marca_route.router)
 app.include_router(modelo_route.router)
+app.include_router(solicitud_baja_route.router)
 
 #middleware que responde con en el header access-control-allow-origin
 app.add_middleware(
