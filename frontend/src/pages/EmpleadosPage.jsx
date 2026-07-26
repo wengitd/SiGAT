@@ -54,7 +54,7 @@ export default function EmpleadosPage() {
     const [errores, setErrores] = useState({});
     const [empleadoAAsignar, setEmpleadoAAsignar] = useState(null);
 
-    
+
     /*useeffect llama al get/empleado -> la respuesta se guarda en /empleados
     react re-renderiza mostrando la lista */
     useEffect(() => {
@@ -88,12 +88,14 @@ export default function EmpleadosPage() {
       ));
     }
 
- 
+
     async function crearEmpleado() {
-      // ... validaciones de contraseña ...
+      if (!validarRut(formData.rut ?? "")) {
+        setErrores({ ...errores, rut: "RUT inválido" });
+        return;
+      }
       try {
-        const { confirmarPassword, ...payload } = formData;
-        const res = await axiosClient.post("/empleado/", payload);
+        const res = await axiosClient.post("/empleado/", formData);
         setEmpleados([...empleados, res.data]);
         setOpenDialog(false);
         setErrores({});
@@ -108,13 +110,14 @@ export default function EmpleadosPage() {
         }
       }
     }
-      
+
 
     async function actualizarEmpleado() {
-      if (formData.password && formData.password !== formData.confirmarPassword)
-        return alert("Las contraseñas no coinciden");
-      const { confirmarPassword, ...payload } = formData;
-      await axiosClient.put(`/empleado/${empleadoEditando.id_emp}`, payload);
+      if (!validarRut(formData.rut ?? "")) {
+        setErrores({ ...errores, rut: "RUT inválido" });
+        return;
+      }
+      await axiosClient.put(`/empleado/${empleadoEditando.id_emp}`, formData);
       const res = await axiosClient.get("/empleado/");
       setEmpleados(res.data);
       setOpenDialog(false);
@@ -139,7 +142,7 @@ export default function EmpleadosPage() {
       const camposVacios = Object.fromEntries(
         Object.keys(empleados[0] || {}).map((k) => [k, ""])
       );
-      camposVacios.operatividad = true; 
+      camposVacios.operatividad = true;
       setFormData(camposVacios);
       setEditando(false);
       setOpenDialog(true);
@@ -150,7 +153,7 @@ export default function EmpleadosPage() {
         <Box>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Typography variant="h5">Empleados</Typography>
-          <Button variant="contained" onClick={abrirCrear}>Agregar Empleado</Button>        
+          <Button variant="contained" onClick={abrirCrear}>Agregar Empleado</Button>
           </Box>
           <TableContainer component={Paper}>
             <Table>
@@ -201,18 +204,18 @@ export default function EmpleadosPage() {
           </TableContainer>
 
           {/*ventana modal para crear empleado */}
-          <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setErrores({}); }}>    
+          <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setErrores({}); }}>
           <DialogTitle>{editando ? "Editar Empleado" : "Agregar Empleado"}</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-            <TextField sx={{mt:1}} label="RUT" value={formData.rut??""}  
-                       onChange={(e) => setFormData({ ...formData, rut: formatearRut(e.target.value) })} 
-                       error={!!errores.rut || (formData.rut?.length > 3 && !validarRut(formData.rut))} 
+            <TextField sx={{mt:1}} label="RUT" value={formData.rut??""}
+                       onChange={(e) => setFormData({ ...formData, rut: formatearRut(e.target.value) })}
+                       error={!!errores.rut || (formData.rut?.length > 3 && !validarRut(formData.rut))}
                        helperText={
                         errores.rut || (formData.rut?.length > 3 && !validarRut(formData.rut) ? "RUT inválido" : "")
             }/>
             <TextField label="Nombre" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
             <TextField label="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} error={!!errores.email} helperText={errores.email} />
-            
+
             {/*Cargo*/}
             <Autocomplete
               freeSolo /*si el usuario escribe un cargo q no existe, lo acepta y crea en la tabla */
@@ -222,27 +225,6 @@ export default function EmpleadosPage() {
               renderInput={(params) => <TextField {...params} label="Cargo" />}
             />
 
-            {/*cuando se seleccione informatico se abren campos para rellenar la contraseña*/}
-            {formData.cargo?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === "informatico" && (
-              <>
-                <TextField
-                  label={editando ? "Nueva contraseña (dejar vacío para no cambiar)" : "Contraseña"}
-                  type="password"
-                  value={formData.password ?? ""}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  helperText="Mínimo 8 caracteres"
-                />
-                {(!editando || formData.password) && (
-                  <TextField
-                    label="Confirmar contraseña"
-                    type="password"
-                    value={formData.confirmarPassword ?? ""}
-                    onChange={(e) => setFormData({ ...formData, confirmarPassword: e.target.value })}
-                  />
-                )}
-              </>
-            )} 
-            
             {/*Planta*/}
             <Autocomplete
               freeSolo
@@ -264,7 +246,7 @@ export default function EmpleadosPage() {
                     id_dpto: e.target.value === "" ? null : Number(e.target.value),
                   })
                 }
-              >                             
+              >
                 {departamentos.map((d) => (
                   <MenuItem key={d.id_dpto} value={d.id_dpto}>
                     {d.nom_dpto}
@@ -272,7 +254,7 @@ export default function EmpleadosPage() {
                 ))}
               </Select>
             </FormControl>
-            
+
             {/*Dropdown Sub Area */}
             {formData.id_dpto && (
               <FormControl>
@@ -292,9 +274,9 @@ export default function EmpleadosPage() {
                 </Select>
               </FormControl>
             )}
-            
+
             {/*Switch Operatividad */}
-            <FormControlLabel control={<Switch checked={Boolean(formData.operatividad)} 
+            <FormControlLabel control={<Switch checked={Boolean(formData.operatividad)}
                                                onChange={(e) => setFormData({ ...formData, operatividad: e.target.checked })} />} label="Operativo" />
           </DialogContent>
           <DialogActions>
@@ -313,4 +295,3 @@ export default function EmpleadosPage() {
         </Box>
       );
 }
-    

@@ -4,8 +4,7 @@ import axiosClient from "../../api/axiosClient"
 
 import { Stepper, Step, StepLabel, Button, Box, Typography,
     Card, CardActionArea, CardContent, TextField, FormControl,
-    InputLabel, Select, MenuItem, InputAdornment, Checkbox, FormControlLabel,
-    Autocomplete} from "@mui/material"
+    InputLabel, Select, MenuItem, InputAdornment, Checkbox, FormControlLabel} from "@mui/material"
 
 import ComputerIcon     from "@mui/icons-material/Computer"
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther"
@@ -17,31 +16,17 @@ function hoy() {
     return new Date().toISOString().slice(0, 10)
 }
 
-// Resuelve (o crea, estilo "Creatable Select") la marca y el modelo
-// escritos por el usuario, y devuelve el id_modelo a enviar en el activo.
-async function resolverIdModelo(marcaNombre, modeloNombre) {
-    const marcaLimpia  = (marcaNombre  ?? "").trim()
-    const modeloLimpio = (modeloNombre ?? "").trim()
-    if (!marcaLimpia || !modeloLimpio) return null
-
-    const { data: marcas } = await axiosClient.get("/marcas/")
-    let marca = marcas.find(m => m.nombre.trim().toLowerCase() === marcaLimpia.toLowerCase())
-    if (!marca) {
-        const { data: nuevaMarca } = await axiosClient.post("/marcas/", { nombre: marcaLimpia })
-        marca = nuevaMarca
-    }
-
-    const { data: modelos } = await axiosClient.get("/modelos/", { params: { id_marca: marca.id_marca } })
-    let modelo = modelos.find(m => m.nombre.trim().toLowerCase() === modeloLimpio.toLowerCase())
-    if (!modelo) {
-        const { data: nuevoModelo } = await axiosClient.post("/modelos/", { id_marca: marca.id_marca, nombre: modeloLimpio })
-        modelo = nuevoModelo
-    }
-    return modelo.id_modelo
-}
-
 //Stepper
 const PASOS = ["Tipo de activo", "Datos generales", "Estado", "Datos técnicos", "Resumen"]
+
+const RAM_CAPACIDADES = [2, 4, 6, 8, 10, 12, 16, 20]
+const RAM_TIPOS = ["DDR3", "DDR4", "DDR5"]
+
+// Normaliza a formato XX:XX:XX:XX:XX:XX (6 pares hexadecimales, máx. 17 caracteres)
+function formatMac(valor) {
+    const hex = valor.replace(/[^0-9a-fA-F]/g, "").toUpperCase().slice(0, 12)
+    return hex.match(/.{1,2}/g)?.join(":") ?? ""
+}
 
 //Opciones de el tipo de activo
 const TIPOS = [
@@ -91,35 +76,44 @@ function PasoGenerales({ form, setForm, facturas, marcas, modelos }) {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    const opcionesMarca = marcas.map(m => m.nombre)
+    // Cascada Marca → Modelo. selMarca es solo un filtro local para el
+    // dropdown de modelos; lo que se envía al backend es form.id_modelo.
+    // Se inicializa a partir del id_modelo ya elegido (si el usuario vuelve
+    // a este paso desde el resumen) para no perder la selección de marca.
+    const [selMarca, setSelMarca] = useState(() => {
+        const modeloActual = modelos.find(m => m.id_modelo === form.id_modelo)
+        return modeloActual?.id_marca ?? ""
+    })
 
-    const opcionesModelo = modelos
-        .filter(m => {
-            const marca = marcas.find(mk => mk.id_marca === m.id_marca)
-            return marca?.nombre.trim().toLowerCase() === (form.marcaNombre || "").trim().toLowerCase()
-        })
-        .map(m => m.nombre)
+    const modelosDeMarca = modelos.filter(m => m.id_marca === selMarca)
+
+    function handleMarca(e) {
+        setSelMarca(e.target.value)
+        setForm({ ...form, id_modelo: "" })
+    }
 
     return (
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <Autocomplete
-                freeSolo
-                options={opcionesMarca}
-                inputValue={form.marcaNombre}
-                onInputChange={(_, valor) => setForm({ ...form, marcaNombre: valor, modeloNombre: "" })}
-                renderInput={(params) => <TextField {...params} label="Marca" />}
-            />
-            <Autocomplete
-                freeSolo
-                options={opcionesModelo}
-                inputValue={form.modeloNombre}
-                onInputChange={(_, valor) => setForm({ ...form, modeloNombre: valor })}
-                renderInput={(params) => <TextField {...params} label="Modelo" />}
-            />
+            <FormControl>
+                <InputLabel>Marca</InputLabel>
+                <Select label="Marca" value={selMarca} onChange={handleMarca}>
+                    {marcas.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
+                    {marcas.map(m => <MenuItem key={m.id_marca} value={m.id_marca}>{m.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <FormControl disabled={!selMarca}>
+                <InputLabel>Modelo</InputLabel>
+                <Select name="id_modelo" label="Modelo" value={form.id_modelo} onChange={handle}>
+                    {modelosDeMarca.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
+                    {modelosDeMarca.map(m => <MenuItem key={m.id_modelo} value={m.id_modelo}>{m.nombre}</MenuItem>)}
+                </Select>
+            </FormControl>
+
             <TextField label="Número serie"  name="num_serie" value={form.num_serie} onChange={handle} />
-            <TextField label="Fecha recepción" name="fecha_recep" value={form.fecha_recep} 
-                onChange={handle} type="date" 
-                slotProps={{ inputLabel: { shrink: true } }} />
+            <TextField label="Fecha recepción" name="fecha_recep" value={form.fecha_recep}
+                onChange={handle} type="date"
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoy() } }} />
 
             <FormControl>
                 <InputLabel>Origen</InputLabel>
@@ -224,22 +218,37 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
+    function handleMac(e) {
+        setForm({ ...form, [e.target.name]: formatMac(e.target.value) })
+    }
+
     if (form.tipo === "equipo_computo") return (
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
 
             <FormControl>
                 <InputLabel>Tipo equipo</InputLabel>
                 <Select name="id_tipoeq" label="Tipo equipo" value={form.id_tipoeq} onChange={handle}>
-                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {tiposEquipo.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
                     {tiposEquipo.map(t => <MenuItem key={t.id_tipoeq} value={t.id_tipoeq}>{t.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
 
             <TextField label="CPU"        name="cpu"       value={form.cpu}       onChange={handle} />
             <TextField label="Host name"  name="host_name" value={form.host_name} onChange={handle} />
-            <TextField label="RAM (capacidad)" name="ram_capac" value={form.ram_capac} onChange={handle} type="number" 
-                slotProps={{ input: { endAdornment: <InputAdornment position="end">GB</InputAdornment> } }}/>
-            <TextField label="RAM (tipo)"      name="ram_tipo"  value={form.ram_tipo}  onChange={handle} placeholder="DDR4, DDR5..." />
+
+            <FormControl>
+                <InputLabel>RAM (capacidad)</InputLabel>
+                <Select name="ram_capac" label="RAM (capacidad)" value={form.ram_capac} onChange={handle}>
+                    {RAM_CAPACIDADES.map(r => <MenuItem key={r} value={r}>{r} GB</MenuItem>)}
+                </Select>
+            </FormControl>
+
+            <FormControl>
+                <InputLabel>RAM (tipo)</InputLabel>
+                <Select name="ram_tipo" label="RAM (tipo)" value={form.ram_tipo} onChange={handle}>
+                    {RAM_TIPOS.map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+                </Select>
+            </FormControl>
 
             <FormControl>
                 <InputLabel>Tipo de disco</InputLabel>
@@ -249,7 +258,7 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
             </FormControl>
 
             <TextField label="Capacidad disco" name="disco_capac" value={form.disco_capac} onChange={handle} type="number" 
-                slotProps={{ input: { endAdornment: <InputAdornment position="end">GB</InputAdornment> } }}/>
+                slotProps={{ input: { endAdornment: <InputAdornment position="end"></InputAdornment> } }}/>
 
             <FormControl>
                 <InputLabel>Unidad disco</InputLabel>
@@ -258,8 +267,10 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
                 </Select>
             </FormControl>
 
-            <TextField label="MAC Ethernet" name="mac_ethernet" value={form.mac_ethernet} onChange={handle} />
-            <TextField label="MAC Wifi"     name="mac_wifi"     value={form.mac_wifi}     onChange={handle} />
+            <TextField label="MAC Ethernet" name="mac_ethernet" value={form.mac_ethernet} onChange={handleMac}
+                placeholder="30:D1:6B:9F:04:AB" slotProps={{ htmlInput: { maxLength: 17 } }} />
+            <TextField label="MAC Wifi"     name="mac_wifi"     value={form.mac_wifi}     onChange={handleMac}
+                placeholder="30:D1:6B:9F:04:AB" slotProps={{ htmlInput: { maxLength: 17 } }} />
             
 
             
@@ -267,7 +278,7 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
             <FormControl>
                 <InputLabel>Familia SO</InputLabel>
                 <Select label="Familia SO" value={selFam} onChange={e => setSelFam(e.target.value)}>
-                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {familias.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
                     {familias.map(f => <MenuItem key={f.id_fam_so} value={f.id_fam_so}>{f.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
@@ -275,7 +286,7 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
             <FormControl disabled={!selFam}>
                 <InputLabel>Versión</InputLabel>
                 <Select label="Versión" value={selVer} onChange={e => setSelVer(e.target.value)}>
-                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {versiones.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
                     {versiones.map(v => <MenuItem key={v.id_ver_so} value={v.id_ver_so}>{v.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
@@ -283,7 +294,7 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
             <FormControl sx={{ gridColumn: "span 2" }} disabled={!selVer}>
                 <InputLabel>Edición</InputLabel>
                 <Select name="id_edicion_so" label="Edición" value={form.id_edicion_so} onChange={handle}>
-                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {ediciones.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
                     {ediciones.map(e => <MenuItem key={e.id_edicion_so} value={e.id_edicion_so}>{e.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
@@ -297,7 +308,7 @@ function PasoTecnico({ form, setForm, tiposEquipo, tiposPerif }) {
             <FormControl sx={{ gridColumn: "span 2" }}>
                 <InputLabel>Tipo de periférico</InputLabel>
                 <Select name="id_tipoper" label="Tipo de periférico" value={form.id_tipoper} onChange={handle}>
-                    <MenuItem value=""><em>Sin especificar</em></MenuItem>
+                    {tiposPerif.length === 0 && <MenuItem value=""><em>Sin especificar</em></MenuItem>}
                     {tiposPerif.map(t => <MenuItem key={t.id_tipoper} value={t.id_tipoper}>{t.nombre}</MenuItem>)}
                 </Select>
             </FormControl>
@@ -340,12 +351,16 @@ function SeccionResumen({ titulo, filas }) {
     )
 }
 
-function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, familiasSO, versionesSO, edicionesSO,
+function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, marcas, modelos, familiasSO, versionesSO, edicionesSO,
     asignarAhora, setAsignarAhora, asignacion, setAsignacion, empleadosOpciones }) {
     const nombreEstado  = tiposEstado.find(t => t.id_tipoe  === form.id_tipoe)?.nombre
     const nombreDispo   = tiposDispo .find(d => d.id_dispo  === form.id_dispo )?.nombre
     const nombreFactura = facturas   .find(f => f.id_fact   === form.id_fact  )
         ? `Folio #${facturas.find(f => f.id_fact === form.id_fact).num_folio}` : null
+
+    // Resuelve marca/modelo desde el id_modelo elegido
+    const modeloSel = modelos.find(m => m.id_modelo === form.id_modelo)
+    const marcaSel  = marcas.find(m => m.id_marca === modeloSel?.id_marca)
 
     // Resuelve el SO desde los 3 niveles
     const edicion = edicionesSO.find(e => e.id_edicion_so === form.id_edicion_so)
@@ -355,8 +370,8 @@ function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, f
 
     const seccionGeneral = [
         ["Tipo",             form.tipo === "equipo_computo" ? "Computacional" : "Periférico"],
-        ["Marca",            form.marcaNombre],
-        ["Modelo",           form.modeloNombre],
+        ["Marca",            marcaSel?.nombre],
+        ["Modelo",           modeloSel?.nombre],
         ["Número de serie",  form.num_serie],
         ["Fecha recepción",  form.fecha_recep],
         ["Origen",           form.origen],
@@ -465,12 +480,10 @@ export default function NuevoActivoPage() {
             alert("Selecciona el empleado y la fecha de entrega para la asignación")
             return
         }
+        const payload = Object.fromEntries(
+            Object.entries(form).filter(([_, v]) => v !== "" && v !== null)
+        )
         try {
-            const id_modelo = await resolverIdModelo(form.marcaNombre, form.modeloNombre)
-            const { marcaNombre, modeloNombre, ...datosActivo } = form
-            const payload = Object.fromEntries(
-                Object.entries({ ...datosActivo, id_modelo }).filter(([_, v]) => v !== "" && v !== null)
-            )
             const { data: nuevoActivo } = await axiosClient.post("/ActivoTi/", payload)
             if (asignarAhora) {
                 await crearAsignacion({
@@ -491,11 +504,11 @@ export default function NuevoActivoPage() {
     const [form, setForm]   = useState({
         tipo: "",
         // generales
-        marcaNombre: "", modeloNombre: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "",
+        id_modelo: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "",
         // estado
         id_tipoe: "", id_dispo: "",
         // equipo_computo
-        cpu: "", ram_capac: "", ram_tipo: "",
+        cpu: "", ram_capac: 8, ram_tipo: "",
         disco_tipo: "", disco_unidad: "", disco_capac: "",
         host_name: "", mac_ethernet: "", mac_wifi: "",
         id_tipoeq: "", id_edicion_so: "",
@@ -540,7 +553,7 @@ export default function NuevoActivoPage() {
                 {paso === 4 && <PasoResumen   form={form}
                     tiposEstado={tiposEstado} tiposDispo={tiposDispo}
                     tiposEquipo={tiposEquipo} tiposPerif={tiposPerif}
-                    facturas={facturas}
+                    facturas={facturas} marcas={marcas} modelos={modelos}
                     familiasSO={familiasSO} versionesSO={versionesSO} edicionesSO={edicionesSO}
                     asignarAhora={asignarAhora} setAsignarAhora={setAsignarAhora}
                     asignacion={asignacion} setAsignacion={setAsignacion}

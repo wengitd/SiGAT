@@ -3,6 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert,
     TextField, FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material"
+import axiosClient from "../api/axiosClient"
 import { getActivos } from "../services/activoService"
 import { crearSolicitudBaja } from "../services/solicitudBajaService"
 
@@ -16,14 +17,15 @@ function labelActivo(a) {
  */
 export default function SolicitudBajaModal({ open, onClose, solicitudesPendientes = [], onCreada }) {
     const [activosOpciones, setActivosOpciones] = useState([])
-    const [value, setValue] = useState({ id_act: "", motivo_baja: "" })
+    const [tiposEstado, setTiposEstado] = useState([])
+    const [value, setValue] = useState({ id_act: "", motivo_baja: "", id_tipoe: "" })
     const [error, setError] = useState("")
     const [guardando, setGuardando] = useState(false)
 
     useEffect(() => {
         if (!open) return
 
-        setValue({ id_act: "", motivo_baja: "" })
+        setValue({ id_act: "", motivo_baja: "", id_tipoe: "" })
         setError("")
 
         getActivos().then(data => {
@@ -35,12 +37,15 @@ export default function SolicitudBajaModal({ open, onClose, solicitudesPendiente
                 )
             )
         })
+        axiosClient.get("/tipos-estado/").then(r => {
+            setTiposEstado(r.data.filter(t => t.nombre?.toLowerCase() !== "bueno"))
+        })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open])
 
     async function guardar() {
-        if (!value.id_act || !value.motivo_baja.trim()) {
-            setError("Completa el activo y el motivo de la baja")
+        if (!value.id_act || !value.motivo_baja.trim() || !value.id_tipoe) {
+            setError("Completa el activo, el motivo de la baja y la nueva condición")
             return
         }
         setGuardando(true)
@@ -75,6 +80,20 @@ export default function SolicitudBajaModal({ open, onClose, solicitudesPendiente
                     </Select>
                 </FormControl>
 
+                <FormControl fullWidth>
+                    <InputLabel>Nueva condición del activo</InputLabel>
+                    <Select
+                        label="Nueva condición del activo"
+                        value={value.id_tipoe}
+                        onChange={(e) => setValue({ ...value, id_tipoe: e.target.value })}
+                    >
+                        {tiposEstado.map(t => (
+                            <MenuItem key={t.id_tipoe} value={t.id_tipoe}>{t.nombre}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+
                 <TextField
                     label="Motivo de la baja"
                     value={value.motivo_baja}
@@ -83,6 +102,9 @@ export default function SolicitudBajaModal({ open, onClose, solicitudesPendiente
                     minRows={3}
                     fullWidth
                 />
+
+                
+
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancelar</Button>

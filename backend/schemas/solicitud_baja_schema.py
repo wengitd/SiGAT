@@ -10,7 +10,7 @@ class SolicitudBajaBase(BaseModel):
 
 
 class SolicitudBajaCreate(SolicitudBajaBase):
-    pass
+    id_tipoe: int  # nueva condición del activo (regular o malo) al solicitar la baja
 
 
 # Registra la resolución (aprobación/rechazo) decidida por fuera del sistema.

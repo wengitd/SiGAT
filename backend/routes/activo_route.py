@@ -20,7 +20,7 @@ SUBTIPOS = {
 
 REGLAS_INCOMPATIBLES = {
     "bueno":   {"de_baja", "en_mantencion"},
-    "regular": {"de_baja"},
+    "regular": set(),
     "malo":    set(),
 }
 

@@ -38,7 +38,7 @@ export default function LoginPage() {
     } catch (err) {
       console.log("Error en login:", err);
       console.log("ERROR RESPONSE:", err.response);
-      setError("Credenciales incorrectas");
+      setError(err.response?.data?.detail || "Credenciales incorrectas");
     }
   }
 

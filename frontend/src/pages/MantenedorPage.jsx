@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, Tabs, Tab, Typography, Paper } from "@mui/material";
 import MantenedorCatalogo from "../components/mantenedor/MantenedorCatalogo";
 import MantenedorEstadoDispo from "../components/mantenedor/MantenedorEstadoDispo";
+import MantenedorSistemaOperativo from "../components/mantenedor/MantenedorSistemaOperativo";
 
 // ── Definición de catálogos por grupo ────────────────────────────────────────
 
@@ -49,9 +50,7 @@ const GRUPOS = [
       },
       {
         title: "Sistemas Operativos",
-        endpoint: "/sistemas-operativos",
-        idField: "id_so",
-        fields: [{ name: "nombre", label: "Nombre", required: true }],
+        custom: "sistemaOperativo",
       },
       {
         title: "Disponibilidad",
@@ -105,13 +104,13 @@ const GRUPOS = [
     label: "Proveedores",
     catalogos: [
       {
-        title: "Proveedores de Licencia",
+        title: "proveedor de licencia",
         endpoint: "/proveedores-licencia",
         idField: "id_prov",
         fields: [{ name: "nombre", label: "Nombre", required: true }],
       },
       {
-        title: "Versiones de Licencia",
+        title: "versión de Licencia",
         endpoint: "/versiones-licencia",
         idField: "id_ver",
         fields: [
@@ -126,7 +125,7 @@ const GRUPOS = [
         ],
       },
       {
-        title: "Proveedores de Factura",
+        title: "proveedor de factura",
         endpoint: "/proveedores-factura",
         idField: "id_prov_fact",
         fields: [{ name: "nombre", label: "Nombre", required: true }],
@@ -200,6 +199,8 @@ export default function MantenedorPage() {
       <Paper sx={{ p: 3 }}>
         {catalogo.custom === "estadoDispo" ? (
           <MantenedorEstadoDispo key={`${grupoIdx}-${catalogoIdx}`} />
+        ) : catalogo.custom === "sistemaOperativo" ? (
+          <MantenedorSistemaOperativo key={`${grupoIdx}-${catalogoIdx}`} />
         ) : (
           <MantenedorCatalogo
             key={`${grupoIdx}-${catalogoIdx}`}

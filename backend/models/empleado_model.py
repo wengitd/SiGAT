@@ -47,3 +47,5 @@ class UsuarioSistema(Base):
     hash_pass : Mapped[str] = mapped_column(String(255), nullable=False)
     rol       : Mapped[str] = mapped_column(String(50), nullable=False)
     vigente   : Mapped[bool] = mapped_column(nullable=False, default=True)
+
+    empleado = relationship("Empleado")

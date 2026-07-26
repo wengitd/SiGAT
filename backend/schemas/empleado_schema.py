@@ -14,10 +14,17 @@ class PlantaOut(BaseModel):
     nombre: str
     model_config = ConfigDict(from_attributes=True)
 
-#schema anidado 
+#schema anidado
 class DepartamentoSimple(BaseModel):
     id_dpto: int
     nom_dpto: str
+    model_config = ConfigDict(from_attributes=True)
+
+#schema anidado
+class EmpleadoBasico(BaseModel):
+    id_emp: int
+    nombre: str
+    email: str
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -73,4 +80,5 @@ class UsuarioSistemaOut(BaseModel):
     id_emp: int
     rol: Literal["editor", "auditor", "admin"]
     vigente: bool
+    empleado: EmpleadoBasico
     model_config = ConfigDict(from_attributes=True)

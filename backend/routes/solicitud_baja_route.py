@@ -8,7 +8,8 @@ from auth.dependencies import get_current_user, require_editor
 
 from models.solicitud_baja_model import SolicitudBaja
 from models.activo_ti_model import ActivoTi, Disponibilidad
-from models.empleado_model import UsuarioSistema
+from models.empleado_model import Empleado, UsuarioSistema
+from models.tipo_estado_model import TipoEstado
 from schemas.solicitud_baja_schema import (
     SolicitudBajaCreate, SolicitudBajaResolver, SolicitudBajaBorrado, SolicitudBajaOut
 )
@@ -43,18 +44,32 @@ def obtener(id_solbaja: int, db: Session = Depends(get_db), current_user=Depends
 
 @router.post("/", response_model=SolicitudBajaOut, status_code=status.HTTP_201_CREATED)
 def crear(payload: SolicitudBajaCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """El solicitante registra una solicitud de baja para un activo."""
-    if db.query(ActivoTi).filter(ActivoTi.id_act == payload.id_act).first() is None:
+    """El solicitante registra una solicitud de baja para un activo y degrada su condición."""
+    activo = db.query(ActivoTi).filter(ActivoTi.id_act == payload.id_act).first()
+    if activo is None:
         raise HTTPException(status_code=400, detail="Activo no existe")
 
-    ya_pendiente = db.query(SolicitudBaja).filter(
+    ya_vigente = db.query(SolicitudBaja).filter(
         SolicitudBaja.id_act == payload.id_act,
-        SolicitudBaja.estado_sol == "pendiente",
+        SolicitudBaja.estado_sol != "rechazada",
     ).first()
-    if ya_pendiente is not None:
-        raise HTTPException(status_code=400, detail="El activo ya tiene una solicitud de baja pendiente")
+    if ya_vigente is not None:
+        raise HTTPException(status_code=400, detail="El activo ya tiene una solicitud de baja pendiente o aprobada")
 
-    nueva = SolicitudBaja(**payload.model_dump(), id_emp_sol=current_user.id_emp)
+    estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == payload.id_tipoe).first()
+    if estado is None:
+        raise HTTPException(status_code=400, detail="Tipo de estado no existe")
+    if estado.nombre.lower() == "bueno":
+        raise HTTPException(
+            status_code=400,
+            detail="Un activo en solicitud de baja no puede quedar en estado 'Bueno'; selecciona 'Regular' o 'Malo'",
+        )
+
+    validar_dispo_estado(activo.id_dispo, payload.id_tipoe, db)
+
+    datos = payload.model_dump(exclude={"id_tipoe"})
+    nueva = SolicitudBaja(**datos, id_emp_sol=current_user.id_emp)
+    activo.id_tipoe = payload.id_tipoe
     db.add(nueva)
     db.commit()
     db.refresh(nueva)
