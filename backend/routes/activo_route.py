@@ -196,8 +196,8 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
         if payload.id_tipoeq is not None:
             if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
                 raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
-        if payload.id_so is not None:
-            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
+        if payload.id_edicion_so is not None:
+            if db.query(EdicionSO).filter(EdicionSO.id_edicion_so == payload.id_edicion_so).first() is None:
                 raise HTTPException(status_code=400, detail="Sistema operativo no existe")
     elif payload.tipo == "periferico":
         if payload.id_tipoper is not None:
@@ -260,8 +260,8 @@ def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db),
         if payload.id_tipoeq is not None:
             if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
                 raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
-        if payload.id_so is not None:
-            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
+        if payload.id_edicion_so is not None:
+            if db.query(EdicionSO).filter(EdicionSO.id_edicion_so == payload.id_edicion_so).first() is None:
                 raise HTTPException(status_code=400, detail="Sistema operativo no existe")
     elif activo.tipo == "periferico":
         if payload.id_tipoper is not None:

@@ -19,6 +19,7 @@ from routes import (
     emp_lic_route,
     factura_route,
     activo_route,
+<<<<<<< Updated upstream
     historial_estado_route,
     asignacion_route,
     checklist_route,
@@ -38,6 +39,9 @@ from routes import (
     marca_route,
     modelo_route,
     solicitud_baja_route,
+=======
+    historial_estado_route
+>>>>>>> Stashed changes
 )
 
 # Inicialización de la app  
@@ -56,6 +60,7 @@ app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)
 app.include_router(activo_route.router)
 app.include_router(historial_estado_route.router)
+<<<<<<< Updated upstream
 app.include_router(asignacion_route.router)
 app.include_router(checklist_route.router)
 app.include_router(plantilla_route.router)
@@ -85,6 +90,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+=======
+>>>>>>> Stashed changes
 
 
 @app.get("/")

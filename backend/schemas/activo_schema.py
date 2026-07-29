@@ -54,7 +54,7 @@ class EquipoComputoCreate(ActivoBase):
     host_name       : str | None= None
 
     id_tipoeq    : int | None = None   # FK → tipo_equipo
-    id_so        : int | None = None   # FK → sistema_operativo
+    id_edicion_so: int | None = None   # FK → edicion_so
 
     @field_validator("mac_ethernet", "mac_wifi")
     @classmethod
@@ -110,7 +110,7 @@ class ActivoUpdate(BaseModel):
     disco_capac     : int | None= None
     host_name       : str | None = None
     id_tipoeq       : int | None = None
-    id_so           : int | None = None
+    id_edicion_so   : int | None = None
 
     @field_validator("mac_ethernet", "mac_wifi")
     @classmethod
