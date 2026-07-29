@@ -34,14 +34,43 @@ CREATE TABLE tipo_equipo (
     nombre    VARCHAR(100) NOT NULL UNIQUE   -- 'Notebook', 'Tablet', 'NUC', etc.
 );
  
-CREATE TABLE sistema_operativo (
-    id_so  SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE      -- 'Windows 11 64 bits', etc.
+
+CREATE TABLE familia_so (
+    id_fam_so SERIAL PRIMARY KEY,
+    nombre    VARCHAR(100) NOT NULL UNIQUE      -- 'Windows', 'Linux', 'MacOS'
 );
+
+CREATE TABLE version_so (
+    id_ver_so  SERIAL PRIMARY KEY,
+    nombre     VARCHAR(100) NOT NULL,      -- '11', 'Ubuntu', '10'
+    UNIQUE (id_ver_so, nombre),
+
+    id_fam_so   INT NOT NULL REFERENCES familia_so(id_fam_so) ON DELETE CASCADE
+);
+
+CREATE TABLE edicion_so (
+    id_edicion_so   SERIAL PRIMARY KEY,
+    nombre          VARCHAR(100) NOT NULL,     --'Pro x64', 'Home', 'LTS'
+    
+    id_ver_so INT NOT NULL REFERENCES version_so(id_ver_so) ON DELETE CASCADE
+);
+
  
 CREATE TABLE tipo_periferico (
     id_tipoper SERIAL PRIMARY KEY,
     nombre     VARCHAR(100) NOT NULL UNIQUE  -- 'Monitor', 'Impresora', etc.
+);
+
+CREATE TABLE marca (
+    id_marca SERIAL PRIMARY KEY,
+    nombre   VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE modelo (
+    id_modelo SERIAL PRIMARY KEY,
+    id_marca  INT NOT NULL REFERENCES marca(id_marca) ON DELETE CASCADE,
+    nombre    VARCHAR(100) NOT NULL,
+    UNIQUE (id_marca, nombre)
 );
  
 CREATE TABLE proveedor_licencia (
@@ -52,6 +81,14 @@ CREATE TABLE proveedor_licencia (
 CREATE TABLE proveedor_factura (
     id_prov_fact SERIAL PRIMARY KEY,
     nombre       VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE disponibilidad (
+    id_dispo    SERIAL PRIMARY KEY,
+    nombre      VARCHAR (100) NOT NULL UNIQUE
+                CHECK (nombre IN ('disponible', 'asignado', 'mantencion', 'de_baja')),
+    descr       VARCHAR (100) NOT NULL,
+    color       VARCHAR (20)
 );
  
 
@@ -130,12 +167,12 @@ CREATE TABLE empleado (
     id_sub    INT REFERENCES sub_area(id_sub)   -- opcional: no todos tienen subárea
 );
 
-CREATE TABLE informatico (
+CREATE TABLE usuario_sistema (
     id_emp    INT PRIMARY KEY,
     hash_pass VARCHAR(255) NOT NULL,
-    rol       VARCHAR(20)  NOT NULL CHECK (rol IN ('editor', 'auditor')),
+    rol       VARCHAR(20)  NOT NULL CHECK (rol IN ('editor', 'auditor', 'admin')),
     vigente   BOOLEAN NOT NULL DEFAULT TRUE,
- 
+
     FOREIGN KEY (id_emp) REFERENCES empleado(id_emp)
 );
 
@@ -149,7 +186,7 @@ CREATE TABLE checklist(
     fecha_ini       DATE,
     fecha_ter       DATE,
     
-    id_emp INT references informatico(id_emp)
+    id_emp INT references usuario_sistema(id_emp)
 );
 
 CREATE TABLE plantilla (
@@ -204,17 +241,18 @@ CREATE TABLE emp_lic (
 
 CREATE TABLE tipo_estado (
     id_tipoe        SERIAL PRIMARY KEY,
-    nombre          VARCHAR(50) NOT NULL UNIQUE,
+    nombre          VARCHAR(50) NOT NULL UNIQUE
+                    CHECK (nombre IN ('Bueno', 'Regular', 'Malo')),
     descr           TEXT,
     operatividad    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-INSERT INTO tipo_estado (nombre,descr) VALUES
-('disponible',    'Activo listo para asignar un empleado'),
-('en_preparacion','Activo en proceso de gestion por el técnico'),
-('asignado',      'Activo entregado a empleado'),
-('en_mantencion', 'Activo en revisión o reparación'),
-('de_baja',       'Activo retirado del inventario');
+-- Relación N:M: qué disponibilidades permite cada estado (condición del equipo)
+CREATE TABLE estado_dispo (
+    id_tipoe    INT NOT NULL REFERENCES tipo_estado(id_tipoe) ON DELETE CASCADE,
+    id_dispo    INT NOT NULL REFERENCES disponibilidad(id_dispo) ON DELETE CASCADE,
+    PRIMARY KEY (id_tipoe, id_dispo)
+);
 
 
 --========================================================
@@ -223,15 +261,15 @@ INSERT INTO tipo_estado (nombre,descr) VALUES
 
 CREATE TABLE activo_ti (
     id_act         SERIAL PRIMARY KEY,
-    modelo         VARCHAR(50),
-    marca          VARCHAR(50),
     num_serie      VARCHAR(50) UNIQUE,
-    disponibilidad BOOLEAN NOT NULL DEFAULT TRUE,
     tipo           VARCHAR(20) NOT NULL CHECK (tipo   IN ('equipo_computo', 'periferico')),
     origen         VARCHAR(20) NOT NULL CHECK (origen IN ('empresa', 'personal')),
- 
-    id_fact        INT NOT NULL REFERENCES factura(id_fact),
-    id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe)
+    fecha_recep    DATE,
+
+    id_modelo      INT NOT NULL REFERENCES modelo(id_modelo),
+    id_fact        INT REFERENCES factura(id_fact),
+    id_tipoe       INT NOT NULL REFERENCES tipo_estado(id_tipoe),
+    id_dispo       INT NOT NULL REFERENCES disponibilidad(id_dispo)
 );
 
 CREATE TABLE equipo_computo (
@@ -246,8 +284,8 @@ CREATE TABLE equipo_computo (
     disco_unidad VARCHAR(5)  CHECK (disco_unidad IN ('MB', 'GB', 'TB')),
     host_name    VARCHAR(50),
  
-    id_tipoeq INT REFERENCES tipo_equipo(id_tipoeq),
-    id_so     INT REFERENCES sistema_operativo(id_so),
+    id_tipoeq       INT REFERENCES tipo_equipo(id_tipoeq),
+    id_edicion_so   INT REFERENCES edicion_so(id_edicion_so),
  
     PRIMARY KEY (id_act),
     FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
@@ -266,7 +304,9 @@ CREATE TABLE periferico (
     FOREIGN KEY (id_act) REFERENCES activo_ti(id_act)
 );
 
-
+--========================================================
+--================== Historial del estado ================
+--========================================================
 
 CREATE TABLE historial_estado (
     id_hes    SERIAL PRIMARY KEY,
@@ -276,7 +316,7 @@ CREATE TABLE historial_estado (
  
     id_tipoe    INT NOT NULL REFERENCES tipo_estado(id_tipoe),
     id_act      INT NOT NULL REFERENCES activo_ti(id_act),
-    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién registró el cambio
+    id_emp_reg  INT REFERENCES usuario_sistema(id_emp)   -- quién registró el cambio
     
 );
 
@@ -295,13 +335,37 @@ CREATE TABLE asignacion (
  
     id_act      INT NOT NULL REFERENCES activo_ti(id_act),
     id_emp      INT NOT NULL REFERENCES empleado(id_emp), -- a quien se le asignó el equipo
-    id_emp_reg  INT REFERENCES informatico(id_emp)   -- quién procesó la asignación
+    id_emp_reg  INT REFERENCES usuario_sistema(id_emp)   -- quién procesó la asignación
 
 );
 
 
+--========================================================
+--=================== SOLICITUD DE BAJA ===================
+--========================================================
+-- Flujo: el solicitante (usuario_sistema) crea la solicitud; 
+-- la aprobación de jefatura ocurre por fuera del sistema (correo) 
+--se deja constancia con ref_aprob/fecha_resolucion; el borrado seguro lo cierra un técnico.
 
- 
+CREATE TABLE solicitud_baja (
+    id_solbaja        SERIAL PRIMARY KEY,
+    motivo_baja       VARCHAR(200) NOT NULL,
+    fecha_solicitud   DATE NOT NULL DEFAULT CURRENT_DATE,
+    fecha_resolucion  DATE,
+    ref_aprob         VARCHAR(200),           -- referencia del correo de aprobación 
+    estado_sol        VARCHAR(20) NOT NULL DEFAULT 'pendiente'
+                       CHECK (estado_sol IN ('pendiente', 'aprobada', 'rechazada')),
+    ruta_acta_baja    VARCHAR(255),           -- PDF acta de baja en Drive 
+    fecha_borrado     DATE,                   -- formateo de datos
+
+    id_act          INT NOT NULL REFERENCES activo_ti(id_act),
+    id_emp_sol      INT NOT NULL REFERENCES usuario_sistema(id_emp), -- solicitante
+    id_emp_aprob    INT REFERENCES usuario_sistema(id_emp),          -- jefatura aprobadora
+    id_emp_borrado  INT REFERENCES usuario_sistema(id_emp)           -- técnico responsable del formateo
+);
+
+
+
 -- ========================================================
 -- =================== SEEDS CATÁLOGOS ====================
 -- ========================================================
@@ -334,10 +398,6 @@ INSERT INTO tipo_equipo (nombre) VALUES
 ('Gabinete'),
 ('NUC');
  
--- Sistemas operativos conocidos hasta ahora
-INSERT INTO sistema_operativo (nombre) VALUES
-('Windows 11 64 bits'),
-('Windows 10 64 bits');
  
 -- Tipos de periférico conocidos hasta ahora
 INSERT INTO tipo_periferico (nombre) VALUES
@@ -357,3 +417,39 @@ INSERT INTO version_licencia (id_prov, nombre) VALUES
 (2, 'Server'),
 (2, 'Home'),
 (3, 'Intercept X');
+
+INSERT INTO tipo_estado (nombre,descr) VALUES
+('Bueno',   'Activo sin desperfectos fisicos ni internos'),
+('Regular', 'Activo con detalles esteticos o de funcionamiento'),
+('Malo',    'Activo con problemas de funcionamiento o piezas dañadas');
+
+-- Disponibilidad
+INSERT INTO disponibilidad (nombre, descr, color) VALUES
+('disponible', 'Activo libre para ser asignado',        'success'),
+('asignado',   'Activo actualmente asignado a un empleado', 'info'),
+('mantencion', 'Activo en proceso de mantencion',        'warning'),
+('de_baja',    'Activo dado de baja del inventario',     'error');
+
+-- Departamentos
+INSERT INTO departamento (id_org, zona, nom_dpto) VALUES
+(1, 'Administracion', 'Contabilidad'),
+(1, 'Administracion', 'Tesoreria'),
+(2, 'Administracion', 'TD'),
+(2, 'Operaciones',    'Mantencion');
+
+-- Sub areas
+INSERT INTO sub_area (id_dpto, nombre) VALUES
+(3, 'Soporte'),
+(3, 'Desarrollo'),
+(3, 'BI'),
+(4, 'Electrica'),
+(4, 'Mecanica');
+
+-- Empleados
+INSERT INTO empleado (rut, nombre, email, id_cargo, id_planta, id_dpto, id_sub) VALUES
+('12345678-9', 'Juan Pérez',  'juan@empresa.cl',  1, 1, 1, NULL),
+('98765432-1', 'Ana García',  'ana@empresa.cl',   2, 1, 3, 1);
+
+-- Usuario del sistema (el empleado ya debe existir)
+INSERT INTO usuario_sistema (id_emp, hash_pass, rol, vigente) VALUES
+(2, 'hash_temporal', 'editor', TRUE);

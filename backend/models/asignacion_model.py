@@ -14,4 +14,4 @@ class Asignacion(Base):
 
     id_act      :Mapped[int] = mapped_column(ForeignKey("activo_ti.id_act"),nullable=False)
     id_emp      :Mapped[int] = mapped_column(ForeignKey("empleado.id_emp"),nullable=False)
-    id_emp_reg  :Mapped[int |None] = mapped_column(ForeignKey("informatico.id_emp"))
+    id_emp_reg  :Mapped[int |None] = mapped_column(ForeignKey("usuario_sistema.id_emp"))

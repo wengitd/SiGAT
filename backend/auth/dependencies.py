@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from fastapi import Depends, HTTPException
 
-from models.empleado_model import Informatico
+from models.empleado_model import UsuarioSistema
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -19,15 +19,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
         raise HTTPException(status_code=401, detail="Token inválido")
 
     id_emp=int(var_token["sub"])
-    inf= db.query(Informatico).filter(Informatico.id_emp==id_emp).first()
+    inf= db.query(UsuarioSistema).filter(UsuarioSistema.id_emp==id_emp).first()
 
     if not inf or not inf.vigente:
         raise HTTPException(status_code=401, detail="Usuario no autorizado")
     return inf
-     
+
 
 
 def require_editor(current_user = Depends(get_current_user)):
-    if current_user.rol != "editor":
+    if current_user.rol not in ("editor", "admin"):
         raise HTTPException(status_code=403, detail="Se requiere rol editor")
     return current_user

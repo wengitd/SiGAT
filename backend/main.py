@@ -14,11 +14,12 @@ from routes import (
     tipo_estado_route,
     dpto_route,
     empleado_route,
-    informatico_route,
+    usuario_sistema_route,
     licencia_route,
     emp_lic_route,
     factura_route,
     activo_route,
+<<<<<<< Updated upstream
     historial_estado_route,
     asignacion_route,
     checklist_route,
@@ -34,6 +35,13 @@ from routes import (
     proveedor_factura_route,
     version_licencia_route,
     sub_area_route,
+    disponibilidad_route,
+    marca_route,
+    modelo_route,
+    solicitud_baja_route,
+=======
+    historial_estado_route
+>>>>>>> Stashed changes
 )
 
 # Inicialización de la app  
@@ -46,12 +54,13 @@ app = FastAPI(
 app.include_router(tipo_estado_route.router)
 app.include_router(dpto_route.router)
 app.include_router(empleado_route.router)
-app.include_router(informatico_route.router)
+app.include_router(usuario_sistema_route.router)
 app.include_router(licencia_route.router)
 app.include_router(emp_lic_route.router)
 app.include_router(factura_route.router)
 app.include_router(activo_route.router)
 app.include_router(historial_estado_route.router)
+<<<<<<< Updated upstream
 app.include_router(asignacion_route.router)
 app.include_router(checklist_route.router)
 app.include_router(plantilla_route.router)
@@ -67,6 +76,10 @@ app.include_router(proveedor_factura_route.router)
 app.include_router(version_licencia_route.router)
 app.include_router(sub_area_route.router)
 app.include_router(auth_router)
+app.include_router(disponibilidad_route.router)
+app.include_router(marca_route.router)
+app.include_router(modelo_route.router)
+app.include_router(solicitud_baja_route.router)
 
 #middleware que responde con en el header access-control-allow-origin
 app.add_middleware(
@@ -77,6 +90,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+=======
+>>>>>>> Stashed changes
 
 
 @app.get("/")
