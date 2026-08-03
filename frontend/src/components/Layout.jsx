@@ -23,6 +23,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import { useAuth } from "../context/AuthContext";
+import SessionExpiryModal from "./SessionExpiryModal";
 
 const SIDEBAR_BG = "#1A2744"; // azul marino
 const SIDEBAR_HOVER = "#243357"; // hover suave
@@ -353,6 +354,8 @@ export default function Layout() {
             <Box component="main" sx={{ flexGrow: 1, overflow: "auto", p: 3 }}>
                 <Outlet />
             </Box>
+
+            <SessionExpiryModal />
         </Box>
     );
 }

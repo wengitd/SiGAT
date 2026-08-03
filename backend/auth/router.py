@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from auth.dependencies import get_current_user
 from auth.jwt import create_access_token
 from database import get_db
 
@@ -42,6 +43,19 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
             "rol": usuario.rol,
             "nombre": usuario.nombre,
             "email": usuario.email,
+        }
+    )
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@router.post("/renew")
+def renew(current_user: UsuarioSistema = Depends(get_current_user)):
+    token = create_access_token(
+        {
+            "sub": str(current_user.id_usuario),
+            "rol": current_user.rol,
+            "nombre": current_user.nombre,
+            "email": current_user.email,
         }
     )
     return {"access_token": token, "token_type": "bearer"}
