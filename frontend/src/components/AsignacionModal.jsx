@@ -44,7 +44,9 @@ export default function AsignacionModal({
         setElegibilidad(null)
 
         if (!activoFijo) {
-            getActivos().then(data => setActivosOpciones(data.filter(a => !a.empleado_asignado)))
+            getActivos().then(data => setActivosOpciones(data.filter(a =>
+                !a.empleado_asignado && a.nombre_dispo?.toLowerCase() !== "de_baja"
+            )))
         }
         if (!empleadoFijo) {
             axiosClient.get("/empleado/").then(r => setEmpleadosOpciones(r.data.filter(e => e.operatividad)))

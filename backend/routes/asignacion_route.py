@@ -43,6 +43,10 @@ def crear(
     if activo is None:
         raise HTTPException(status_code=400, detail="Activo no existe")
 
+    dispo_actual = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == activo.id_dispo).first()
+    if dispo_actual is not None and dispo_actual.nombre.lower() == "de_baja":
+        raise HTTPException(status_code=400, detail="Un activo dado de baja no puede ser asignado")
+
     query_emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
     if query_emp is None:
         raise HTTPException(status_code=400, detail="Empleado no existe")

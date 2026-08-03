@@ -135,7 +135,7 @@ export default function InventarioPage() {
                             </Tooltip>
                         )}
 
-                        {isEditor && (
+                        {isEditor && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
                             !params.row.empleado_asignado ? (
                                 <Tooltip title="Asignar">
                                     <IconButton size="small" color="primary" onClick={() => setActivoAAsignar(params.row)}>
