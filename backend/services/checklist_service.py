@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
-from models.activo_ti_model import ActivoTi
+from models.activo_ti_model import ActivoTi, Disponibilidad
 from models.asignacion_model import Asignacion
 from models.checklist_model import Checklist, ChecklistPaso, Plantilla, PlantillaPaso
 
@@ -35,6 +35,15 @@ def ensure_equipo_computo(activo: ActivoTi) -> None:
         raise HTTPException(
             status_code=400,
             detail="Los checklists de preparación solo aplican a activos computacionales",
+        )
+
+
+def ensure_no_de_baja(db: Session, activo: ActivoTi) -> None:
+    dispo_actual = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == activo.id_dispo).first()
+    if dispo_actual is not None and dispo_actual.nombre.lower() == "de_baja":
+        raise HTTPException(
+            status_code=400,
+            detail="Un activo dado de baja no puede iniciar un checklist de preparación/reasignación",
         )
 
 
@@ -71,6 +80,7 @@ def iniciar_checklist(
     if activo is None:
         raise HTTPException(status_code=404, detail="Activo no encontrado")
     ensure_equipo_computo(activo)
+    ensure_no_de_baja(db, activo)
 
     abierto = (
         db.query(Checklist)

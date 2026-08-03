@@ -48,6 +48,7 @@ class Marca(Base):
 
     id_marca: Mapped[int] = mapped_column(primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100))
+    tipo_activo: Mapped[str] = mapped_column(String(20))
     modelos = relationship("Modelo", back_populates="marca")
 
 

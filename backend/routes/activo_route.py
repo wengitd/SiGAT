@@ -307,11 +307,15 @@ def crear(
 
     # Verifica existencia del modelo (marca/modelo) si fue enviado
     if payload.id_modelo is not None:
-        if (
-            db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
-            is None
-        ):
+        modelo = db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
+        if modelo is None:
             raise HTTPException(status_code=400, detail="Modelo no existe")
+        marca = db.query(Marca).filter(Marca.id_marca == modelo.id_marca).first()
+        if marca.tipo_activo != payload.tipo:
+            raise HTTPException(
+                status_code=400,
+                detail="El modelo no corresponde al tipo de activo seleccionado",
+            )
 
     # Verifica existencia del tipo de estado
     if (
@@ -435,11 +439,15 @@ def actualizar(
 
     # Verifica existencia del modelo (marca/modelo) si fue enviado
     if payload.id_modelo is not None:
-        if (
-            db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
-            is None
-        ):
+        modelo = db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
+        if modelo is None:
             raise HTTPException(status_code=400, detail="Modelo no existe")
+        marca = db.query(Marca).filter(Marca.id_marca == modelo.id_marca).first()
+        if marca.tipo_activo != activo.tipo:
+            raise HTTPException(
+                status_code=400,
+                detail="El modelo no corresponde al tipo de activo seleccionado",
+            )
 
     # Verifica FKs de subtipo según tipo del activo
     if activo.tipo == "equipo_computo":
