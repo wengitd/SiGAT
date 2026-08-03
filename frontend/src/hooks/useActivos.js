@@ -3,7 +3,7 @@ import { getActivos } from "../services/activoService";
 
 
 
-export default function useActivos(){
+export default function useActivos() {
     const [activos, setActivos] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -19,6 +19,6 @@ export default function useActivos(){
         refetch()
     }, [refetch])
 
-    return {activos, loading, refetch}
+    return { activos, loading, refetch }
 }
 

@@ -1,17 +1,17 @@
 import axiosClient from "../api/axiosClient";
 
-const getActivos = async () =>{
+const getActivos = async () => {
     const response = await axiosClient.get("/ActivoTi")
     return response.data
 }
 
-const getActivo = async (id) =>{ 
+const getActivo = async (id) => {
     const response = await axiosClient.get(`/ActivoTi/${id}`)
-    return response.data    
+    return response.data
 }
 
-const deleteActivo =async(id) =>{
-    const response = await axiosClient.delete(`/ActivoTi/${id}`) 
+const deleteActivo = async (id) => {
+    const response = await axiosClient.delete(`/ActivoTi/${id}`)
     return response.data
 }
 
@@ -26,4 +26,4 @@ const updateActivo = async (id, payload) => {
 }
 
 
-export {getActivos, getActivo, deleteActivo, createActivo, updateActivo}
+export { getActivos, getActivo, deleteActivo, createActivo, updateActivo }

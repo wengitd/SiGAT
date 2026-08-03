@@ -15,7 +15,7 @@ import { useState, useMemo } from "react"
  */
 export default function useBuscador(rows, campos) {
     const [busqueda, setBusqueda] = useState("")
-    const [filtros,  setFiltros]  = useState({})   // { campo: valor }
+    const [filtros, setFiltros] = useState({})   // { campo: valor }
 
     function setFiltro(campo, valor) {
         setFiltros(prev => ({ ...prev, [campo]: valor }))
