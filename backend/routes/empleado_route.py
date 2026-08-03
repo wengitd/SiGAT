@@ -31,7 +31,9 @@ def _obtener_o_crear_cargo(db: Session, nombre: str) -> Cargo:
 
 def _obtener_o_crear_planta(db: Session, nombre: str) -> Planta:
     nombre = nombre.strip()
-    planta = db.query(Planta).filter(func.lower(Planta.nombre) == nombre.lower()).first()
+    planta = (
+        db.query(Planta).filter(func.lower(Planta.nombre) == nombre.lower()).first()
+    )
     if planta is None:
         planta = Planta(nombre=nombre)
         db.add(planta)
@@ -42,7 +44,9 @@ def _obtener_o_crear_planta(db: Session, nombre: str) -> Planta:
 def _resolver_departamento(db: Session, nom_dpto: str | None) -> int | None:
     if nom_dpto is None or not nom_dpto.strip():
         return None
-    dpto = db.query(Departamento).filter(Departamento.nom_dpto == nom_dpto.strip()).first()
+    dpto = (
+        db.query(Departamento).filter(Departamento.nom_dpto == nom_dpto.strip()).first()
+    )
     if dpto is None:
         raise HTTPException(
             status_code=400,
@@ -65,15 +69,21 @@ def _aplicar_catalogos(db: Session, emp: Empleado, datos: dict) -> None:
 @router.get("/", response_model=list[EmpleadoOut])
 def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     "Devuelve todos los Empleados."
-    return db.query(Empleado).options(
-        joinedload(Empleado.cargo),
-        joinedload(Empleado.planta),
-        joinedload(Empleado.departamento),
-    ).all()
+    return (
+        db.query(Empleado)
+        .options(
+            joinedload(Empleado.cargo),
+            joinedload(Empleado.planta),
+            joinedload(Empleado.departamento),
+        )
+        .all()
+    )
 
 
 @router.get("/{id_emp}", response_model=EmpleadoOut)
-def obtener(id_emp: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def obtener(
+    id_emp: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
     """Devuelve un Empleado por id."""
     emp = _query_empleados(db).filter(Empleado.id_emp == id_emp).first()
     if emp is None:
@@ -92,7 +102,9 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db)):
         if db.query(SubArea).filter(SubArea.id_sub == payload.id_sub).first() is None:
             raise HTTPException(status_code=400, detail="Subárea no existe")
 
-    nuevo_emp = Empleado(**datos, id_cargo=id_cargo, id_planta=id_planta, id_dpto=id_dpto)
+    nuevo_emp = Empleado(
+        **datos, id_cargo=id_cargo, id_planta=id_planta, id_dpto=id_dpto
+    )
     db.add(nuevo_emp)
     db.commit()
     db.refresh(nuevo_emp)
@@ -101,12 +113,17 @@ def crear(payload: EmpleadoCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_emp}", response_model=EmpleadoOut)
-def actualizar(id_emp: int, payload: EmpleadoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def actualizar(
+    id_emp: int,
+    payload: EmpleadoUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_editor),
+):
 
     act_emp = db.query(Empleado).filter(Empleado.id_emp == id_emp).first()
     if act_emp is None:
         raise HTTPException(status_code=404, detail="No encontrado")
-    
+
     if payload.id_sub is not None:
         if db.query(SubArea).filter(SubArea.id_sub == payload.id_sub).first() is None:
             raise HTTPException(status_code=400, detail="Subárea no existe")
@@ -115,12 +132,18 @@ def actualizar(id_emp: int, payload: EmpleadoUpdate, db: Session = Depends(get_d
     _aplicar_catalogos(db, act_emp, datos)
 
     if payload.id_sub is not None and payload.id_dpto is not None:
-        sub = db.query(SubArea).filter(
-            SubArea.id_sub == payload.id_sub,
-            SubArea.id_dpto == payload.id_dpto
-        ).first()
+        sub = (
+            db.query(SubArea)
+            .filter(
+                SubArea.id_sub == payload.id_sub, SubArea.id_dpto == payload.id_dpto
+            )
+            .first()
+        )
         if sub is None:
-            raise HTTPException(status_code=400, detail="La subárea no pertenece al departamento seleccionado")
+            raise HTTPException(
+                status_code=400,
+                detail="La subárea no pertenece al departamento seleccionado",
+            )
 
     db.commit()
     emp = _query_empleados(db).filter(Empleado.id_emp == id_emp).first()
@@ -128,7 +151,9 @@ def actualizar(id_emp: int, payload: EmpleadoUpdate, db: Session = Depends(get_d
 
 
 @router.delete("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_emp: int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def eliminar(
+    id_emp: int, db: Session = Depends(get_db), current_user=Depends(require_editor)
+):
     eli_emp = db.query(Empleado).filter(Empleado.id_emp == id_emp).first()
 
     if eli_emp is None:

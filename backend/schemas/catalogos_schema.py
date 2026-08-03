@@ -23,9 +23,10 @@ class EmpresaOut(EmpresaBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-#CARGO-----------------------------------
+# CARGO-----------------------------------
 class CargoBase(BaseModel):
-    nombre : str = Field(max_length=100)
+    nombre: str = Field(max_length=100)
+
 
 class CargoCreate(CargoBase):
     pass
@@ -78,11 +79,14 @@ class TipoEquipoOut(TipoEquipoBase):
 class FamiliaSOBase(BaseModel):
     nombre: str = Field(max_length=100)
 
+
 class FamiliaSOCreate(FamiliaSOBase):
     pass
 
+
 class FamiliaSOUpdate(BaseModel):
     nombre: str | None = Field(default=None, max_length=100)
+
 
 class FamiliaSOOut(FamiliaSOBase):
     id_fam_so: int
@@ -91,15 +95,18 @@ class FamiliaSOOut(FamiliaSOBase):
 
 # VERSION SO ----------------------------
 class VersionSOBase(BaseModel):
-    nombre   : str = Field(max_length=100)
+    nombre: str = Field(max_length=100)
     id_fam_so: int
+
 
 class VersionSOCreate(VersionSOBase):
     pass
 
+
 class VersionSOUpdate(BaseModel):
-    nombre   : str | None = Field(default=None, max_length=100)
+    nombre: str | None = Field(default=None, max_length=100)
     id_fam_so: int | None = None
+
 
 class VersionSOOut(VersionSOBase):
     id_ver_so: int
@@ -108,15 +115,18 @@ class VersionSOOut(VersionSOBase):
 
 # EDICION SO ----------------------------
 class EdicionSOBase(BaseModel):
-    nombre   : str = Field(max_length=100)
+    nombre: str = Field(max_length=100)
     id_ver_so: int
+
 
 class EdicionSOCreate(EdicionSOBase):
     pass
 
+
 class EdicionSOUpdate(BaseModel):
-    nombre   : str | None = Field(default=None, max_length=100)
+    nombre: str | None = Field(default=None, max_length=100)
     id_ver_so: int | None = None
+
 
 class EdicionSOOut(EdicionSOBase):
     id_edicion_so: int
@@ -192,7 +202,7 @@ class MarcaOut(MarcaBase):
 
 
 class ModeloBase(BaseModel):
-    nombre  : str = Field(max_length=100)
+    nombre: str = Field(max_length=100)
     id_marca: int
 
 
@@ -201,7 +211,7 @@ class ModeloCreate(ModeloBase):
 
 
 class ModeloUpdate(BaseModel):
-    nombre  : str | None = Field(default=None, max_length=100)
+    nombre: str | None = Field(default=None, max_length=100)
     id_marca: int | None = None
 
 
@@ -216,8 +226,9 @@ class ModeloOut(ModeloBase):
 
 
 class SubAreaBase(BaseModel):
-    nombre  : str = Field(max_length=100)
-    id_dpto : int                          # FK al padre
+    nombre: str = Field(max_length=100)
+    id_dpto: int  # FK al padre
+
 
 class SubAreaCreate(SubAreaBase):
     pass

@@ -1,33 +1,42 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user, require_editor
-
-from database import get_db
-from models.activo_ti_model import ActivoTi, EquipoComputo, Periferico, FamiliaSO, VersionSO, EdicionSO, TipoEquipo, TipoPeriferico, Disponibilidad, Marca, Modelo
-from schemas.activo_schema  import ActivoBase, ActivoCreate, ActivoUpdate, ActivoOut
-
-from models.empleado_model import Empleado
+from fastapi import APIRouter, Depends, HTTPException, status
+from models.activo_ti_model import (
+    ActivoTi,
+    Disponibilidad,
+    EdicionSO,
+    EquipoComputo,
+    FamiliaSO,
+    Marca,
+    Modelo,
+    Periferico,
+    TipoEquipo,
+    TipoPeriferico,
+    VersionSO,
+)
 from models.asignacion_model import Asignacion
+from models.empleado_model import Empleado
 from models.factura_model import Factura
 from models.tipo_estado_model import TipoEstado
+from schemas.activo_schema import ActivoCreate, ActivoOut, ActivoUpdate
+from sqlalchemy.orm import Session
 
-router=APIRouter(prefix="/ActivoTi", tags=["Activos"])
+from database import get_db
 
-SUBTIPOS = {
-    "equipo_computo": EquipoComputo,
-    "periferico": Periferico
-}
+router = APIRouter(prefix="/ActivoTi", tags=["Activos"])
+
+SUBTIPOS = {"equipo_computo": EquipoComputo, "periferico": Periferico}
 
 REGLAS_INCOMPATIBLES = {
-    "bueno":   {"de_baja", "en_mantencion"},
+    "bueno": {"de_baja", "en_mantencion"},
     "regular": set(),
-    "malo":    set(),
+    "malo": set(),
 }
 
-#funcion helper para estado y disponibilidad
+# funcion helper para estado y disponibilidad
+
 
 def validar_dispo_estado(id_dispo: int, id_tipoe: int, db: Session):
-    dispo  = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == id_dispo).first()
+    dispo = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == id_dispo).first()
     estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == id_tipoe).first()
 
     if not dispo or not estado:
@@ -38,10 +47,11 @@ def validar_dispo_estado(id_dispo: int, id_tipoe: int, db: Session):
     if dispo.nombre.lower() in no_permitidas:
         raise HTTPException(
             status_code=400,
-            detail=f"Un activo '{estado.nombre}' no puede estar '{dispo.nombre}'"
+            detail=f"Un activo '{estado.nombre}' no puede estar '{dispo.nombre}'",
         )
 
-#funciones helper
+
+# funciones helper
 def to_dict(obj):
     """
     Convierte un objeto SQLAlchemy en un diccionario,
@@ -49,15 +59,16 @@ def to_dict(obj):
     """
     # Si el objeto no existe, retorna diccionario vacío
     if obj is None:
-        return {}    
+        return {}
     return {col.name: getattr(obj, col.name) for col in obj.__table__.columns}
 
-def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
+
+def build_activo_data(activo_model: ActivoTi, db: Session) -> dict:
     """
     Construye un diccionario completo de un activo,
     combinando datos del modelo principal y su subtipo.
 
-    Ademas, se traen los atributos necesarios para un escenario completo 
+    Ademas, se traen los atributos necesarios para un escenario completo
     de un activo
 
     Se reutiliza en: create, read, list.
@@ -66,41 +77,80 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
     data = to_dict(activo_model)
 
     # Obtiene el modelo subtipo según el tipo de activo
-    modelo_subtipo=SUBTIPOS.get(activo_model.tipo)
+    modelo_subtipo = SUBTIPOS.get(activo_model.tipo)
 
     if modelo_subtipo:
-        #Busca el registro del subtipo relacionado
-        sub = db.query(modelo_subtipo).filter(modelo_subtipo.id_act == activo_model.id_act).first()
-        #Si existe subtipo, lo mezcla con el diccionario principal
+        # Busca el registro del subtipo relacionado
+        sub = (
+            db.query(modelo_subtipo)
+            .filter(modelo_subtipo.id_act == activo_model.id_act)
+            .first()
+        )
+        # Si existe subtipo, lo mezcla con el diccionario principal
         if sub:
             data.update(to_dict(sub))
-            
-            #agregar sistema operativo
-            if sub and hasattr(sub, 'id_edicion_so') and sub.id_edicion_so is not None:
-                edicion = db.query(EdicionSO).filter(EdicionSO.id_edicion_so == sub.id_edicion_so).first()
+
+            # agregar sistema operativo
+            if sub and hasattr(sub, "id_edicion_so") and sub.id_edicion_so is not None:
+                edicion = (
+                    db.query(EdicionSO)
+                    .filter(EdicionSO.id_edicion_so == sub.id_edicion_so)
+                    .first()
+                )
                 if edicion:
-                    version = db.query(VersionSO).filter(VersionSO.id_ver_so == edicion.id_ver_so).first()
-                    familia = db.query(FamiliaSO).filter(FamiliaSO.id_fam_so == version.id_fam_so).first() if version else None
+                    version = (
+                        db.query(VersionSO)
+                        .filter(VersionSO.id_ver_so == edicion.id_ver_so)
+                        .first()
+                    )
+                    familia = (
+                        db.query(FamiliaSO)
+                        .filter(FamiliaSO.id_fam_so == version.id_fam_so)
+                        .first()
+                        if version
+                        else None
+                    )
                     data["detalles_so"] = {
-                        "familia":  familia.nombre  if familia  else None,
-                        "version":  version.nombre  if version  else None,
-                        "edicion":  edicion.nombre,
+                        "familia": familia.nombre if familia else None,
+                        "version": version.nombre if version else None,
+                        "edicion": edicion.nombre,
                     }
-            
+                    # Nombre legible para grillas (Inventario / Computacionales)
+                    partes = [
+                        p
+                        for p in (
+                            familia.nombre if familia else None,
+                            version.nombre if version else None,
+                            edicion.nombre,
+                        )
+                        if p
+                    ]
+                    data["nombre_so"] = " ".join(partes) if partes else None
+
             # agregar el tipo de equipo segun periferico o computacional
-            if sub and hasattr(sub, 'id_tipoeq') and sub.id_tipoeq is not None:
-                tipoeq = db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == sub.id_tipoeq).first()
+            if sub and hasattr(sub, "id_tipoeq") and sub.id_tipoeq is not None:
+                tipoeq = (
+                    db.query(TipoEquipo)
+                    .filter(TipoEquipo.id_tipoeq == sub.id_tipoeq)
+                    .first()
+                )
                 if tipoeq:
                     data["nombre_tipoeq"] = tipoeq.nombre
 
-            if sub and hasattr(sub, 'id_tipoper') and sub.id_tipoper is not None:
-                tipoper = db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == sub.id_tipoper).first()
+            if sub and hasattr(sub, "id_tipoper") and sub.id_tipoper is not None:
+                tipoper = (
+                    db.query(TipoPeriferico)
+                    .filter(TipoPeriferico.id_tipoper == sub.id_tipoper)
+                    .first()
+                )
                 if tipoper:
                     data["nombre_tipoper"] = tipoper.nombre
 
     # Marca / modelo del activo (vía catálogo)
     if activo_model.id_modelo is not None:
-        modelo = db.query(Modelo).filter(Modelo.id_modelo == activo_model.id_modelo).first()
+        modelo = (
+            db.query(Modelo).filter(Modelo.id_modelo == activo_model.id_modelo).first()
+        )
         if modelo:
             data["nombre_modelo"] = modelo.nombre
             marca = db.query(Marca).filter(Marca.id_marca == modelo.id_marca).first()
@@ -108,31 +158,49 @@ def build_activo_data(activo_model:ActivoTi, db:Session)->dict:
                 data["nombre_marca"] = marca.nombre
 
     # Estado del activo
-    estado = db.query(TipoEstado).filter(TipoEstado.id_tipoe == activo_model.id_tipoe).first()
+    estado = (
+        db.query(TipoEstado)
+        .filter(TipoEstado.id_tipoe == activo_model.id_tipoe)
+        .first()
+    )
     if estado:
         data["nombre_estado"] = estado.nombre
 
     # Empleado asignado (última asignación activa = sin fecha_dev)
-    asignacion = (db.query(Asignacion).filter(Asignacion.id_act == activo_model.id_act, Asignacion.fecha_dev == None).order_by(Asignacion.fecha_entr.desc()).first())
+    asignacion = (
+        db.query(Asignacion)
+        .filter(Asignacion.id_act == activo_model.id_act, Asignacion.fecha_dev == None)
+        .order_by(Asignacion.fecha_entr.desc())
+        .first()
+    )
     if asignacion:
-        empleado = db.query(Empleado).filter(Empleado.id_emp == asignacion.id_emp).first()
+        empleado = (
+            db.query(Empleado).filter(Empleado.id_emp == asignacion.id_emp).first()
+        )
         if empleado:
             data["empleado_asignado"] = empleado.nombre
+            data["id_asig_actual"] = asignacion.id_asig
 
-    #Disponibilidad del activo
-    dispo = db.query(Disponibilidad).filter(Disponibilidad.id_dispo == activo_model.id_dispo).first()
+    # Disponibilidad del activo
+    dispo = (
+        db.query(Disponibilidad)
+        .filter(Disponibilidad.id_dispo == activo_model.id_dispo)
+        .first()
+    )
     if dispo:
         data["nombre_dispo"] = dispo.nombre
-        data["dispo_color"]  = dispo.color or "default"
+        data["dispo_color"] = dispo.color or "default"
 
-
-    #Para obtener la ruta de la factura
+    # Para obtener la ruta de la factura
     if activo_model.id_fact is not None:
-        factura = db.query(Factura).filter(Factura.id_fact == activo_model.id_fact).first()
+        factura = (
+            db.query(Factura).filter(Factura.id_fact == activo_model.id_fact).first()
+        )
         if factura:
             data["ruta_pdf_fact"] = factura.ruta_pdf_fact
-    
+
     return data
+
 
 # Evita asignar atributos inexistentes al modelo SQLAlchemy.
 def split_payload_por_model(payload_dict: dict, model_class) -> dict:
@@ -141,6 +209,7 @@ def split_payload_por_model(payload_dict: dict, model_class) -> dict:
     columnas = {col.name for col in model_class.__table__.columns}
     # Retorna solo claves válidas para el modelo
     return {k: v for k, v in payload_dict.items() if k in columnas}
+
 
 # Helper
 # Confirma cambios en la base de datos.
@@ -153,28 +222,82 @@ def commit_or_rollback(db: Session):
         db.rollback()
         raise
 
- 
 
 @router.get("/", response_model=list[ActivoOut], response_model_exclude_none=True)
 def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     activos = db.query(ActivoTi).all()
     return [build_activo_data(a, db) for a in activos]
 
-    
+
+@router.get("/sugerencias/cpu", response_model=list[str])
+def sugerencias_cpu(
+    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
+    """Valores distintos de CPU ya usados en equipos computacionales."""
+    filas = (
+        db.query(EquipoComputo.cpu)
+        .filter(EquipoComputo.cpu.isnot(None), EquipoComputo.cpu != "")
+        .distinct()
+        .order_by(EquipoComputo.cpu)
+        .all()
+    )
+    return [f[0] for f in filas]
+
+
+@router.get("/sugerencias/u-medida", response_model=list[str])
+def sugerencias_u_medida(
+    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
+    """Valores distintos de unidad de medida ya usados en periféricos."""
+    filas = (
+        db.query(Periferico.u_medida)
+        .filter(Periferico.u_medida.isnot(None), Periferico.u_medida != "")
+        .distinct()
+        .order_by(Periferico.u_medida)
+        .all()
+    )
+    return [f[0] for f in filas]
+
+
+@router.get("/existe-serie")
+def existe_serie(
+    num_serie: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Indica si ya hay un activo con ese número de serie."""
+    serie = (num_serie or "").strip()
+    if not serie:
+        return {"existe": False}
+    existe = (
+        db.query(ActivoTi.id_act).filter(ActivoTi.num_serie == serie).first() is not None
+    )
+    return {"existe": existe}
+
 
 @router.get("/{id_act}", response_model=ActivoOut, response_model_exclude_none=True)
-def obtener (id_act: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def obtener(
+    id_act: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
     """Devuelve un activo por id."""
     obt_activo = db.query(ActivoTi).filter(ActivoTi.id_act == id_act).first()
     if obt_activo is None:
-        raise  HTTPException(status_code=404, detail="Activo no encontrado")
+        raise HTTPException(status_code=404, detail="Activo no encontrado")
 
     return build_activo_data(obt_activo, db)
 
 
-
-@router.post("/", response_model=ActivoOut, status_code=status.HTTP_201_CREATED, response_model_exclude_none=True)
-def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+@router.post(
+    "/",
+    response_model=ActivoOut,
+    status_code=status.HTTP_201_CREATED,
+    response_model_exclude_none=True,
+)
+def crear(
+    payload: ActivoCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_editor),
+):
 
     # ---------- VALIDACIONES FK ----------
     # Verifica existencia de factura si fue enviada
@@ -184,36 +307,76 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
 
     # Verifica existencia del modelo (marca/modelo) si fue enviado
     if payload.id_modelo is not None:
-        if db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first() is None:
+        if (
+            db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
+            is None
+        ):
             raise HTTPException(status_code=400, detail="Modelo no existe")
 
     # Verifica existencia del tipo de estado
-    if db.query(TipoEstado).filter(TipoEstado.id_tipoe == payload.id_tipoe).first() is None:
+    if (
+        db.query(TipoEstado).filter(TipoEstado.id_tipoe == payload.id_tipoe).first()
+        is None
+    ):
         raise HTTPException(status_code=404, detail="Tipo estado no encontrado")
-    
+
     # Verifica FKs de subtipo
     if payload.tipo == "equipo_computo":
         if payload.id_tipoeq is not None:
-            if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
+            if (
+                db.query(TipoEquipo)
+                .filter(TipoEquipo.id_tipoeq == payload.id_tipoeq)
+                .first()
+                is None
+            ):
                 raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
-        if payload.id_so is not None:
-            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
-                raise HTTPException(status_code=400, detail="Sistema operativo no existe")
+        if payload.id_edicion_so is not None:
+            if (
+                db.query(EdicionSO)
+                .filter(EdicionSO.id_edicion_so == payload.id_edicion_so)
+                .first()
+                is None
+            ):
+                raise HTTPException(
+                    status_code=400, detail="Edición de sistema operativo no existe"
+                )
     elif payload.tipo == "periferico":
         if payload.id_tipoper is not None:
-            if db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == payload.id_tipoper).first() is None:
-                raise HTTPException(status_code=400, detail="Tipo de periférico no existe")
+            if (
+                db.query(TipoPeriferico)
+                .filter(TipoPeriferico.id_tipoper == payload.id_tipoper)
+                .first()
+                is None
+            ):
+                raise HTTPException(
+                    status_code=400, detail="Tipo de periférico no existe"
+                )
 
-    #------------REGLA DISPONIBLE - TIPOESTADO--
+    # ------------REGLA DISPONIBLE - TIPOESTADO--
     validar_dispo_estado(payload.id_dispo, payload.id_tipoe, db)
 
+    # Número de serie único
+    if payload.num_serie:
+        existe = (
+            db.query(ActivoTi)
+            .filter(ActivoTi.num_serie == payload.num_serie)
+            .first()
+        )
+        if existe:
+            raise HTTPException(
+                status_code=400,
+                detail="Ya existe un activo con ese número de serie",
+            )
+
     # ---------- RESOLUCIÓN DE SUBTIPO ----------
-    
+
     # Obtiene dinámicamente la clase subtipo según el tipo de activo
     modelo_subtipo = SUBTIPOS.get(payload.tipo)
     if modelo_subtipo is None:
-        raise HTTPException(status_code=400, detail=f"Tipo no soportado: {payload.tipo}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Tipo no soportado: {payload.tipo}"
+        )
+
     # Convierte el payload a dict una sola vez
     payload_dict = payload.model_dump()
 
@@ -222,7 +385,7 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
     datos_activo = split_payload_por_model(payload_dict, ActivoTi)
     activo = ActivoTi(**datos_activo)
     db.add(activo)
-    db.flush()  
+    db.flush()
 
     # ---------- CREAR SUBTIPO ----------
     # Extrae únicamente los campos del subtipo
@@ -234,40 +397,82 @@ def crear(payload: ActivoCreate, db: Session = Depends(get_db), current_user=Dep
 
     # ---------- CONFIRMAR TRANSACCIÓN ----------
     # Guarda padre y subtipo en una sola transacción
-    commit_or_rollback(db)   
+    commit_or_rollback(db)
     db.refresh(activo)
 
-    # Devolver datos combinados 
+    # Devolver datos combinados
     return build_activo_data(activo, db)
 
- 
 
 # Actualiza parcialmente un activo TI y su subtipo asociado----------------------
 @router.put("/{id_act}", response_model=ActivoOut, response_model_exclude_none=True)
-def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+def actualizar(
+    id_act: int,
+    payload: ActivoUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_editor),
+):
     activo = db.query(ActivoTi).filter(ActivoTi.id_act == id_act).first()
 
     if not activo:
         raise HTTPException(status_code=404, detail="Activo no encontrado")
 
+    # Número de serie único (permite conservar el mismo valor del activo)
+    if payload.num_serie is not None and payload.num_serie != "":
+        existe = (
+            db.query(ActivoTi)
+            .filter(
+                ActivoTi.num_serie == payload.num_serie,
+                ActivoTi.id_act != id_act,
+            )
+            .first()
+        )
+        if existe:
+            raise HTTPException(
+                status_code=400,
+                detail="Ya existe un activo con ese número de serie",
+            )
+
     # Verifica existencia del modelo (marca/modelo) si fue enviado
     if payload.id_modelo is not None:
-        if db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first() is None:
+        if (
+            db.query(Modelo).filter(Modelo.id_modelo == payload.id_modelo).first()
+            is None
+        ):
             raise HTTPException(status_code=400, detail="Modelo no existe")
 
     # Verifica FKs de subtipo según tipo del activo
     if activo.tipo == "equipo_computo":
         if payload.id_tipoeq is not None:
-            if db.query(TipoEquipo).filter(TipoEquipo.id_tipoeq == payload.id_tipoeq).first() is None:
+            if (
+                db.query(TipoEquipo)
+                .filter(TipoEquipo.id_tipoeq == payload.id_tipoeq)
+                .first()
+                is None
+            ):
                 raise HTTPException(status_code=400, detail="Tipo de equipo no existe")
-        if payload.id_so is not None:
-            if db.query(SistemaOperativo).filter(SistemaOperativo.id_so == payload.id_so).first() is None:
-                raise HTTPException(status_code=400, detail="Sistema operativo no existe")
+        if payload.id_edicion_so is not None:
+            if (
+                db.query(EdicionSO)
+                .filter(EdicionSO.id_edicion_so == payload.id_edicion_so)
+                .first()
+                is None
+            ):
+                raise HTTPException(
+                    status_code=400, detail="Edición de sistema operativo no existe"
+                )
     elif activo.tipo == "periferico":
         if payload.id_tipoper is not None:
-            if db.query(TipoPeriferico).filter(TipoPeriferico.id_tipoper == payload.id_tipoper).first() is None:
-                raise HTTPException(status_code=400, detail="Tipo de periférico no existe")
-    
+            if (
+                db.query(TipoPeriferico)
+                .filter(TipoPeriferico.id_tipoper == payload.id_tipoper)
+                .first()
+                is None
+            ):
+                raise HTTPException(
+                    status_code=400, detail="Tipo de periférico no existe"
+                )
+
     # Convierte el payload a dict excluyendo campos no enviado
     payload_dict = payload.model_dump(exclude_unset=True)
 
@@ -288,26 +493,29 @@ def actualizar(id_act:int, payload: ActivoUpdate, db: Session = Depends(get_db),
             for k, v in split_payload_por_model(payload_dict, modelo_subtipo).items():
                 setattr(sub, k, v)
 
-    nuevo_id_dispo = payload.id_dispo if payload.id_dispo is not None else activo.id_dispo
-    nuevo_id_tipoe = payload.id_tipoe if payload.id_tipoe is not None else activo.id_tipoe
+    nuevo_id_dispo = (
+        payload.id_dispo if payload.id_dispo is not None else activo.id_dispo
+    )
+    nuevo_id_tipoe = (
+        payload.id_tipoe if payload.id_tipoe is not None else activo.id_tipoe
+    )
     validar_dispo_estado(nuevo_id_dispo, nuevo_id_tipoe, db)
 
     commit_or_rollback(db)
     return build_activo_data(activo, db)
 
+
 # Soft delete de activos TI.
 # El registro no se elimina físicamente para mantener trazabilidad.
-@router.delete ("/{id_act}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_act:int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    eli_act= db.query(ActivoTi).filter(ActivoTi.id_act == id_act).first()
+@router.delete("/{id_act}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar(
+    id_act: int, db: Session = Depends(get_db), current_user=Depends(require_editor)
+):
+    eli_act = db.query(ActivoTi).filter(ActivoTi.id_act == id_act).first()
     if eli_act is None:
         raise HTTPException(status_code=404, detail="Activo no encontrado")
 
-    eli_act.disponibilidad=False
+    eli_act.disponibilidad = False
     commit_or_rollback(db)
 
     return None
-
-
-
-
