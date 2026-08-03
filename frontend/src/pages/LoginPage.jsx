@@ -15,7 +15,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const PLEXUS_POINTS = [
     [40, 60], [120, 40], [220, 110], [90, 160], [300, 60], [260, 200],
@@ -100,6 +100,8 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const sessionExpired = searchParams.get("reason") === "expired";
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -185,6 +187,9 @@ export default function LoginPage() {
                     </Box>
 
                     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                        {sessionExpired && !error && (
+                            <Alert severity="info">Tu sesión expiró por inactividad. Vuelve a iniciar sesión.</Alert>
+                        )}
                         <TextField
                             label="Email"
                             type="email"

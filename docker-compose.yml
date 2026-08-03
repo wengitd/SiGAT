@@ -46,6 +46,7 @@ services:
       target: development
       args:
         VITE_API_URL: http://localhost:8000
+        VITE_SESSION_WARNING_MINUTES: 5
     image: sigat-frontend:dev
     container_name: sigat_frontend_dev
     restart: unless-stopped
@@ -56,6 +57,7 @@ services:
       - backend
     environment:
       VITE_API_URL: http://localhost:8000
+      VITE_SESSION_WARNING_MINUTES: 5
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
     volumes:

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isTokenExpired } from "../utils/jwt";
 
 // En desarrollo: http://localhost:8000
 // En produccion (build): /api (Nginx hace proxy al backend)
@@ -23,8 +24,10 @@ axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401 && window.location.pathname !== "/login") {
+            const staleToken = localStorage.getItem("token");
+            const reason = staleToken && isTokenExpired(staleToken) ? "expired" : "invalid";
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            window.location.href = `/login?reason=${reason}`;
         }
         return Promise.reject(error);
     }
