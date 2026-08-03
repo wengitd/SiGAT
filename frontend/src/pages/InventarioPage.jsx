@@ -111,7 +111,7 @@ export default function InventarioPage() {
                             </IconButton>
                         </Tooltip>
 
-                        {isEditor && esComputacional && !params.row.empleado_asignado && (
+                        {isEditor && esComputacional && !params.row.empleado_asignado && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
                             <Tooltip title="Preparar equipo">
                                 <IconButton
                                     size="small"
@@ -123,7 +123,7 @@ export default function InventarioPage() {
                             </Tooltip>
                         )}
 
-                        {isEditor && esComputacional && params.row.empleado_asignado && (
+                        {isEditor && esComputacional && params.row.empleado_asignado && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
                             <Tooltip title="Preparar reasignación">
                                 <IconButton
                                     size="small"

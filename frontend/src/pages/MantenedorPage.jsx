@@ -82,11 +82,26 @@ const GRUPOS = [
                 idField: "id_tipoper",
                 fields: [{ name: "nombre", label: "Nombre", required: true }],
             },
+        ],
+    },
+    {
+        label: "Marcas y Modelos",
+        catalogos: [
             {
                 title: "Marcas",
                 endpoint: "/marcas",
                 idField: "id_marca",
-                fields: [{ name: "nombre", label: "Nombre", required: true }],
+                fields: [
+                    { name: "nombre", label: "Nombre", required: true },
+                    {
+                        name: "tipo_activo", label: "Tipo de activo", required: true,
+                        type: "select",
+                        options: [
+                            { value: "equipo_computo", label: "Computacional" },
+                            { value: "periferico", label: "Periférico" },
+                        ],
+                    },
+                ],
             },
             {
                 title: "Modelos",
