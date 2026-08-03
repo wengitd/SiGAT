@@ -6,24 +6,24 @@ import {
     IconButton, Tooltip, CircularProgress, Alert,
 } from "@mui/material"
 import { DataGrid } from "@mui/x-data-grid"
-import AddIcon    from "@mui/icons-material/Add"
-import EditIcon   from "@mui/icons-material/Edit"
+import AddIcon from "@mui/icons-material/Add"
+import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
 import axiosClient from "../../api/axiosClient"
 import { useAuth } from "../../context/AuthContext"
+import { useDialog } from "../../context/DialogContext"
 
 // ── FAMILIA ──────────────────────────────────────────────────────────────────
 
 function TabFamilias({ isEditor }) {
-    const [rows,     setRows]     = useState([])
-    const [loading,  setLoading]  = useState(false)
-    const [error,    setError]    = useState(null)
-    const [open,     setOpen]     = useState(false)
-    const [editId,   setEditId]   = useState(null)
-    const [nombre,   setNombre]   = useState("")
-    const [saving,   setSaving]   = useState(false)
-    const [deleteId, setDeleteId] = useState(null)
-    const [deleting, setDeleting] = useState(false)
+    const { confirm } = useDialog()
+    const [rows, setRows] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const [open, setOpen] = useState(false)
+    const [editId, setEditId] = useState(null)
+    const [nombre, setNombre] = useState("")
+    const [saving, setSaving] = useState(false)
 
     async function cargar() {
         setLoading(true)
@@ -40,29 +40,39 @@ function TabFamilias({ isEditor }) {
         setSaving(true)
         try {
             if (editId) await axiosClient.put(`/sistemas-operativos/familias/${editId}`, { nombre })
-            else        await axiosClient.post("/sistemas-operativos/familias", { nombre })
+            else await axiosClient.post("/sistemas-operativos/familias", { nombre })
             setOpen(false); cargar()
         } catch (err) { setError(err.response?.data?.detail ?? "Error al guardar") }
         finally { setSaving(false) }
     }
 
-    async function eliminar() {
-        setDeleting(true)
-        try { await axiosClient.delete(`/sistemas-operativos/familias/${deleteId}`); setDeleteId(null); cargar() }
-        catch (err) { setError(err.response?.data?.detail ?? "Error al eliminar"); setDeleteId(null) }
-        finally { setDeleting(false) }
+    async function promptDelete(row) {
+        const ok = await confirm({
+            title: "Confirmar eliminación",
+            message: `¿Seguro que deseas eliminar la familia "${row.nombre}"?`,
+            severity: "error",
+            confirmText: "Eliminar",
+        })
+        if (!ok) return
+        try {
+            await axiosClient.delete(`/sistemas-operativos/familias/${row.id_fam_so}`)
+            cargar()
+        } catch (err) {
+            setError(err.response?.data?.detail ?? "Error al eliminar")
+        }
     }
 
     const columns = [
-        { field: "id_fam_so", headerName: "ID",     width: 70 },
-        { field: "nombre",    headerName: "Familia", flex: 1  },
-        { field: "__acc", headerName: "", width: 90, sortable: false,
-          renderCell: (p) => isEditor ? (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-                <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => setDeleteId(p.row.id_fam_so)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
-            </Box>
-          ) : null
+        { field: "id_fam_so", headerName: "ID", width: 70 },
+        { field: "nombre", headerName: "Familia", flex: 1 },
+        {
+            field: "__acc", headerName: "", width: 90, sortable: false,
+            renderCell: (p) => isEditor ? (
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => promptDelete(p.row)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                </Box>
+            ) : null
         },
     ]
 
@@ -82,15 +92,6 @@ function TabFamilias({ isEditor }) {
                     <Button onClick={guardar} variant="contained" disabled={saving}>{saving ? <CircularProgress size={18} /> : "Guardar"}</Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} maxWidth="xs">
-                <DialogTitle>Confirmar eliminación</DialogTitle>
-                <DialogContent><Typography>¿Seguro que deseas eliminar esta familia?</Typography></DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteId(null)} disabled={deleting}>Cancelar</Button>
-                    <Button onClick={eliminar} color="error" variant="contained" disabled={deleting}>{deleting ? <CircularProgress size={18} /> : "Eliminar"}</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     )
 }
@@ -98,16 +99,15 @@ function TabFamilias({ isEditor }) {
 // ── VERSIONES ─────────────────────────────────────────────────────────────────
 
 function TabVersiones({ isEditor }) {
-    const [rows,      setRows]      = useState([])
-    const [familias,  setFamilias]  = useState([])
-    const [loading,   setLoading]   = useState(false)
-    const [error,     setError]     = useState(null)
-    const [open,      setOpen]      = useState(false)
-    const [editId,    setEditId]    = useState(null)
-    const [form,      setForm]      = useState({ nombre: "", id_fam_so: "" })
-    const [saving,    setSaving]    = useState(false)
-    const [deleteId,  setDeleteId]  = useState(null)
-    const [deleting,  setDeleting]  = useState(false)
+    const { confirm } = useDialog()
+    const [rows, setRows] = useState([])
+    const [familias, setFamilias] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const [open, setOpen] = useState(false)
+    const [editId, setEditId] = useState(null)
+    const [form, setForm] = useState({ nombre: "", id_fam_so: "" })
+    const [saving, setSaving] = useState(false)
 
     async function cargar() {
         setLoading(true)
@@ -130,31 +130,43 @@ function TabVersiones({ isEditor }) {
         try {
             const payload = { nombre: form.nombre, id_fam_so: Number(form.id_fam_so) }
             if (editId) await axiosClient.put(`/sistemas-operativos/versiones/${editId}`, payload)
-            else        await axiosClient.post("/sistemas-operativos/versiones", payload)
+            else await axiosClient.post("/sistemas-operativos/versiones", payload)
             setOpen(false); cargar()
         } catch (err) { setError(err.response?.data?.detail ?? "Error al guardar") }
         finally { setSaving(false) }
     }
 
-    async function eliminar() {
-        setDeleting(true)
-        try { await axiosClient.delete(`/sistemas-operativos/versiones/${deleteId}`); setDeleteId(null); cargar() }
-        catch (err) { setError(err.response?.data?.detail ?? "Error al eliminar"); setDeleteId(null) }
-        finally { setDeleting(false) }
+    async function promptDelete(row) {
+        const ok = await confirm({
+            title: "Confirmar eliminación",
+            message: `¿Seguro que deseas eliminar la versión "${row.nombre}"?`,
+            severity: "error",
+            confirmText: "Eliminar",
+        })
+        if (!ok) return
+        try {
+            await axiosClient.delete(`/sistemas-operativos/versiones/${row.id_ver_so}`)
+            cargar()
+        } catch (err) {
+            setError(err.response?.data?.detail ?? "Error al eliminar")
+        }
     }
 
     const columns = [
-        { field: "id_ver_so",  headerName: "ID",      width: 70 },
-        { field: "nombre",     headerName: "Versión",  flex: 1  },
-        { field: "id_fam_so",  headerName: "Familia",  flex: 1,
-          valueGetter: (value) => familias.find(f => f.id_fam_so === value)?.nombre ?? value },
-        { field: "__acc", headerName: "", width: 90, sortable: false,
-          renderCell: (p) => isEditor ? (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-                <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => setDeleteId(p.row.id_ver_so)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
-            </Box>
-          ) : null
+        { field: "id_ver_so", headerName: "ID", width: 70 },
+        { field: "nombre", headerName: "Versión", flex: 1 },
+        {
+            field: "id_fam_so", headerName: "Familia", flex: 1,
+            valueGetter: (value) => familias.find(f => f.id_fam_so === value)?.nombre ?? value
+        },
+        {
+            field: "__acc", headerName: "", width: 90, sortable: false,
+            renderCell: (p) => isEditor ? (
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => promptDelete(p.row)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                </Box>
+            ) : null
         },
     ]
 
@@ -180,15 +192,6 @@ function TabVersiones({ isEditor }) {
                     <Button onClick={guardar} variant="contained" disabled={saving}>{saving ? <CircularProgress size={18} /> : "Guardar"}</Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} maxWidth="xs">
-                <DialogTitle>Confirmar eliminación</DialogTitle>
-                <DialogContent><Typography>¿Seguro que deseas eliminar esta versión?</Typography></DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteId(null)} disabled={deleting}>Cancelar</Button>
-                    <Button onClick={eliminar} color="error" variant="contained" disabled={deleting}>{deleting ? <CircularProgress size={18} /> : "Eliminar"}</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     )
 }
@@ -196,18 +199,17 @@ function TabVersiones({ isEditor }) {
 // ── EDICIONES ─────────────────────────────────────────────────────────────────
 
 function TabEdiciones({ isEditor }) {
-    const [rows,      setRows]      = useState([])
-    const [familias,  setFamilias]  = useState([])
+    const { confirm } = useDialog()
+    const [rows, setRows] = useState([])
+    const [familias, setFamilias] = useState([])
     const [versiones, setVersiones] = useState([])
-    const [versFilt,  setVersFilt]  = useState([])   // versiones filtradas por familia
-    const [loading,   setLoading]   = useState(false)
-    const [error,     setError]     = useState(null)
-    const [open,      setOpen]      = useState(false)
-    const [editId,    setEditId]    = useState(null)
-    const [form,      setForm]      = useState({ nombre: "", id_fam_so: "", id_ver_so: "" })
-    const [saving,    setSaving]    = useState(false)
-    const [deleteId,  setDeleteId]  = useState(null)
-    const [deleting,  setDeleting]  = useState(false)
+    const [versFilt, setVersFilt] = useState([])   // versiones filtradas por familia
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const [open, setOpen] = useState(false)
+    const [editId, setEditId] = useState(null)
+    const [form, setForm] = useState({ nombre: "", id_fam_so: "", id_ver_so: "" })
+    const [saving, setSaving] = useState(false)
 
     async function cargar() {
         setLoading(true)
@@ -243,37 +245,50 @@ function TabEdiciones({ isEditor }) {
         try {
             const payload = { nombre: form.nombre, id_ver_so: Number(form.id_ver_so) }
             if (editId) await axiosClient.put(`/sistemas-operativos/ediciones/${editId}`, payload)
-            else        await axiosClient.post("/sistemas-operativos/ediciones", payload)
+            else await axiosClient.post("/sistemas-operativos/ediciones", payload)
             setOpen(false); cargar()
         } catch (err) { setError(err.response?.data?.detail ?? "Error al guardar") }
         finally { setSaving(false) }
     }
 
-    async function eliminar() {
-        setDeleting(true)
-        try { await axiosClient.delete(`/sistemas-operativos/ediciones/${deleteId}`); setDeleteId(null); cargar() }
-        catch (err) { setError(err.response?.data?.detail ?? "Error al eliminar"); setDeleteId(null) }
-        finally { setDeleting(false) }
+    async function promptDelete(row) {
+        const ok = await confirm({
+            title: "Confirmar eliminación",
+            message: `¿Seguro que deseas eliminar la edición "${row.nombre}"?`,
+            severity: "error",
+            confirmText: "Eliminar",
+        })
+        if (!ok) return
+        try {
+            await axiosClient.delete(`/sistemas-operativos/ediciones/${row.id_edicion_so}`)
+            cargar()
+        } catch (err) {
+            setError(err.response?.data?.detail ?? "Error al eliminar")
+        }
     }
 
     const columns = [
-        { field: "id_edicion_so", headerName: "ID",      width: 70 },
-        { field: "nombre",        headerName: "Edición",  flex: 1  },
-        { field: "id_ver_so",     headerName: "Versión",  flex: 1,
-          valueGetter: (value) => versiones.find(v => v.id_ver_so === value)?.nombre ?? value },
-        { field: "familia",       headerName: "Familia",  flex: 1,
-          valueGetter: (_, row) => {
-            const ver = versiones.find(v => v.id_ver_so === row.id_ver_so)
-            return familias.find(f => f.id_fam_so === ver?.id_fam_so)?.nombre ?? "—"
-          }
+        { field: "id_edicion_so", headerName: "ID", width: 70 },
+        { field: "nombre", headerName: "Edición", flex: 1 },
+        {
+            field: "id_ver_so", headerName: "Versión", flex: 1,
+            valueGetter: (value) => versiones.find(v => v.id_ver_so === value)?.nombre ?? value
         },
-        { field: "__acc", headerName: "", width: 90, sortable: false,
-          renderCell: (p) => isEditor ? (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-                <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => setDeleteId(p.row.id_edicion_so)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
-            </Box>
-          ) : null
+        {
+            field: "familia", headerName: "Familia", flex: 1,
+            valueGetter: (_, row) => {
+                const ver = versiones.find(v => v.id_ver_so === row.id_ver_so)
+                return familias.find(f => f.id_fam_so === ver?.id_fam_so)?.nombre ?? "—"
+            }
+        },
+        {
+            field: "__acc", headerName: "", width: 90, sortable: false,
+            renderCell: (p) => isEditor ? (
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Tooltip title="Editar"><IconButton size="small" onClick={() => openEdit(p.row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => promptDelete(p.row)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                </Box>
+            ) : null
         },
     ]
 
@@ -305,15 +320,6 @@ function TabEdiciones({ isEditor }) {
                     <Button onClick={guardar} variant="contained" disabled={saving}>{saving ? <CircularProgress size={18} /> : "Guardar"}</Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} maxWidth="xs">
-                <DialogTitle>Confirmar eliminación</DialogTitle>
-                <DialogContent><Typography>¿Seguro que deseas eliminar esta edición?</Typography></DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteId(null)} disabled={deleting}>Cancelar</Button>
-                    <Button onClick={eliminar} color="error" variant="contained" disabled={deleting}>{deleting ? <CircularProgress size={18} /> : "Eliminar"}</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     )
 }
@@ -332,13 +338,13 @@ export default function MantenedorSistemaOperativo() {
 
             <Paper variant="outlined" sx={{ mb: 3 }}>
                 <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-                    <Tab label="Familias"  />
+                    <Tab label="Familias" />
                     <Tab label="Versiones" />
                     <Tab label="Ediciones" />
                 </Tabs>
             </Paper>
 
-            {tab === 0 && <TabFamilias  isEditor={isEditor} />}
+            {tab === 0 && <TabFamilias isEditor={isEditor} />}
             {tab === 1 && <TabVersiones isEditor={isEditor} />}
             {tab === 2 && <TabEdiciones isEditor={isEditor} />}
         </Box>

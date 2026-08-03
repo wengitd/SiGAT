@@ -1,22 +1,28 @@
 import { Navigate } from "react-router-dom";
-import { useAuth }   from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 /*
-  ProtectedRoute — protege rutas por autenticación y opcionalmente por rol.
+  ProtectedRoute — protege rutas por autenticación y por roles permitidos.
 
   Props:
-    requiredRole?: "editor" | "auditor" | "admin"
-      Si se indica, solo ese rol (o "admin") puede acceder.
-      Sin prop, cualquier usuario autenticado puede entrar.
+    allowedRoles?: Array<"admin" | "editor" | "auditor"> | string
 */
-export default function ProtectedRoute({ children, requiredRole }) {
-  const { token, rol } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles, requiredRole }) {
+    const { token, rol } = useAuth();
 
-  if (!token) return <Navigate to="/login" replace />;
+    if (!token) return <Navigate to="/login" replace />;
 
-  if (requiredRole && rol !== requiredRole && rol !== "admin")
-    return <Navigate to="/dashboard" replace />;
+    const rolesList = allowedRoles
+        ? Array.isArray(allowedRoles)
+            ? allowedRoles
+            : [allowedRoles]
+        : requiredRole
+            ? [requiredRole, "admin"]
+            : null;
 
-  return children;
+    if (rolesList && !rolesList.includes(rol)) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
 }
-

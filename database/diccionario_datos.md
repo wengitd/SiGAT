@@ -362,65 +362,86 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 ---
 
-### 4.20 `checklist`
+### 4.20 `plantilla`
 
-**Descripción**: representa una ejecución concreta de una checklist de preparación técnica de un activo, realizada por un usuario del sistema. Cada checklist se compone de varios ítems mediante la tabla `check_plantilla`.
+**Descripción**: cabecera de plantilla tipada para preparación o reasignación de equipos de cómputo. Solo puede haber una plantilla `vigente = TRUE` por `proposito`.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
-| `id_check` | SERIAL | PK | auto | Identificador único de la ejecución |
-| `nombre` | VARCHAR(50) | NOT NULL | — | Nombre descriptivo de la ejecución |
-| `fecha_ini` | DATE | — | — | Fecha de inicio del checklist |
-| `fecha_ter` | DATE | — | — | Fecha de finalización del checklist |
-| `id_emp` | INT | FK | — | Usuario del sistema que ejecuta el checklist |
-
-**Claves foráneas**:
-- `checklist.id_emp → usuario_sistema.id_emp`
+| `id_plantilla` | SERIAL | PK | auto | Identificador de la plantilla |
+| `nombre` | VARCHAR(100) | NOT NULL | — | Nombre descriptivo |
+| `proposito` | VARCHAR(50) | NOT NULL, CHECK | — | `'preparacion'` o `'reasignacion'` |
+| `vigente` | BOOLEAN | NOT NULL | TRUE | Si es la plantilla activa para su propósito |
 
 ---
 
-### 4.21 `plantilla`
+### 4.21 `plantilla_paso`
 
-**Descripción**: catálogo de ítems reutilizables que pueden formar parte de un checklist de preparación. Por ejemplo: "Instalar sistema operativo", "Configurar red corporativa", "Instalar antivirus".
+**Descripción**: pasos reutilizables de una plantilla (p. ej. formateo, antivirus, licencias).
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
-| `id_ip` | SERIAL | PK | auto | Identificador único del ítem de plantilla |
-| `descr` | TEXT | — | — | Descripción del ítem |
-| `orden` | INT | NOT NULL | — | Orden de ejecución sugerido |
+| `id_paso` | SERIAL | PK | auto | Identificador del paso |
+| `id_plantilla` | INT | FK, NOT NULL | — | Plantilla dueña |
+| `descr` | TEXT | NOT NULL | — | Descripción del paso |
+| `orden` | INT | NOT NULL | — | Orden sugerido |
+| `activo` | BOOLEAN | NOT NULL | TRUE | Si se copia al instanciar un checklist |
 
-**Claves foráneas**: ninguna.
+**Claves foráneas**:
+- `plantilla_paso.id_plantilla → plantilla.id_plantilla`
 
 ---
 
-### 4.22 `check_plantilla`
+### 4.22 `checklist`
 
-**Descripción**: tabla asociativa que materializa la relación N:N entre `checklist` y `plantilla`. Para cada ítem incluido en un checklist, registra el estado de cumplimiento y observaciones específicas de esa ejecución.
+**Descripción**: ejecución concreta de un checklist de preparación o reasignación ligada a un `activo_ti` (solo `equipo_computo`). Los pasos se materializan en `checklist_paso` con snapshot de la descripción.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
-| `id_check` | INT | PK compuesta, FK, NOT NULL | — | Checklist del que forma parte |
-| `id_ip` | INT | PK compuesta, FK, NOT NULL | — | Ítem de plantilla incluido |
-| `estado` | VARCHAR(50) | NOT NULL, CHECK | — | Estado del ítem en esta ejecución. Valores: `'pendiente'`, `'completado'`, `'no_aplica'`, `'en_proceso'` |
-| `observacion` | VARCHAR(255) | — | — | Observación del técnico sobre este ítem |
+| `id_check` | SERIAL | PK | auto | Identificador de la ejecución |
+| `nombre` | VARCHAR(100) | NOT NULL | — | Nombre descriptivo |
+| `fecha_ini` | DATE | — | — | Fecha de inicio |
+| `fecha_ter` | DATE | — | — | Fecha de cierre/cancelación |
+| `proposito` | VARCHAR(50) | NOT NULL, CHECK | — | `'preparacion'` o `'reasignacion'` |
+| `estado` | VARCHAR(50) | NOT NULL, CHECK | — | `'abierto'`, `'cerrado'` o `'cancelado'` |
+| `id_usuario` | INT | FK | — | Técnico que inicia el checklist |
+| `id_act` | INT | FK, NOT NULL | — | Activo computacional |
+| `id_asig` | INT | FK | — | Asignación vigente al iniciar (reasignación) |
 
 **Claves foráneas**:
-- `check_plantilla.id_check → checklist.id_check`
-- `check_plantilla.id_ip → plantilla.id_ip`
+- `checklist.id_usuario → usuario_sistema.id_usuario`
+- `checklist.id_act → activo_ti.id_act`
+- `checklist.id_asig → asignacion.id_asig`
 
-**Clave primaria compuesta**: `(id_check, id_ip)` — un mismo ítem no puede estar dos veces en el mismo checklist.
+---
+
+### 4.22b `checklist_paso`
+
+**Descripción**: paso de una ejecución con snapshot de texto (no depende de ediciones posteriores a la plantilla).
+
+| Atributo | Tipo | Restricciones | Default | Descripción |
+| --- | --- | --- | --- | --- |
+| `id_cpaso` | SERIAL | PK | auto | Identificador del paso de ejecución |
+| `id_check` | INT | FK, NOT NULL | — | Checklist dueño |
+| `id_paso` | INT | FK | — | Paso de plantilla de origen (trazabilidad) |
+| `orden` | INT | NOT NULL | — | Orden en la ejecución |
+| `descr` | TEXT | NOT NULL | — | Descripción copiada al iniciar |
+| `estado` | VARCHAR(50) | NOT NULL, CHECK | — | `'pendiente'`, `'completado'`, `'no_aplica'`, `'en_proceso'` |
+| `observacion` | VARCHAR(255) | — | — | Nota del técnico |
+
+**Claves foráneas**:
+- `checklist_paso.id_check → checklist.id_check`
+- `checklist_paso.id_paso → plantilla_paso.id_paso`
 
 ---
 
 ### 4.23 `licencia`
 
-**Descripción**: licencias de software adquiridas por la organización (sistema operativo, ofimática, antivirus, herramientas de productividad). El proveedor y la versión se referencian mediante FK a los catálogos `proveedor_licencia` y `version_licencia` en lugar de texto libre. Las licencias se asignan a empleados a través de la tabla intermedia `emp_lic`.
+**Descripción**: representa un producto de software licenciado por la organización (sistema operativo, ofimática, antivirus, etc.), identificado únicamente por su proveedor y versión. No almacena fechas de vigencia del contrato: la temporalidad pertenece a la asignación al empleado (`emp_lic.fecha_asignacion`). Las filas de esta tabla se vinculan a empleados mediante la tabla asociativa `emp_lic`.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_lic` | SERIAL | PK | auto | Identificador único de la licencia |
-| `fecha_ini` | DATE | — | — | Fecha de inicio de validez del contrato de licencia |
-| `fecha_exp` | DATE | — | — | Fecha de expiración de la licencia |
 | `id_prov` | INT | FK, NOT NULL | — | Proveedor del software licenciado |
 | `id_ver` | INT | FK, NOT NULL | — | Versión del producto licenciado |
 
@@ -428,16 +449,19 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 - `licencia.id_prov → proveedor_licencia.id_prov`
 - `licencia.id_ver → version_licencia.id_ver`
 
+**Notas**: las columnas `fecha_ini` y `fecha_exp` que existían en versiones anteriores del esquema fueron eliminadas; la fecha relevante para el negocio es `emp_lic.fecha_asignacion`.
+
 ---
 
 ### 4.24 `emp_lic`
 
-**Descripción**: tabla asociativa que materializa la relación N:N entre `empleado` y `licencia`. Permite registrar qué licencias se han asignado a cada empleado.
+**Descripción**: tabla asociativa que materializa la relación N:N entre `empleado` y `licencia`. Registra qué licencias tiene cada empleado y la fecha en que se le asignaron. Una vez asignada, la licencia se considera permanente para ese empleado hasta que se elimine el vínculo (hard delete).
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_emp` | INT | PK compuesta, FK, NOT NULL | — | Empleado al que se asigna la licencia |
 | `id_lic` | INT | PK compuesta, FK, NOT NULL | — | Licencia asignada |
+| `fecha_asignacion` | DATE | NOT NULL | — | Fecha en que se asignó la licencia al empleado (la fija el backend al crear el vínculo, típicamente la fecha del día) |
 
 **Claves foráneas**:
 - `emp_lic.id_emp → empleado.id_emp`
@@ -634,9 +658,12 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | empleado → departamento | N:1 | empleado.id_dpto |
 | empleado → sub_area | N:1 | empleado.id_sub |
 | usuario_sistema → empleado | 1:1 | usuario_sistema.id_emp |
-| checklist → usuario_sistema | N:1 | checklist.id_emp |
-| check_plantilla → checklist | N:1 | check_plantilla.id_check |
-| check_plantilla → plantilla | N:1 | check_plantilla.id_ip |
+| plantilla_paso → plantilla | N:1 | plantilla_paso.id_plantilla |
+| checklist → usuario_sistema | N:1 | checklist.id_usuario |
+| checklist → activo_ti | N:1 | checklist.id_act |
+| checklist → asignacion | N:1 | checklist.id_asig |
+| checklist_paso → checklist | N:1 | checklist_paso.id_check |
+| checklist_paso → plantilla_paso | N:1 | checklist_paso.id_paso |
 | licencia → proveedor_licencia | N:1 | licencia.id_prov |
 | licencia → version_licencia | N:1 | licencia.id_ver |
 | emp_lic → empleado | N:1 | emp_lic.id_emp |
@@ -679,7 +706,9 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 **Soft-delete.** Las entidades sensibles a desactivación (`empleado.operatividad`, `tipo_estado.operatividad`, `usuario_sistema.vigente`) implementan borrado lógico para preservar la integridad referencial y la auditabilidad histórica, en lugar de borrado físico. La vigencia de una `asignacion` ya no depende de un flag booleano, sino de si `fecha_dev` es NULL.
 
-**Restricciones CHECK para enumeraciones.** Los campos discriminadores y de rol con un conjunto cerrado y estable de valores (`activo_ti.tipo`, `activo_ti.origen`, `usuario_sistema.rol`, `departamento.zona`, `check_plantilla.estado`, `equipo_computo.disco_tipo`, `equipo_computo.disco_unidad`, `tipo_estado.nombre`, `disponibilidad.nombre`, `solicitud_baja.estado_sol`) utilizan restricciones CHECK con listas de valores permitidos, en lugar de tipos ENUM nativos de PostgreSQL. Esto facilita la portabilidad del esquema y la modificación de los valores admitidos mediante migraciones. A diferencia de los demás catálogos del sistema, `tipo_estado` y `disponibilidad` no siguen el patrón "Creatable Select": representan un vocabulario de negocio cerrado y no se espera que crezca desde el frontend.
+**Fecha de licencia en la asignación, no en el contrato.** La tabla `licencia` identifica solo el producto (proveedor + versión). La fecha que interesa operativamente es `emp_lic.fecha_asignacion`: cuándo se vinculó esa licencia a un empleado concreto. Un mismo `id_lic` puede asignarse a varios empleados, cada uno con su propia `fecha_asignacion`. Por ello se eliminaron `fecha_ini` y `fecha_exp` de `licencia`.
+
+**Restricciones CHECK para enumeraciones.** Los campos discriminadores y de rol con un conjunto cerrado y estable de valores (`activo_ti.tipo`, `activo_ti.origen`, `usuario_sistema.rol`, `departamento.zona`, `checklist_paso.estado`, `equipo_computo.disco_tipo`, `equipo_computo.disco_unidad`, `tipo_estado.nombre`, `disponibilidad.nombre`, `solicitud_baja.estado_sol`) utilizan restricciones CHECK con listas de valores permitidos, en lugar de tipos ENUM nativos de PostgreSQL. Esto facilita la portabilidad del esquema y la modificación de los valores admitidos mediante migraciones. A diferencia de los demás catálogos del sistema, `tipo_estado` y `disponibilidad` no siguen el patrón "Creatable Select": representan un vocabulario de negocio cerrado y no se espera que crezca desde el frontend.
 
 ---
 

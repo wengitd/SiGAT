@@ -1,0 +1,2977 @@
+% ============================================================
+% Documentación de Endpoints API - Backend FastAPI
+% Generado a partir del código fuente en /backend/routes, /backend/schemas y /backend/models
+% ============================================================
+
+\subsection{Autenticación}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/auth/login
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. username (body, x-www-form-urlencoded)
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Corresponde al email del empleado
+                    \end{enumerate}
+                \item ii. password
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Se verifica con hash Argon2
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Respuesta: 200 \{access\_token, token\_type: "bearer"\}; 401 contraseña incorrecta; 403 usuario desactivado; 404 email no encontrado.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Tipos de Estado (/tipos-estado)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/tipos-estado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada (requiere token de autenticación)
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/tipos-estado/\{id\_tipoe\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/tipos-estado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. operatividad
+                    \begin{enumerate}
+                        \item 1. Boolean
+                        \item 2. No requerido - Default true
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/tipos-estado/\{id\_tipoe\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iv. operatividad
+                    \begin{enumerate}
+                        \item 1. Boolean
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/tipos-estado/\{id\_tipoe\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado lógico (operatividad = false)
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Departamentos (/departamento)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/departamento/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/departamento/\{id\_dpto\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_dpto (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/departamento/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_org
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en la tabla Empresa
+                    \end{enumerate}
+                \item ii. zona
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. Requerido
+                        \item 3. Valores permitidos: "Administracion", "Operaciones", "Produccion"
+                    \end{enumerate}
+                \item iii. nom\_dpto
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                        \item 4. No puede repetirse (case-insensitive) dentro de la misma empresa
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: este endpoint no exige autenticación (posible pendiente de seguridad)
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/departamento/\{id\_dpto\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_dpto (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_org
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. zona
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "Administracion", "Operaciones", "Produccion"
+                    \end{enumerate}
+                \item iv. nom\_dpto
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Empleados (/empleado)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/empleado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/empleado/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/empleado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. rut
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Único en el sistema
+                        \item 4. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iii. email
+                    \begin{enumerate}
+                        \item 1. String (formato email)
+                        \item 2. Requerido
+                        \item 3. Único en el sistema
+                        \item 4. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iv. cargo
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                        \item 4. Si no existe en el catálogo Cargo se crea automáticamente
+                    \end{enumerate}
+                \item v. planta
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                        \item 4. Si no existe en el catálogo Planta se crea automáticamente
+                    \end{enumerate}
+                \item vi. nom\_dpto
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                        \item 4. Debe existir previamente en Departamento
+                    \end{enumerate}
+                \item vii. operatividad
+                    \begin{enumerate}
+                        \item 1. Boolean
+                        \item 2. No requerido - Default true
+                    \end{enumerate}
+                \item viii. id\_sub
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Sub-área
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: este endpoint no exige autenticación (posible pendiente de seguridad)
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/empleado/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. rut, nombre, email, cargo, planta, nom\_dpto, operatividad, id\_sub
+                    \begin{enumerate}
+                        \item 1. Mismos tipos y restricciones que en la creación
+                        \item 2. No requeridos - Default null (actualización parcial)
+                    \end{enumerate}
+                \item iii. id\_dpto
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Si se envía junto con id\_sub, la subárea debe pertenecer a ese departamento
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/empleado/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado lógico (operatividad = false)
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Usuarios del Sistema (/usuario\_sistema)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/usuario\_sistema/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/usuario\_sistema/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/usuario\_sistema/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir como Empleado y no tener ya un usuario asociado
+                    \end{enumerate}
+                \item ii. password
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño mínimo de 8 caracteres
+                        \item 4. Tamaño máximo de 128 caracteres
+                    \end{enumerate}
+                \item iii. rol
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. Requerido
+                        \item 3. Valores permitidos: "editor", "auditor", "admin"
+                    \end{enumerate}
+                \item iv. vigente
+                    \begin{enumerate}
+                        \item 1. Boolean
+                        \item 2. No requerido - Default true
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/usuario\_sistema/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. password
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño mínimo de 8 caracteres
+                        \item 4. Tamaño máximo de 128 caracteres
+                    \end{enumerate}
+                \item iii. rol
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "editor", "auditor", "admin"
+                    \end{enumerate}
+                \item iv. vigente
+                    \begin{enumerate}
+                        \item 1. Boolean
+                        \item 2. No requerido - Default null
+                        \item 3. No puede establecerse en false sobre el propio usuario autenticado
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/usuario\_sistema/\{id\_emp\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. No puede ser el propio usuario autenticado
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado lógico (vigente = false)
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Licencias (/licencia)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/licencia/\{id\_lic\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_lic (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. fecha\_ini
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ii. fecha\_exp
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. id\_prov
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Proveedor de Licencia
+                    \end{enumerate}
+                \item iv. id\_ver
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Versión de Licencia y corresponder al id\_prov indicado
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/licencia/\{id\_lic\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_lic (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. fecha\_ini, fecha\_exp, id\_prov, id\_ver
+                    \begin{enumerate}
+                        \item 1. Mismos tipos y restricciones que en la creación
+                        \item 2. No requeridos - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Empleado - Licencia (/emp\_licencias)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/emp\_licencias/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Empleado
+                    \end{enumerate}
+                \item ii. id\_lic
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Licencia
+                        \item 4. La combinación id\_emp + id\_lic no puede estar duplicada
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/emp\_licencias/\{id\_emp\}/\{id\_lic\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_emp (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_lic (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Facturas (/factura)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/factura/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/factura/\{id\_fact\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_fact (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/factura/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov\_fact
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Proveedor de Factura
+                    \end{enumerate}
+                \item ii. fecha\_em
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. num\_folio
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item iv. ruta\_pdf\_fact
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 200 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/factura/\{id\_fact\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_fact (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_prov\_fact, fecha\_em, num\_folio, ruta\_pdf\_fact
+                    \begin{enumerate}
+                        \item 1. Mismos tipos y restricciones que en la creación
+                        \item 2. No requeridos - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Activos TI (/ActivoTi)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/ActivoTi/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/ActivoTi/\{id\_act\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_act (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/ActivoTi/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones (campos comunes)
+            \begin{enumerate}
+                \item i. tipo
+                    \begin{enumerate}
+                        \item 1. String (enum discriminador)
+                        \item 2. Requerido
+                        \item 3. Valores permitidos: "equipo\_computo", "periferico"
+                    \end{enumerate}
+                \item ii. id\_modelo
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Modelo
+                    \end{enumerate}
+                \item iii. num\_serie
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Único en el sistema
+                        \item 4. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iv. origen
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. Requerido
+                        \item 3. Valores permitidos: "empresa", "personal"
+                    \end{enumerate}
+                \item v. fecha\_recep
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                        \item 3. No puede ser una fecha futura
+                    \end{enumerate}
+                \item vi. id\_fact
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Factura
+                    \end{enumerate}
+                \item vii. id\_tipoe
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Tipo de Estado
+                    \end{enumerate}
+                \item viii. id\_dispo
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Disponibilidad
+                        \item 4. Debe ser compatible con id\_tipoe (ej. un activo "bueno" no puede tener disponibilidad "de\_baja" o "en\_mantencion")
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Parámetros adicionales si tipo = "equipo\_computo"
+            \begin{enumerate}
+                \item i. ram\_capac
+                    \begin{enumerate}
+                        \item 1. Number (entero, enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: 2, 4, 6, 8, 10, 12, 16, 20
+                    \end{enumerate}
+                \item ii. ram\_tipo
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "DDR3", "DDR4", "DDR5"
+                    \end{enumerate}
+                \item iii. cpu
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iv. mac\_ethernet
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Debe cumplir formato de dirección MAC (ej. AA:BB:CC:DD:EE:FF)
+                    \end{enumerate}
+                \item v. mac\_wifi
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Debe cumplir formato de dirección MAC
+                    \end{enumerate}
+                \item vi. disco\_tipo
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "HDD", "SSD", "NVMe", "eMMC"
+                    \end{enumerate}
+                \item vii. disco\_unidad
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "MB", "GB", "TB"
+                    \end{enumerate}
+                \item viii. disco\_capac
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ix. host\_name
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item x. id\_tipoeq
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Tipo de Equipo
+                    \end{enumerate}
+                \item xi. id\_so
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Edición de Sistema Operativo
+                    \end{enumerate}
+            \end{enumerate}
+        \item d. Parámetros adicionales si tipo = "periferico"
+            \begin{enumerate}
+                \item i. valor\_tec
+                    \begin{enumerate}
+                        \item 1. Number (decimal, 10 dígitos, 2 decimales)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ii. u\_medida
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. obs\_perif
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iv. id\_tipoper
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Tipo de Periférico
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/ActivoTi/\{id\_act\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_act (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. Todos los campos del punto anterior (excepto "tipo", que no puede modificarse)
+                    \begin{enumerate}
+                        \item 1. Mismos tipos y restricciones que en la creación
+                        \item 2. No requeridos - Default null (actualización parcial)
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/ActivoTi/\{id\_act\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_act (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: implementado como borrado lógico, aunque el campo referenciado en el código no corresponde a una columna real del modelo (hallazgo técnico a revisar)
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Historial de Estados (/historial\_estado)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/historial\_estado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_act (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ii. id\_tipoe (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/historial\_estado/\{id\_hes\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_hes (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/historial\_estado/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ii. causa
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iii. id\_tipoe
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Tipo de Estado
+                    \end{enumerate}
+                \item iv. id\_act
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Activo TI
+                    \end{enumerate}
+                \item v. id\_emp\_reg
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Usuario del Sistema
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: al registrar, actualiza automáticamente ActivoTi.id\_tipoe con el nuevo estado
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Asignaciones (/asignaciones)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/asignaciones/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/asignaciones/\{id\_asig\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_asig (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/asignaciones/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. fecha\_entr
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. Requerido
+                        \item 3. No puede ser una fecha futura
+                    \end{enumerate}
+                \item ii. fecha\_dev
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                        \item 3. No puede ser una fecha futura
+                    \end{enumerate}
+                \item iii. ruta\_acta\_entr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 255 caracteres
+                    \end{enumerate}
+                \item iv. id\_act
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Activo TI y no tener una asignación vigente sin devolución
+                    \end{enumerate}
+                \item v. id\_emp
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Empleado y estar operativo
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: id\_emp\_reg se asigna automáticamente en el servidor con el usuario autenticado (no se recibe del cliente)
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/asignaciones/\{id\_asig\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_asig (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. fecha\_dev
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. Requerido
+                        \item 3. No puede ser una fecha futura
+                    \end{enumerate}
+                \item iii. ruta\_acta\_entr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 255 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: solo se puede actualizar si la asignación aún no tiene fecha\_dev registrada
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Checklist (/Checklist)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/Checklist/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/Checklist/\{id\_check\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_check (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/Checklist/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item ii. fecha\_ini
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. fecha\_ter
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iv. id\_emp
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Usuario del Sistema
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/Checklist/\{id\_check\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_check (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 50 caracteres
+                    \end{enumerate}
+                \item iii. fecha\_ter
+                    \begin{enumerate}
+                        \item 1. Date
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: no permite modificar fecha\_ini ni id\_emp
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Plantilla de Checklist (/Plantilla)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/Plantilla/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/Plantilla/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item ii. orden
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe ser único
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/Plantilla/\{id\_ip\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ip (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+                \item iii. orden
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: hallazgo técnico — el código referencia una variable antes de definirla, provoca error en tiempo de ejecución al invocarse
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Checklist - Plantilla (/check-plantillas)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/check-plantillas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/check-plantillas/\{id\_check\}/\{id\_ip\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_check (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_ip (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/check-plantillas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. estado
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. Requerido
+                        \item 3. Valores permitidos: "pendiente", "completado", "no\_aplica", "en\_proceso"
+                    \end{enumerate}
+                \item ii. observacion
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 255 caracteres
+                    \end{enumerate}
+                \item iii. id\_check
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Checklist
+                    \end{enumerate}
+                \item iv. id\_ip
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Plantilla
+                        \item 4. La combinación id\_check + id\_ip no puede estar duplicada
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/check-plantillas/\{id\_check\}/\{id\_ip\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_check (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_ip (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item iii. estado
+                    \begin{enumerate}
+                        \item 1. String (enum)
+                        \item 2. No requerido - Default null
+                        \item 3. Valores permitidos: "pendiente", "completado", "no\_aplica", "en\_proceso"
+                    \end{enumerate}
+                \item iv. observacion
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 255 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Empresas (/empresas)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/empresas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/empresas/\{id\_org\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_org (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/empresas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/empresas/\{id\_org\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_org (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/empresas/\{id\_org\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_org (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Departamentos asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Cargos (/cargos)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/cargos/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/cargos/\{id\_cargo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_cargo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/cargos/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/cargos/\{id\_cargo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_cargo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/cargos/\{id\_cargo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_cargo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Empleados asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Plantas (/plantas)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/plantas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/plantas/\{id\_planta\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_planta (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/plantas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/plantas/\{id\_planta\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_planta (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: hallazgo técnico — el código referencia variables antes de definirlas, provoca error en tiempo de ejecución al invocarse
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/plantas/\{id\_planta\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_planta (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Empleados asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Tipos de Equipo (/tipos-equipo)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/tipos-equipo/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/tipos-equipo/\{id\_tipoeq\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoeq (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/tipos-equipo/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/tipos-equipo/\{id\_tipoeq\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoeq (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/tipos-equipo/\{id\_tipoeq\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoeq (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Equipos de Cómputo asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Sistemas Operativos (/sistemas-operativos) - Familia}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/sistemas-operativos/familias
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/sistemas-operativos/familias
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                        \item 4. Debe ser único
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/sistemas-operativos/familias/\{id\_fam\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_fam\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/sistemas-operativos/familias/\{id\_fam\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_fam\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Versiones de SO asociadas
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Sistemas Operativos (/sistemas-operativos) - Versión}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/sistemas-operativos/versiones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/sistemas-operativos/versiones/por-familia/\{id\_fam\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_fam\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/sistemas-operativos/versiones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item ii. id\_fam\_so
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Familia de SO
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/sistemas-operativos/versiones/\{id\_ver\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item iii. id\_fam\_so
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/sistemas-operativos/versiones/\{id\_ver\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Ediciones de SO asociadas
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Sistemas Operativos (/sistemas-operativos) - Edición}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/sistemas-operativos/ediciones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/sistemas-operativos/ediciones/por-version/\{id\_ver\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/sistemas-operativos/ediciones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item ii. id\_ver\_so
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Versión de SO
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/sistemas-operativos/ediciones/\{id\_edicion\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_edicion\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item iii. id\_ver\_so
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/sistemas-operativos/ediciones/\{id\_edicion\_so\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_edicion\_so (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Equipos de Cómputo asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Tipos de Periférico (/tipos-periferico)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/tipos-periferico/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/tipos-periferico/\{id\_tipoper\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoper (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/tipos-periferico/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/tipos-periferico/\{id\_tipoper\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoper (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/tipos-periferico/\{id\_tipoper\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoper (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Periféricos asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Proveedores de Licencia (/proveedores-licencia)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/proveedores-licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/proveedores-licencia/\{id\_prov\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/proveedores-licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/proveedores-licencia/\{id\_prov\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/proveedores-licencia/\{id\_prov\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Versiones de Licencia asociadas
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Proveedores de Factura (/proveedores-factura)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/proveedores-factura/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/proveedores-factura/\{id\_prov\_fact\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov\_fact (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/proveedores-factura/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/proveedores-factura/\{id\_prov\_fact\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov\_fact (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/proveedores-factura/\{id\_prov\_fact\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov\_fact (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Facturas asociadas
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Versiones de Licencia (/versiones-licencia)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/versiones-licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_prov (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/versiones-licencia/\{id\_ver\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/versiones-licencia/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item ii. id\_prov
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Proveedor de Licencia
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/versiones-licencia/\{id\_ver\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item iii. id\_prov
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/versiones-licencia/\{id\_ver\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_ver (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Licencias asociadas
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Sub-áreas (/sub-areas)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/sub-areas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_dpto (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/sub-areas/\{id\_sub\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_sub (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/sub-areas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item ii. id\_dpto
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Departamento
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: este endpoint no exige autenticación (posible pendiente de seguridad)
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/sub-areas/\{id\_sub\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_sub (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item iii. id\_dpto
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/sub-areas/\{id\_sub\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_sub (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Empleados asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Disponibilidades (/disponibilidades)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/disponibilidades/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/disponibilidades/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Debe ser único
+                    \end{enumerate}
+                \item ii. descr
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item iii. color
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Valores esperados: "success", "warning", "error", "info", "primary", "default" (no aplicado como enum estricto)
+                        \item 4. Tamaño máximo de 20 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: este endpoint requiere solo autenticación (no exige rol editor)
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/disponibilidades/\{id\_dispo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_dispo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre, descr, color
+                    \begin{enumerate}
+                        \item 1. Mismos tipos y restricciones que en la creación
+                        \item 2. No requeridos - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/disponibilidades/\{id\_dispo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_dispo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/disponibilidades/por-estado/\{id\_tipoe\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 6. http://”URLPROYECTO”.cl/disponibilidades/relaciones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 7. http://”URLPROYECTO”.cl/disponibilidades/relaciones
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Tipo de Estado
+                    \end{enumerate}
+                \item ii. id\_dispo
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Disponibilidad
+                        \item 4. La combinación id\_tipoe + id\_dispo no puede estar duplicada
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 8. http://”URLPROYECTO”.cl/disponibilidades/relaciones/\{id\_tipoe\}/\{id\_dispo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_tipoe (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. id\_dispo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Marcas (/marcas)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/marcas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. Sin parámetros de entrada
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/marcas/\{id\_marca\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_marca (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/marcas/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/marcas/\{id\_marca\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_marca (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/marcas/\{id\_marca\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_marca (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Bloqueado (400) si tiene Modelos asociados
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Modelos (/modelos)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/modelos/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_marca (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/modelos/\{id\_modelo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_modelo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/modelos/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item ii. id\_marca
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Marca
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/modelos/\{id\_modelo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_modelo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. nombre
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 100 caracteres
+                    \end{enumerate}
+                \item iii. id\_marca
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Si se envía, se revalida su existencia
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/modelos/\{id\_modelo\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “delete”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_modelo (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: borrado físico, sin bloqueo por dependencias
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Solicitudes de Baja (/solicitudes-baja)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/solicitudes-baja/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. estado\_sol (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Valores esperados: "pendiente", "aprobada", "rechazada"
+                    \end{enumerate}
+                \item ii. id\_act (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 2. http://”URLPROYECTO”.cl/solicitudes-baja/\{id\_solbaja\}
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_solbaja (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+            \end{enumerate}
+    \end{enumerate}
+
+    \item 3. http://”URLPROYECTO”.cl/solicitudes-baja/
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “post”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. motivo\_baja
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Tamaño máximo de 200 caracteres
+                    \end{enumerate}
+                \item ii. id\_act
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Debe existir en Activo TI
+                        \item 4. No puede tener ya una solicitud vigente distinta de "rechazada"
+                    \end{enumerate}
+                \item iii. id\_tipoe
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                        \item 3. Corresponde a la nueva condición del activo: solo se permite "regular" o "malo" (se rechaza "bueno")
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: id\_emp\_sol se asigna automáticamente con el usuario autenticado. Solo requiere autenticación, no rol editor.
+    \end{enumerate}
+
+    \item 4. http://”URLPROYECTO”.cl/solicitudes-baja/\{id\_solbaja\}/resolver
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_solbaja (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. estado\_sol
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. Requerido
+                        \item 3. Debe cumplir el patrón "^(aprobada|rechazada)\$"
+                    \end{enumerate}
+                \item iii. ref\_aprob
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 200 caracteres
+                    \end{enumerate}
+                \item iv. id\_emp\_aprob
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default null
+                        \item 3. Debe existir en Empleado
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: solo aplicable si la solicitud está en estado "pendiente"; fecha\_resolucion se asigna automáticamente
+    \end{enumerate}
+
+    \item 5. http://”URLPROYECTO”.cl/solicitudes-baja/\{id\_solbaja\}/borrado
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “put”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. id\_solbaja (parámetro de ruta)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. Requerido
+                    \end{enumerate}
+                \item ii. ruta\_acta\_baja
+                    \begin{enumerate}
+                        \item 1. String
+                        \item 2. No requerido - Default null
+                        \item 3. Tamaño máximo de 255 caracteres
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Nota: solo aplicable si la solicitud está "aprobada" y sin fecha\_borrado registrada; actualiza automáticamente id\_dispo del activo a "de\_baja", fecha\_borrado e id\_emp\_borrado
+    \end{enumerate}
+\end{enumerate}

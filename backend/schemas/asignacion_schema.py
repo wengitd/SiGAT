@@ -9,25 +9,26 @@ def _validar_fecha_no_futura(v: date | None) -> date | None:
 
 
 class AsignacionBase(BaseModel):
-    fecha_entr      :date
-    fecha_dev       :date | None = None
-    ruta_acta_entr  :str  | None = Field(default=None, max_length=255)
+    fecha_entr: date
+    fecha_dev: date | None = None
+    ruta_acta_entr: str | None = Field(default=None, max_length=255)
 
-    id_act          :int
-    id_emp          :int
-    id_emp_reg      :int | None = None
+    id_act: int
+    id_emp: int
 
     @field_validator("fecha_entr", "fecha_dev")
     @classmethod
     def _fechas_no_futuras(cls, v):
         return _validar_fecha_no_futura(v)
 
+
 class AsignacionCreate(AsignacionBase):
     pass
 
+
 class AsignacionUpdate(BaseModel):
-    fecha_dev      : date
-    ruta_acta_entr : str | None = Field(default=None, max_length=255)
+    fecha_dev: date
+    ruta_acta_entr: str | None = Field(default=None, max_length=255)
 
     @field_validator("fecha_dev")
     @classmethod
@@ -36,6 +37,7 @@ class AsignacionUpdate(BaseModel):
 
 
 class AsignacionOut(AsignacionBase):
-    id_asig         :int
+    id_asig: int
+    id_usuario_reg: int | None = None
 
     model_config = ConfigDict(from_attributes=True)

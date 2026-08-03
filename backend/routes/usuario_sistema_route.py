@@ -1,104 +1,154 @@
+from auth.dependencies import get_current_user, require_admin
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, joinedload
-from passlib.context import CryptContext #libreria para hash pass
-from auth.dependencies import get_current_user, require_editor
-
+from models.usuario_sistema_model import UsuarioSistema
+from passlib.context import CryptContext
+from schemas.usuario_sistema_schema import (
+    UsuarioSistemaCreate,
+    UsuarioSistemaOut,
+    UsuarioSistemaUpdate,
+)
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from database import get_db
-from models.empleado_model import UsuarioSistema
-from models.empleado_model import Empleado
 
-from schemas.empleado_schema import UsuarioSistemaCreate, UsuarioSistemaUpdate, UsuarioSistemaOut
+router = APIRouter(prefix="/usuario_sistema", tags=["Usuarios del sistema"])
 
-router=APIRouter(prefix="/usuario_sistema", tags=["Usuarios del sistema"])
-
-#objeto que sabe hashear y verificar pass
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
-@router.get("/", response_model=list[UsuarioSistemaOut],)
-def listar (db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    "Muestra todos los usuarios del sistema."
-    return db.query(UsuarioSistema).options(joinedload(UsuarioSistema.empleado)).all()
+@router.get("/", response_model=list[UsuarioSistemaOut])
+def listar(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Muestra todos los usuarios del sistema."""
+    return db.query(UsuarioSistema).all()
 
-@router.get("/{id_emp}", response_model=UsuarioSistemaOut)
-def obtener (id_emp: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+
+@router.get("/{id_usuario}", response_model=UsuarioSistemaOut)
+def obtener(
+    id_usuario: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """Devuelve un usuario del sistema por id."""
+    usuario = (
+        db.query(UsuarioSistema)
+        .filter(UsuarioSistema.id_usuario == id_usuario)
+        .first()
+    )
+    if usuario is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return usuario
 
-    inf = db.query(UsuarioSistema).options(joinedload(UsuarioSistema.empleado)).filter(UsuarioSistema.id_emp == id_emp).first()
-    if inf is None:
-        raise  HTTPException(status_code=404, detail="Usuario no encontrado")
-    return inf
 
-@router.post("/", response_model=UsuarioSistemaOut, status_code=status.HTTP_201_CREATED)
-def crear(payload: UsuarioSistemaCreate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
+@router.post(
+    "/", response_model=UsuarioSistemaOut, status_code=status.HTTP_201_CREATED
+)
+def crear(
+    payload: UsuarioSistemaCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin),
+):
+    """Crea un nuevo usuario del sistema (solo administradores)."""
+    # Verificar si ya existe un usuario con el mismo email
+    existente = (
+        db.query(UsuarioSistema)
+        .filter(func.lower(UsuarioSistema.email) == payload.email.lower())
+        .first()
+    )
+    if existente is not None:
+        raise HTTPException(
+            status_code=400, detail="Ya existe un usuario con este correo electrónico"
+        )
 
-    #verificar que empleado existe
-    emp = db.query(Empleado).filter(Empleado.id_emp == payload.id_emp).first()
-    if emp is None:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    hash_pass = pwd_context.hash(payload.password)
 
-    #verificar que no sea ya un usuario del sistema (para no duplicar PK)
-    inf=db.query(UsuarioSistema).filter(UsuarioSistema.id_emp == payload.id_emp).first()
-    if inf is not None:
-        raise HTTPException(status_code=400, detail="Este empleado ya es usuario del sistema")
-
-    #hashear la pass
-    hash_pass=pwd_context.hash(payload.password)
-
-    #crear el objeto SQLAlchemy con el hash no con pass
-    nuevo_inf=UsuarioSistema(
-        id_emp=payload.id_emp,
+    nuevo_usuario = UsuarioSistema(
+        nombre=payload.nombre,
+        email=payload.email.lower(),
         hash_pass=hash_pass,
         rol=payload.rol,
-        vigente=payload.vigente
+        vigente=payload.vigente,
     )
 
-    #guardar
-    db.add(nuevo_inf)
+    db.add(nuevo_usuario)
     db.commit()
-    db.refresh(nuevo_inf)
-    return db.query(UsuarioSistema).options(joinedload(UsuarioSistema.empleado)).filter(UsuarioSistema.id_emp == nuevo_inf.id_emp).first()
+    db.refresh(nuevo_usuario)
+    return nuevo_usuario
 
-@router.put("/{id_emp}", response_model=UsuarioSistemaOut)
-def actualizar(id_emp:int, payload: UsuarioSistemaUpdate, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    #variable=db.query(model.py).filter(model.id_model==id_model).first()
-    act_inf = db.query(UsuarioSistema).filter(UsuarioSistema.id_emp == id_emp).first()
 
-    if act_inf is None:
+@router.put("/{id_usuario}", response_model=UsuarioSistemaOut)
+def actualizar(
+    id_usuario: int,
+    payload: UsuarioSistemaUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin),
+):
+    """Actualiza un usuario del sistema (solo administradores)."""
+    usuario = (
+        db.query(UsuarioSistema)
+        .filter(UsuarioSistema.id_usuario == id_usuario)
+        .first()
+    )
+    if usuario is None:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    datos= payload.model_dump(exclude_unset=True)
+    datos = payload.model_dump(exclude_unset=True)
 
-    if datos.get("vigente") is False and id_emp == current_user.id_emp:
-        raise HTTPException(status_code=400, detail="No puedes desactivar tu propio usuario")
+    if datos.get("vigente") is False and id_usuario == current_user.id_usuario:
+        raise HTTPException(
+            status_code=400, detail="No puedes desactivar tu propio usuario"
+        )
 
-    #si el cliente envia password, se hashea y renombra la clave a hash_pass
-    if "password" in datos:
+    if "email" in datos and datos["email"]:
+        email_nuevo = datos["email"].lower()
+        existente = (
+            db.query(UsuarioSistema)
+            .filter(
+                func.lower(UsuarioSistema.email) == email_nuevo,
+                UsuarioSistema.id_usuario != id_usuario,
+            )
+            .first()
+        )
+        if existente:
+            raise HTTPException(
+                status_code=400, detail="El correo electrónico ya está en uso"
+            )
+        datos["email"] = email_nuevo
+
+    if "password" in datos and datos["password"]:
         datos["hash_pass"] = pwd_context.hash(datos.pop("password"))
 
-    #sino, solo cambia el rol.
-
-    #"datos" contiene hash_pass,rol, pero no password
-    #cuando el for itere datos, va a tener hash_pass y rol
     for campo, valor in datos.items():
-        setattr(act_inf,campo,valor)
+        setattr(usuario, campo, valor)
 
     db.commit()
-    db.refresh(act_inf)
-    return db.query(UsuarioSistema).options(joinedload(UsuarioSistema.empleado)).filter(UsuarioSistema.id_emp == id_emp).first()
+    db.refresh(usuario)
+    return usuario
 
-@router.delete ("/{id_emp}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_emp:int, db: Session = Depends(get_db), current_user=Depends(require_editor)):
-    if id_emp == current_user.id_emp:
-        raise HTTPException(status_code=400, detail="No puedes desactivar tu propio usuario")
 
-    eli_inf= db.query(UsuarioSistema).filter(UsuarioSistema.id_emp == id_emp).first()
+@router.delete("/{id_usuario}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar(
+    id_usuario: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_admin),
+):
+    """Desactiva un usuario del sistema (solo administradores)."""
+    if id_usuario == current_user.id_usuario:
+        raise HTTPException(
+            status_code=400, detail="No puedes desactivar tu propio usuario"
+        )
 
-    if eli_inf is None:
+    usuario = (
+        db.query(UsuarioSistema)
+        .filter(UsuarioSistema.id_usuario == id_usuario)
+        .first()
+    )
+    if usuario is None:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    eli_inf.vigente = False
+    usuario.vigente = False
     db.commit()
-
     return None

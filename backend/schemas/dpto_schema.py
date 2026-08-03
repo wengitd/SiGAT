@@ -2,15 +2,18 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+
 class SubAreaSimple(BaseModel):
     id_sub: int
     nombre: str
     model_config = ConfigDict(from_attributes=True)
 
+
 class EmpresaSimple(BaseModel):
     id_org: int
     nombre: str
     model_config = ConfigDict(from_attributes=True)
+
 
 class DepartamentoBase(BaseModel):
     id_org: int | None = None

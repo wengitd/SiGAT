@@ -3,40 +3,56 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext();
 
 function parseJWT(token) {
-  try {
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return {};
-  }
+    try {
+        return JSON.parse(atob(token.split(".")[1]));
+    } catch {
+        return {};
+    }
 }
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+    const [token, setToken] = useState(localStorage.getItem("token"));
 
-  const payload = token ? parseJWT(token) : {};
-  const rol     = payload.rol ?? null;   // "editor" | "auditor" | "admin" | null
-  const idEmp   = payload.sub ? Number(payload.sub) : null;
-  const isEditor  = rol === "editor" || rol === "admin";
-  const isAuditor = rol === "auditor";
-  const isAdmin   = rol === "admin";
+    const payload = token ? parseJWT(token) : {};
+    const rol = payload.rol ?? null;   // "editor" | "auditor" | "admin" | null
+    const idUsuario = payload.sub ? Number(payload.sub) : null;
+    const nombreUsuario = payload.nombre ?? "";
+    const emailUsuario = payload.email ?? "";
 
-  function login(newToken) {
-    setToken(newToken);
-    localStorage.setItem("token", newToken);
-  }
+    const isAdmin = rol === "admin";
+    const isEditor = rol === "editor" || rol === "admin";
+    const isAuditor = rol === "auditor";
 
-  function logout() {
-    setToken(null);
-    localStorage.removeItem("token");
-  }
+    function login(newToken) {
+        setToken(newToken);
+        localStorage.setItem("token", newToken);
+    }
 
-  return (
-    <AuthContext.Provider value={{ token, rol, idEmp, isEditor, isAuditor, isAdmin, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    function logout() {
+        setToken(null);
+        localStorage.removeItem("token");
+    }
+
+    return (
+        <AuthContext.Provider
+            value={{
+                token,
+                rol,
+                idUsuario,
+                nombreUsuario,
+                emailUsuario,
+                isEditor,
+                isAuditor,
+                isAdmin,
+                login,
+                logout,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+    return useContext(AuthContext);
 }
