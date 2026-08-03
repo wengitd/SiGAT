@@ -1,14 +1,19 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from bootstrap import ensure_admin_user
 from config import settings
 from database import get_db
-from fastapi.middleware.cors import CORSMiddleware #CORS bloqueaba conexion con frontend
+from fastapi.middleware.cors import (
+    CORSMiddleware,
+)  # CORS bloqueaba conexion con frontend
 
 
-from auth.router import router as auth_router #carpeta creada para jwt
-#de la carpeta auth/, del archivo router.py, importa la variable router
+from auth.router import router as auth_router  # carpeta creada para jwt
+# de la carpeta auth/, del archivo router.py, importa la variable router
 
 from routes import (
     tipo_estado_route,
@@ -23,7 +28,6 @@ from routes import (
     asignacion_route,
     checklist_route,
     plantilla_route,
-    check_plantilla_route,
     empresa_route,
     cargo_route,
     planta_route,
@@ -38,13 +42,23 @@ from routes import (
     marca_route,
     modelo_route,
     solicitud_baja_route,
+    trazabilidad_route,
 )
 
-# Inicialización de la app  
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Al arrancar, asegura el usuario admin declarado en .env."""
+    ensure_admin_user()
+    yield
+
+
+# Inicialización de la app
 app = FastAPI(
     title=settings.app_name,
     description="API del Sistema de Gestión de Activos Tecnológicos - Forestal Leonera",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.include_router(tipo_estado_route.router)
@@ -59,7 +73,6 @@ app.include_router(historial_estado_route.router)
 app.include_router(asignacion_route.router)
 app.include_router(checklist_route.router)
 app.include_router(plantilla_route.router)
-app.include_router(check_plantilla_route.router)
 app.include_router(empresa_route.router)
 app.include_router(cargo_route.router)
 app.include_router(planta_route.router)
@@ -75,16 +88,22 @@ app.include_router(disponibilidad_route.router)
 app.include_router(marca_route.router)
 app.include_router(modelo_route.router)
 app.include_router(solicitud_baja_route.router)
+app.include_router(trazabilidad_route.router)
 
-#middleware que responde con en el header access-control-allow-origin
+# middleware que responde con en el header access-control-allow-origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    # Desarrollo (Vite) y produccion (Nginx same-origin / puerto publicado)
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8080",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 @app.get("/")
