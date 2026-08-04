@@ -7,7 +7,7 @@ import { createTheme } from "@mui/material/styles";
   colores, tipografía y overrides de componentes MUI.
 
   Para cambiar cualquier color en toda la app, solo
-  modificas este archivo. Los componentes lo heredan
+  modificar este archivo. Los componentes lo heredan
   automáticamente via ThemeProvider en main.jsx.
 */
 

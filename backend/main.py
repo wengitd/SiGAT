@@ -43,6 +43,7 @@ from routes import (
     modelo_route,
     solicitud_baja_route,
     trazabilidad_route,
+    dashboard_route,
 )
 
 
@@ -89,6 +90,7 @@ app.include_router(marca_route.router)
 app.include_router(modelo_route.router)
 app.include_router(solicitud_baja_route.router)
 app.include_router(trazabilidad_route.router)
+app.include_router(dashboard_route.router)
 
 # middleware que responde con en el header access-control-allow-origin
 app.add_middleware(
