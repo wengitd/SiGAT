@@ -18,8 +18,7 @@ axiosClient.interceptors.request.use((config) => {
 });
 
 /*Si el backend rechaza el token (venció, o el usuario fue desactivado),
-la sesión local queda inválida: se limpia y se manda a login en vez de
-dejar el menú visible con las tablas vacías. */
+la sesión local queda inválida: se limpia y se manda a login*/
 axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
