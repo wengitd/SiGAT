@@ -115,7 +115,6 @@ export default function InventarioPage() {
                             </IconButton>
                         </Tooltip>
 
-<<<<<<< HEAD
                         {tieneFactura && (
                             <Tooltip title="Ver factura">
                                 <IconButton
@@ -132,9 +131,6 @@ export default function InventarioPage() {
                         )}
 
                         {isEditor && esComputacional && !params.row.empleado_asignado && (
-=======
-                        {isEditor && esComputacional && !params.row.empleado_asignado && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
->>>>>>> main
                             <Tooltip title="Preparar equipo">
                                 <IconButton
                                     size="small"
@@ -146,7 +142,7 @@ export default function InventarioPage() {
                             </Tooltip>
                         )}
 
-                        {isEditor && esComputacional && params.row.empleado_asignado && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
+                        {isEditor && esComputacional && params.row.empleado_asignado && (
                             <Tooltip title="Preparar reasignación">
                                 <IconButton
                                     size="small"
