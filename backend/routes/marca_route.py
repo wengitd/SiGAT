@@ -10,22 +10,36 @@ from schemas.catalogos_schema import MarcaCreate, MarcaUpdate, MarcaOut
 router = APIRouter(prefix="/marcas", tags=["marcas"])
 
 
-def _obtener_o_crear_marca(db: Session, nombre: str) -> Marca:
-    """Busca marca por nombre (sin distinguir mayúsculas) o la crea."""
+def _obtener_o_crear_marca(db: Session, nombre: str, tipo_activo: str) -> Marca:
+    """Busca marca por nombre + tipo_activo (sin distinguir mayúsculas) o la crea."""
     nombre = nombre.strip()
     if not nombre:
         raise HTTPException(status_code=400, detail="El nombre de la marca es obligatorio")
-    marca = db.query(Marca).filter(func.lower(Marca.nombre) == nombre.lower()).first()
+    marca = (
+        db.query(Marca)
+        .filter(
+            func.lower(Marca.nombre) == nombre.lower(),
+            Marca.tipo_activo == tipo_activo,
+        )
+        .first()
+    )
     if marca is None:
-        marca = Marca(nombre=nombre)
+        marca = Marca(nombre=nombre, tipo_activo=tipo_activo)
         db.add(marca)
         db.flush()
     return marca
 
 
 @router.get("/", response_model=list[MarcaOut])
-def listar(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return db.query(Marca).all()
+def listar(
+    tipo_activo: str | None = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    query = db.query(Marca)
+    if tipo_activo:
+        query = query.filter(Marca.tipo_activo == tipo_activo)
+    return query.all()
 
 
 @router.post("/ensure", response_model=MarcaOut)
@@ -34,8 +48,8 @@ def ensure(
     db: Session = Depends(get_db),
     current_user=Depends(require_editor),
 ):
-    """Obtiene o crea una marca por nombre (idempotente)."""
-    marca = _obtener_o_crear_marca(db, payload.nombre)
+    """Obtiene o crea una marca por nombre + tipo_activo (idempotente)."""
+    marca = _obtener_o_crear_marca(db, payload.nombre, payload.tipo_activo)
     db.commit()
     db.refresh(marca)
     return marca

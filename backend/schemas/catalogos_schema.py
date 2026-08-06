@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 ###############################
 ## CATALOGOS SIN DEPENDENCIA
@@ -169,6 +170,7 @@ class ProveedorLicenciaOut(ProveedorLicenciaBase):
 
 class MarcaBase(BaseModel):
     nombre: str = Field(max_length=100)
+    tipo_activo: Literal["equipo_computo", "periferico"]
 
 
 class MarcaCreate(MarcaBase):
@@ -177,6 +179,7 @@ class MarcaCreate(MarcaBase):
 
 class MarcaUpdate(BaseModel):
     nombre: str | None = Field(default=None, max_length=100)
+    tipo_activo: Literal["equipo_computo", "periferico"] | None = None
 
 
 class MarcaOut(MarcaBase):

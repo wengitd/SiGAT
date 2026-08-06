@@ -62,8 +62,10 @@ CREATE TABLE tipo_periferico (
 );
 
 CREATE TABLE marca (
-    id_marca SERIAL PRIMARY KEY,
-    nombre   VARCHAR(100) NOT NULL UNIQUE
+    id_marca    SERIAL PRIMARY KEY,
+    nombre      VARCHAR(100) NOT NULL,
+    tipo_activo VARCHAR(20)  NOT NULL CHECK (tipo_activo IN ('equipo_computo', 'periferico')),
+    UNIQUE (nombre, tipo_activo)
 );
 
 CREATE TABLE modelo (
@@ -477,41 +479,49 @@ INSERT INTO usuario_sistema (nombre, email, hash_pass, rol, vigente) VALUES
 -- ----------------------------------------------------------------------------
 -- 1. MARCAS Y MODELOS REALES
 -- ----------------------------------------------------------------------------
-INSERT INTO marca (nombre) VALUES
-('Dell'),      -- id 1
-('HP'),        -- id 2
-('Lenovo'),    -- id 3
-('Apple'),     -- id 4
-('Samsung'),   -- id 5
-('LG'),        -- id 6
-('Epson'),     -- id 7
-('Logitech');  -- id 8
+INSERT INTO marca (nombre, tipo_activo) VALUES
+('Dell', 'equipo_computo'),      -- id 1
+('HP', 'equipo_computo'),        -- id 2
+('Lenovo', 'equipo_computo'),    -- id 3
+('Apple', 'equipo_computo'),     -- id 4
+('Samsung', 'equipo_computo'),   -- id 5
+('LG', 'periferico'),            -- id 6
+('Epson', 'periferico'),         -- id 7
+('Logitech', 'periferico'),      -- id 8
+('Dell', 'periferico'),          -- id 9  (monitores Dell)
+('HP', 'periferico'),            -- id 10 (impresoras HP)
+('Lenovo', 'periferico'),        -- id 11 (monitores Lenovo)
+('Samsung', 'periferico');       -- id 12 (monitores Samsung)
 
 INSERT INTO modelo (id_marca, nombre) VALUES
--- Dell (id_marca 1)
+-- Dell (id_marca 1 - equipo_computo)
 (1, 'Latitude 3420'),       -- id 1
 (1, 'Latitude 5430'),       -- id 2
 (1, 'OptiPlex 3080 Slim'),  -- id 3
-(1, 'UltraSharp U2723QE'),  -- id 4
--- HP (id_marca 2)
+-- Dell (id_marca 9 - periferico)
+(9, 'UltraSharp U2723QE'),  -- id 4
+-- HP (id_marca 2 - equipo_computo)
 (2, 'ProBook 440 G8'),      -- id 5
 (2, 'EliteBook 840 G9'),    -- id 6
-(2, 'LaserJet Pro M404dn'), -- id 7
--- Lenovo (id_marca 3)
+-- HP (id_marca 10 - periferico)
+(10, 'LaserJet Pro M404dn'), -- id 7
+-- Lenovo (id_marca 3 - equipo_computo)
 (3, 'ThinkPad T14 Gen 2'),  -- id 8
 (3, 'ThinkCentre M70q'),    -- id 9
-(3, 'ThinkVision S24e-20'), -- id 10
--- Apple (id_marca 4)
+-- Lenovo (id_marca 11 - periferico)
+(11, 'ThinkVision S24e-20'), -- id 10
+-- Apple (id_marca 4 - equipo_computo)
 (4, 'MacBook Pro 14 M2'),   -- id 11
 (4, 'MacBook Air 13 M1'),   -- id 12
--- Samsung (id_marca 5)
-(5, 'S24F350 Monitor'),     -- id 13
+-- Samsung (id_marca 12 - periferico)
+(12, 'S24F350 Monitor'),    -- id 13
+-- Samsung (id_marca 5 - equipo_computo)
 (5, 'Galaxy Tab S8'),       -- id 14
--- LG (id_marca 6)
+-- LG (id_marca 6 - periferico)
 (6, '24MK600M'),            -- id 15
--- Epson (id_marca 7)
+-- Epson (id_marca 7 - periferico)
 (7, 'EcoTank L3250'),       -- id 16
--- Logitech (id_marca 8)
+-- Logitech (id_marca 8 - periferico)
 (8, 'MK270 Wireless');      -- id 17
 
 -- ----------------------------------------------------------------------------

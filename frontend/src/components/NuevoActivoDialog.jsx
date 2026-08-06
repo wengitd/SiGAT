@@ -92,7 +92,9 @@ function PasoTipo({ form, setForm, setAsignarAhora }) {
                     >
                         <CardActionArea
                             onClick={() => {
-                                setForm({ ...form, tipo: t.valor })
+                                if (t.valor !== form.tipo) {
+                                    setForm({ ...form, tipo: t.valor, id_modelo: "" })
+                                }
                                 if (t.valor === "equipo_computo") setAsignarAhora(false)
                             }}
                             sx={{ p: 3, textAlign: "center" }}
@@ -131,12 +133,15 @@ function PasoGenerales({
         return modeloActual?.id_marca ?? ""
     })
 
-    const marcaSeleccionada = marcas.find(m => m.id_marca === selMarca) ?? null
+    // Sólo se ofrecen marcas del mismo tipo de activo (Computacional / Periférico)
+    const marcasDelTipo = marcas.filter(m => m.tipo_activo === form.tipo)
+
+    const marcaSeleccionada = marcasDelTipo.find(m => m.id_marca === selMarca) ?? null
     const modelosDeMarca = modelos.filter(m => m.id_marca === selMarca)
     const modeloSeleccionado = modelosDeMarca.find(m => m.id_modelo === form.id_modelo) ?? null
 
     async function crearMarca(nombre) {
-        const { data } = await axiosClient.post("/marcas/ensure", { nombre })
+        const { data } = await axiosClient.post("/marcas/ensure", { nombre, tipo_activo: form.tipo })
         setMarcas(prev => (prev.some(m => m.id_marca === data.id_marca) ? prev : [...prev, data]))
         setSelMarca(data.id_marca)
         setForm(prev => ({ ...prev, id_modelo: "" }))
@@ -157,7 +162,7 @@ function PasoGenerales({
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
             <CreatableAutocomplete
                 label="Marca"
-                options={marcas}
+                options={marcasDelTipo}
                 value={marcaSeleccionada}
                 getOptionLabel={(m) => m.nombre ?? ""}
                 isOptionEqualToValue={(a, b) => a.id_marca === b.id_marca}
