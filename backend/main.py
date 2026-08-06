@@ -35,7 +35,6 @@ from routes import (
     sistema_operativo_route,
     tipo_periferico_route,
     proveedor_licencia_route,
-    proveedor_factura_route,
     version_licencia_route,
     sub_area_route,
     disponibilidad_route,
@@ -81,7 +80,6 @@ app.include_router(tipo_equipo_route.router)
 app.include_router(sistema_operativo_route.router)
 app.include_router(tipo_periferico_route.router)
 app.include_router(proveedor_licencia_route.router)
-app.include_router(proveedor_factura_route.router)
 app.include_router(version_licencia_route.router)
 app.include_router(sub_area_route.router)
 app.include_router(auth_router)

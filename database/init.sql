@@ -77,11 +77,6 @@ CREATE TABLE proveedor_licencia (
     id_prov SERIAL PRIMARY KEY,
     nombre  VARCHAR(100) NOT NULL UNIQUE     -- 'Office', 'Windows', 'Sophos'
 );
- 
-CREATE TABLE proveedor_factura (
-    id_prov_fact SERIAL PRIMARY KEY,
-    nombre       VARCHAR(100) NOT NULL UNIQUE
-);
 
 CREATE TABLE disponibilidad (
     id_dispo    SERIAL PRIMARY KEY,
@@ -121,10 +116,7 @@ CREATE TABLE version_licencia (
 CREATE TABLE factura (
     id_fact       SERIAL PRIMARY KEY,
     fecha_em      DATE,
-    num_folio     INT  NOT NULL UNIQUE,
-    ruta_pdf_fact VARCHAR(200) NOT NULL,
-    
-    id_prov_fact  INT  NOT NULL REFERENCES proveedor_factura(id_prov_fact)
+    ruta_pdf_fact VARCHAR(200) NOT NULL
 );
 
 --========================================================
@@ -550,18 +542,12 @@ INSERT INTO edicion_so (id_ver_so, nombre) VALUES
 (6, 'Standard');            -- id 9 (macOS Sonoma)
 
 -- ----------------------------------------------------------------------------
--- 3. PROVEEDORES DE FACTURA Y FACTURAS
+-- 3. FACTURAS
 -- ----------------------------------------------------------------------------
-INSERT INTO proveedor_factura (nombre) VALUES
-('Ingram Micro Chile SpA'), -- id 1
-('TechMarket Chile SpA'),   -- id 2
-('PC Factory S.A.'),        -- id 3
-('Sintac Chile');           -- id 4
-
-INSERT INTO factura (fecha_em, num_folio, ruta_pdf_fact, id_prov_fact) VALUES
-('2024-01-15', 10452, '/facturas/2024/F10452_Ingram.pdf', 1),     -- id 1
-('2024-03-20', 88201, '/facturas/2024/F88201_TechMarket.pdf', 2), -- id 2
-('2024-05-10', 55412, '/facturas/2024/F55412_PCFactory.pdf', 3);  -- id 3
+INSERT INTO factura (fecha_em, ruta_pdf_fact) VALUES
+('2024-01-15', 'activo_1/factura_20240115_000000.pdf'),  -- id 1
+('2024-03-20', 'activo_2/factura_20240320_000000.pdf'),  -- id 2
+('2024-05-10', 'activo_3/factura_20240510_000000.pdf');  -- id 3
 
 -- ----------------------------------------------------------------------------
 -- 4. MATRIZ DE ESTADO Y DISPONIBILIDAD (ESTADO_DISPO)

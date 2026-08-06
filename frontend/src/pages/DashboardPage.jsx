@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react"
-import { Box, Card, Typography, CircularProgress, Alert } from "@mui/material"
+import { useEffect, useRef, useState } from "react"
+import {
+    Box, Card, Typography, CircularProgress, Alert,
+    FormControl, InputLabel, Select, MenuItem,
+} from "@mui/material"
 import { PieChart } from "@mui/x-charts/PieChart"
 import { BarChart } from "@mui/x-charts/BarChart"
 
@@ -22,19 +25,48 @@ const COLOR_ESTADO = {
     "De baja": "#D32F2F",
 }
 
+const ANIO_ACTUAL = new Date().getFullYear()
+const ANIOS = Array.from({ length: 6 }, (_, i) => ANIO_ACTUAL - i)
+
 export default function DashboardPage() {
+    const [anio, setAnio] = useState(ANIO_ACTUAL)
     const [resumen, setResumen] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
     const [error, setError] = useState(null)
+    const yaCargoRef = useRef(false)
 
     useEffect(() => {
-        getResumenDashboard()
-            .then(setResumen)
-            .catch(() => setError("No se pudo cargar el resumen del dashboard."))
-            .finally(() => setLoading(false))
-    }, [])
+        let cancelled = false
 
-    if (loading) {
+        if (!yaCargoRef.current) {
+            setLoading(true)
+        } else {
+            setRefreshing(true)
+        }
+        setError(null)
+
+        getResumenDashboard(anio)
+            .then((data) => {
+                if (!cancelled) {
+                    setResumen(data)
+                    yaCargoRef.current = true
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setError("No se pudo cargar el resumen del dashboard.")
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoading(false)
+                    setRefreshing(false)
+                }
+            })
+
+        return () => { cancelled = true }
+    }, [anio])
+
+    if (loading && !resumen) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
                 <CircularProgress />
@@ -42,10 +74,11 @@ export default function DashboardPage() {
         )
     }
 
-    if (error) {
+    if (error && !resumen) {
         return <Alert severity="error">{error}</Alert>
     }
 
+    const anioLabel = resumen?.anio ?? anio
     const { activos, licencias_totales, sistemas_operativos, activos_por_estado, licencias_por_mes } = resumen
 
     const dataSO = sistemas_operativos.map((s, i) => ({
@@ -63,16 +96,49 @@ export default function DashboardPage() {
     }))
 
     return (
-        <Box>
-            <Typography variant="h5" sx={{ mb: 3 }}>Dashboard</Typography>
+        <Box sx={{ position: "relative" }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 3, flexWrap: "wrap" }}>
+                <Typography variant="h5">Dashboard</Typography>
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                    <InputLabel id="dashboard-anio-label">Periodo</InputLabel>
+                    <Select
+                        labelId="dashboard-anio-label"
+                        label="Periodo"
+                        value={anio}
+                        onChange={(e) => setAnio(Number(e.target.value))}
+                        disabled={refreshing}
+                    >
+                        {ANIOS.map((y) => (
+                            <MenuItem key={y} value={y}>{y}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Box>
 
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" }, gap: 3 }}>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+            )}
+
+            {refreshing && (
+                <Box sx={{ position: "absolute", top: 56, right: 0, zIndex: 1 }}>
+                    <CircularProgress size={22} />
+                </Box>
+            )}
+
+            <Box sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" },
+                gap: 3,
+                opacity: refreshing ? 0.65 : 1,
+                transition: "opacity 0.2s",
+                pointerEvents: refreshing ? "none" : "auto",
+            }}>
                 {/* Columna izquierda */}
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)" }, gap: 2 }}>
-                        <StatCard icon={ComputerOutlinedIcon} value={activos.equipo_computo} label="Total activos computacionales" color="#1B6B5A" />
-                        <StatCard icon={PrintOutlinedIcon} value={activos.periferico} label="Total activos periféricos" color="#0288D1" />
-                        <StatCard icon={EventOutlinedIcon} value={activos.adquiridos_anio} label="Activos adquiridos este año" color="#4CAF8F" />
+                        <StatCard icon={ComputerOutlinedIcon} value={activos.equipo_computo} label={`Activos computacionales en ${anioLabel}`} color="#1B6B5A" />
+                        <StatCard icon={PrintOutlinedIcon} value={activos.periferico} label={`Activos periféricos en ${anioLabel}`} color="#0288D1" />
+                        <StatCard icon={EventOutlinedIcon} value={activos.adquiridos_anio} label={`Activos adquiridos en ${anioLabel}`} color="#4CAF8F" />
                     </Box>
 
                     {licencias_totales.length > 0 && (
@@ -82,7 +148,7 @@ export default function DashboardPage() {
                                     key={l.proveedor}
                                     icon={VpnKeyOutlinedIcon}
                                     value={l.total}
-                                    label={`Total Licencias ${l.proveedor}`}
+                                    label={`Licencias ${l.proveedor} en ${anioLabel}`}
                                     color={PALETA[i % PALETA.length]}
                                 />
                             ))}
@@ -91,7 +157,7 @@ export default function DashboardPage() {
 
                     <Card sx={{ p: 2 }}>
                         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-                            Licencias asignadas por mes
+                            Licencias asignadas por mes — {anioLabel}
                         </Typography>
                         {licencias_por_mes.series.length > 0 ? (
                             <BarChart
@@ -104,7 +170,7 @@ export default function DashboardPage() {
                                 }))}
                             />
                         ) : (
-                            <Typography color="text.secondary">Sin licencias asignadas registradas.</Typography>
+                            <Typography color="text.secondary">Sin licencias asignadas registradas en {anioLabel}.</Typography>
                         )}
                     </Card>
                 </Box>
@@ -113,23 +179,23 @@ export default function DashboardPage() {
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <Card sx={{ p: 2 }}>
                         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-                            Sistemas operativos
+                            Sistemas operativos — {anioLabel}
                         </Typography>
                         {dataSO.length > 0 ? (
                             <PieChart series={[{ data: dataSO, innerRadius: 30 }]} height={260} />
                         ) : (
-                            <Typography color="text.secondary">Sin equipos con sistema operativo registrado.</Typography>
+                            <Typography color="text.secondary">Sin equipos con sistema operativo registrados en {anioLabel}.</Typography>
                         )}
                     </Card>
 
                     <Card sx={{ p: 2 }}>
                         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-                            Activos por estado
+                            Activos por estado — {anioLabel}
                         </Typography>
                         {dataEstado.length > 0 ? (
                             <PieChart series={[{ data: dataEstado, innerRadius: 30 }]} height={260} />
                         ) : (
-                            <Typography color="text.secondary">Sin activos registrados.</Typography>
+                            <Typography color="text.secondary">Sin activos registrados en {anioLabel}.</Typography>
                         )}
                     </Card>
                 </Box>

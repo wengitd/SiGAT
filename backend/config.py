@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     app_name: str = "SiGAT API"
     app_env: str = "development"
 
+    # Almacenamiento local de PDFs de factura (volumen Docker en prod/dev)
+    facturas_storage_path: str = "/data/facturas"
+
     # Usuario administrador inicial (opcional; se crea al arrancar si no existe)
     admin_user: str | None = None  # email de login
     admin_password: str | None = None

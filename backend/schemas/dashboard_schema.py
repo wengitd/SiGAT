@@ -33,6 +33,7 @@ class LicenciasPorMes(BaseModel):
 
 
 class ResumenDashboard(BaseModel):
+    anio: int
     activos: ActivosResumen
     licencias_totales: list[ProveedorTotal]
     sistemas_operativos: list[FamiliaTotal]
