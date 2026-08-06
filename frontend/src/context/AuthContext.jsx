@@ -1,17 +1,18 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { parseJWT } from "../utils/jwt";
 
 const AuthContext = createContext();
 
-function parseJWT(token) {
-    try {
-        return JSON.parse(atob(token.split(".")[1]));
-    } catch {
-        return {};
-    }
-}
-
 export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem("token"));
+
+    useEffect(() => {
+        function onStorage(e) {
+            if (e.key === "token") setToken(e.newValue);
+        }
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
+    }, []);
 
     const payload = token ? parseJWT(token) : {};
     const rol = payload.rol ?? null;   // "editor" | "auditor" | "admin" | null

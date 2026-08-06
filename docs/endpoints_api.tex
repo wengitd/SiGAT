@@ -2845,6 +2845,38 @@
     \end{enumerate}
 \end{enumerate}
 
+\subsection{Dashboard (/dashboard)}
+
+\begin{enumerate}
+    \item 1. http://”URLPROYECTO”.cl/dashboard/resumen
+    \begin{enumerate}
+        \item a. Tipo de petición:
+            \begin{itemize}
+               \item i. “get”
+            \end{itemize}
+        \item b. Parámetros a ingresar, el tipo de datos y restricciones
+            \begin{enumerate}
+                \item i. anio (parámetro de query)
+                    \begin{enumerate}
+                        \item 1. Number (entero)
+                        \item 2. No requerido - Default: año calendario actual
+                        \item 3. Rango válido: 2000 a 2100 (422 si está fuera de rango)
+                        \item 4. Filtra todos los agregados de activos por \texttt{fecha\_recep} y todos los de licencia por \texttt{fecha\_asignacion}
+                    \end{enumerate}
+            \end{enumerate}
+        \item c. Respuesta 200:
+            \begin{itemize}
+                \item i. anio: año efectivo de la consulta
+                \item ii. activos: \{ periferico, equipo\_computo, adquiridos\_anio \} — todos filtrados por \texttt{fecha\_recep} del año
+                \item iii. licencias\_totales: lista \{ proveedor, total \} de asignaciones del año (\texttt{fecha\_asignacion})
+                \item iv. sistemas\_operativos: lista \{ familia, total \} de equipos con \texttt{fecha\_recep} del año
+                \item v. activos\_por\_estado: lista \{ estado, total \} de activos con \texttt{fecha\_recep} del año
+                \item vi. licencias\_por\_mes: \{ labels (Ene–Dic), series: [\{ proveedor, data[12] \}] \} del año
+            \end{itemize}
+        \item d. Nota: requiere token de autenticación
+    \end{enumerate}
+\end{enumerate}
+
 \subsection{Solicitudes de Baja (/solicitudes-baja)}
 
 \begin{enumerate}

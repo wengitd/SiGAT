@@ -12,10 +12,12 @@ import {
 import ComputerIcon from "@mui/icons-material/Computer"
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther"
 import CloseIcon from "@mui/icons-material/Close"
+import UploadFileIcon from "@mui/icons-material/UploadFile"
 
 import AsignacionForm from "./AsignacionForm"
 import CreatableAutocomplete from "./CreatableAutocomplete"
 import { crearAsignacion } from "../services/asignacionService"
+import { uploadFactura } from "../services/facturaService"
 import { useDialog } from "../context/DialogContext"
 
 function hoy() {
@@ -30,13 +32,18 @@ const U_MEDIDA_PRESETS = ["pulgadas", "VA", "ppm", "kg", "W"]
 
 const FORM_INICIAL = {
     tipo: "",
-    id_modelo: "", num_serie: "", origen: "", id_fact: "", fecha_recep: "",
+    id_modelo: "", num_serie: "", origen: "", fecha_recep: "",
     id_tipoe: "", id_dispo: "",
     cpu: "", ram_capac: 8, ram_tipo: "",
     disco_tipo: "", disco_unidad: "", disco_capac: "",
     host_name: "", mac_ethernet: "", mac_wifi: "",
     id_tipoeq: "", id_edicion_so: "",
     valor_tec: "", u_medida: "", obs_perif: "", id_tipoper: "",
+}
+
+const FACTURA_INICIAL = {
+    fecha_em: "",
+    file: null,
 }
 
 // Normaliza a formato XX:XX:XX:XX:XX:XX (6 pares hexadecimales, máx. 17 caracteres)
@@ -105,11 +112,18 @@ function PasoTipo({ form, setForm, setAsignarAhora }) {
 }
 
 function PasoGenerales({
-    form, setForm, facturas, marcas, setMarcas, modelos, setModelos, errores, setErrores,
+    form, setForm, factura, setFactura, facturaPreviewUrl, onFacturaFileChange,
+    marcas, setMarcas, modelos, setModelos, errores, setErrores,
 }) {
     function handle(e) {
         limpiarError(setErrores, e.target.name)
         setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    function handleFactura(e) {
+        const { name, value } = e.target
+        limpiarError(setErrores, name)
+        setFactura(prev => ({ ...prev, [name]: value }))
     }
 
     // Cascada Marca → Modelo. selMarca es solo un filtro local;
@@ -125,7 +139,6 @@ function PasoGenerales({
     const marcaSeleccionada = marcasDelTipo.find(m => m.id_marca === selMarca) ?? null
     const modelosDeMarca = modelos.filter(m => m.id_marca === selMarca)
     const modeloSeleccionado = modelosDeMarca.find(m => m.id_modelo === form.id_modelo) ?? null
-    const facturaSeleccionada = facturas.find(f => f.id_fact === form.id_fact) ?? null
 
     async function crearMarca(nombre) {
         const { data } = await axiosClient.post("/marcas/ensure", { nombre, tipo_activo: form.tipo })
@@ -187,7 +200,7 @@ function PasoGenerales({
                 onChange={handle} type="date"
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoy() } }} />
 
-            <FormControl fullWidth error={!!errores.origen} required>
+            <FormControl fullWidth error={!!errores.origen} required sx={{ gridColumn: "span 2" }}>
                 <InputLabel>Origen</InputLabel>
                 <Select
                     name="origen"
@@ -201,18 +214,65 @@ function PasoGenerales({
                 {errores.origen && <FormHelperText>{errores.origen}</FormHelperText>}
             </FormControl>
 
-            <Autocomplete
-                fullWidth
+            <Typography variant="subtitle2" color="text.secondary" sx={{ gridColumn: "span 2", mt: 1 }}>
+                Factura
+            </Typography>
+
+            <TextField
+                label="Fecha emisión"
+                name="fecha_em"
+                type="date"
+                value={factura.fecha_em}
+                onChange={handleFactura}
+                error={!!errores.fecha_em}
+                helperText={errores.fecha_em}
                 sx={{ gridColumn: "span 2" }}
-                options={facturas}
-                value={facturaSeleccionada}
-                getOptionLabel={(f) => `Folio # ${f.num_folio}`}
-                isOptionEqualToValue={(a, b) => a.id_fact === b.id_fact}
-                onChange={(_, opt) => setForm(prev => ({ ...prev, id_fact: opt?.id_fact ?? "" }))}
-                renderInput={(params) => (
-                    <TextField {...params} label="Factura" placeholder="Sin factura" />
-                )}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoy() } }}
             />
+
+            <Box sx={{ gridColumn: "span 2", display: "flex", flexDirection: "column", gap: 1.5 }}>
+                <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<UploadFileIcon />}
+                    sx={{ alignSelf: "flex-start" }}
+                >
+                    {factura.file ? factura.file.name : "Adjuntar PDF de factura"}
+                    <input
+                        type="file"
+                        hidden
+                        accept="application/pdf,.pdf"
+                        onChange={onFacturaFileChange}
+                    />
+                </Button>
+                {errores.file && (
+                    <FormHelperText error>{errores.file}</FormHelperText>
+                )}
+                {facturaPreviewUrl && (
+                    <Box
+                        sx={{
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            bgcolor: "grey.100",
+                        }}
+                    >
+                        <Box
+                            component="iframe"
+                            title="Vista previa factura"
+                            src={facturaPreviewUrl}
+                            sx={{
+                                width: "100%",
+                                height: 300,
+                                border: 0,
+                                display: "block",
+                                bgcolor: "background.paper",
+                            }}
+                        />
+                    </Box>
+                )}
+            </Box>
         </Box>
     )
 }
@@ -501,12 +561,13 @@ function SeccionResumen({ titulo, filas }) {
     )
 }
 
-function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, facturas, marcas, modelos, familiasSO, versionesSO, edicionesSO,
+function PasoResumen({ form, tiposEstado, tiposDispo, tiposEquipo, tiposPerif, factura, marcas, modelos, familiasSO, versionesSO, edicionesSO,
     asignarAhora, setAsignarAhora, asignacion, setAsignacion, empleadosOpciones, errores, setErrores }) {
     const nombreEstado = tiposEstado.find(t => t.id_tipoe === form.id_tipoe)?.nombre
     const nombreDispo = tiposDispo.find(d => d.id_dispo === form.id_dispo)?.nombre
-    const nombreFactura = facturas.find(f => f.id_fact === form.id_fact)
-        ? `Folio #${facturas.find(f => f.id_fact === form.id_fact).num_folio}` : null
+    const nombreFactura = factura.file
+        ? `${factura.fecha_em || "Sin fecha"} — ${factura.file.name}`
+        : null
 
     const modeloSel = modelos.find(m => m.id_modelo === form.id_modelo)
     const marcaSel = marcas.find(m => m.id_marca === modeloSel?.id_marca)
@@ -606,7 +667,8 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
     const [guardando, setGuardando] = useState(false)
     const [errores, setErrores] = useState({})
 
-    const [facturas, setFacturas] = useState([])
+    const [factura, setFactura] = useState({ ...FACTURA_INICIAL })
+    const [facturaPreviewUrl, setFacturaPreviewUrl] = useState(null)
     const [marcas, setMarcas] = useState([])
     const [modelos, setModelos] = useState([])
     const [tiposEstado, setTiposEstado] = useState([])
@@ -623,18 +685,46 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
     const [asignacion, setAsignacion] = useState({ id_emp: "", fecha_entr: hoy(), ruta_acta_entr: "" })
     const [form, setForm] = useState({ ...FORM_INICIAL })
 
+    const limpiarPreviewFactura = useCallback(() => {
+        setFacturaPreviewUrl(prev => {
+            if (prev) URL.revokeObjectURL(prev)
+            return null
+        })
+    }, [])
+
     const resetFormulario = useCallback(() => {
         setPaso(0)
         setForm({ ...FORM_INICIAL })
+        setFactura({ ...FACTURA_INICIAL })
+        limpiarPreviewFactura()
         setAsignarAhora(false)
         setAsignacion({ id_emp: "", fecha_entr: hoy(), ruta_acta_entr: "" })
         setGuardando(false)
         setErrores({})
-    }, [])
+    }, [limpiarPreviewFactura])
+
+    function onFacturaFileChange(e) {
+        const file = e.target.files?.[0] ?? null
+        e.target.value = ""
+        limpiarError(setErrores, "file")
+        if (!file) {
+            setFactura(prev => ({ ...prev, file: null }))
+            limpiarPreviewFactura()
+            return
+        }
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+            setErrores(prev => ({ ...prev, file: "Solo se permiten archivos PDF" }))
+            setFactura(prev => ({ ...prev, file: null }))
+            limpiarPreviewFactura()
+            return
+        }
+        setFactura(prev => ({ ...prev, file }))
+        limpiarPreviewFactura()
+        setFacturaPreviewUrl(URL.createObjectURL(file))
+    }
 
     useEffect(() => {
         if (!open) return
-        axiosClient.get("/factura/").then(r => setFacturas(r.data))
         axiosClient.get("/marcas/").then(r => setMarcas(r.data))
         axiosClient.get("/modelos/").then(r => setModelos(r.data))
         axiosClient.get("/tipos-estado/").then(r => setTiposEstado(r.data))
@@ -649,6 +739,10 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
         axiosClient.get("/ActivoTi/sugerencias/u-medida").then(r => setSugerenciasUMedida(r.data)).catch(() => setSugerenciasUMedida([]))
     }, [open])
 
+    useEffect(() => () => {
+        if (facturaPreviewUrl) URL.revokeObjectURL(facturaPreviewUrl)
+    }, [facturaPreviewUrl])
+
     function handleClose() {
         if (guardando) return
         resetFormulario()
@@ -659,6 +753,12 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
         const nuevos = {}
         if (n === 1) {
             if (!form.origen) nuevos.origen = "El origen es obligatorio"
+
+            const facturaParcial = Boolean(factura.fecha_em || factura.file)
+            if (facturaParcial) {
+                if (!factura.fecha_em) nuevos.fecha_em = "La fecha de emisión es obligatoria"
+                if (!factura.file) nuevos.file = "Adjunta el PDF de la factura"
+            }
         }
         if (n === 2) {
             if (!form.id_tipoe) nuevos.id_tipoe = "Selecciona la condición"
@@ -687,6 +787,10 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
 
     async function enviar() {
         if (!validarAsignacion()) return
+        if (!validarPaso(1)) {
+            setPaso(1)
+            return
+        }
 
         const payload = Object.fromEntries(
             Object.entries(form).filter(([_, v]) => v !== "" && v !== null)
@@ -694,6 +798,31 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
         setGuardando(true)
         try {
             const { data: nuevoActivo } = await axiosClient.post("/ActivoTi/", payload)
+
+            if (factura.file) {
+                try {
+                    await uploadFactura({
+                        id_act: nuevoActivo.id_act,
+                        fecha_em: factura.fecha_em,
+                        file: factura.file,
+                    })
+                } catch (factErr) {
+                    const detail = factErr.response?.data?.detail
+                    const mensaje = typeof detail === "string"
+                        ? detail
+                        : "El activo se creó, pero no se pudo guardar la factura"
+                    await showAlert({
+                        title: "Error al subir factura",
+                        message: mensaje,
+                        severity: "warning",
+                    })
+                    resetFormulario()
+                    onCreado?.()
+                    onClose?.()
+                    return
+                }
+            }
+
             // Computacionales requieren checklist de preparación antes de asignar
             if (asignarAhora && form.tipo !== "equipo_computo") {
                 await crearAsignacion({
@@ -796,7 +925,10 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
                         <PasoGenerales
                             form={form}
                             setForm={setForm}
-                            facturas={facturas}
+                            factura={factura}
+                            setFactura={setFactura}
+                            facturaPreviewUrl={facturaPreviewUrl}
+                            onFacturaFileChange={onFacturaFileChange}
                             marcas={marcas}
                             setMarcas={setMarcas}
                             modelos={modelos}
@@ -835,7 +967,7 @@ export default function NuevoActivoDialog({ open, onClose, onCreado }) {
                             tiposDispo={tiposDispo}
                             tiposEquipo={tiposEquipo}
                             tiposPerif={tiposPerif}
-                            facturas={facturas}
+                            factura={factura}
                             marcas={marcas}
                             modelos={modelos}
                             familiasSO={familiasSO}

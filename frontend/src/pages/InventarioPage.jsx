@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext"
 import { useDialog } from "../context/DialogContext"
 
 import {
-    Box, Typography, Chip, Link, Button, IconButton, Tooltip,
+    Box, Typography, Chip, Button, IconButton, Tooltip,
 } from "@mui/material"
 import { DataGrid } from "@mui/x-data-grid"
 
@@ -19,6 +19,7 @@ import HistoryIcon from "@mui/icons-material/History"
 import AddIcon from "@mui/icons-material/Add"
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck"
 import BuildCircleIcon from "@mui/icons-material/BuildCircle"
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf"
 
 import BuscadorActivos from "../components/BuscadorActivos"
 import FiltroActivos from "../components/FiltroActivos"
@@ -26,6 +27,7 @@ import AsignacionModal from "../components/AsignacionModal"
 import NuevoActivoDialog from "../components/NuevoActivoDialog"
 import ActivoDetalleDrawer from "../components/ActivoDetalleDrawer"
 import ChecklistEjecucionDialog from "../components/ChecklistEjecucionDialog"
+import FacturaPdfDialog from "../components/FacturaPdfDialog"
 
 const CAMPOS_BUSQUEDA = [
     "nombre_marca", "nombre_modelo", "num_serie", "host_name",
@@ -42,6 +44,7 @@ export default function InventarioPage() {
     const [activoDetalle, setActivoDetalle] = useState(null)
     const [dialogCrearOpen, setDialogCrearOpen] = useState(false)
     const [checklistCtx, setChecklistCtx] = useState(null)
+    const [facturaDialog, setFacturaDialog] = useState(null)
 
     // Etiqueta legible para filtrar por tipo (Computacional / Periférico)
     const activosConLabel = useMemo(
@@ -98,11 +101,12 @@ export default function InventarioPage() {
         {
             field: "acciones",
             headerName: "Acciones",
-            width: 260,
+            width: 290,
             sortable: false,
             filterable: false,
             renderCell: (params) => {
                 const esComputacional = params.row.tipo === "equipo_computo"
+                const tieneFactura = Boolean(params.row.id_fact)
                 return (
                     <Box sx={{ display: "flex", gap: 0.25, alignItems: "center", height: "100%" }}>
                         <Tooltip title="Ver detalle">
@@ -111,7 +115,26 @@ export default function InventarioPage() {
                             </IconButton>
                         </Tooltip>
 
+<<<<<<< HEAD
+                        {tieneFactura && (
+                            <Tooltip title="Ver factura">
+                                <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => setFacturaDialog({
+                                        id_fact: params.row.id_fact,
+                                        fecha_em: params.row.fecha_em_fact,
+                                    })}
+                                >
+                                    <PictureAsPdfIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+
+                        {isEditor && esComputacional && !params.row.empleado_asignado && (
+=======
                         {isEditor && esComputacional && !params.row.empleado_asignado && params.row.nombre_dispo?.toLowerCase() !== "de_baja" && (
+>>>>>>> main
                             <Tooltip title="Preparar equipo">
                                 <IconButton
                                     size="small"
@@ -186,14 +209,7 @@ export default function InventarioPage() {
             ),
         },
         { field: "origen", headerName: "Origen", width: 90 },
-        {
-            field: "ruta_pdf_fact", headerName: "Factura", width: 90,
-            renderCell: (params) => params.value
-                ? <Link href={params.value} target="_blank" rel="noreferrer" sx={{ fontSize: 14, textDecoration: "none" }}>Ver PDF</Link>
-                : "—",
-        },
         { field: "tipo_label", headerName: "Tipo", width: 130 },
-        { field: "nombre_so", headerName: "Sistema Operativo", width: 140 },
         { field: "nombre_estado", headerName: "Estado", width: 110 },
         {
             field: "empleado_asignado", headerName: "Asignado a", width: 160,
@@ -309,11 +325,35 @@ export default function InventarioPage() {
                 open={!!activoDetalle}
                 onClose={() => setActivoDetalle(null)}
                 activo={activoDetalle}
+                onVerFactura={activoDetalle?.id_fact
+                    ? () => setFacturaDialog({
+                        id_fact: activoDetalle.id_fact,
+                        fecha_em: activoDetalle.fecha_em_fact,
+                    })
+                    : undefined}
                 onPreparar={isEditor ? (proposito) => {
                     const row = activoDetalle
                     setActivoDetalle(null)
                     if (row) abrirChecklist(row, proposito)
                 } : undefined}
+            />
+
+            <FacturaPdfDialog
+                open={!!facturaDialog}
+                onClose={() => setFacturaDialog(null)}
+                idFact={facturaDialog?.id_fact}
+                fechaEm={facturaDialog?.fecha_em}
+                onReemplazado={(actualizada) => {
+                    refetch()
+                    if (actualizada?.fecha_em != null) {
+                        setFacturaDialog(prev => prev
+                            ? { ...prev, fecha_em: actualizada.fecha_em }
+                            : prev)
+                        setActivoDetalle(prev => prev?.id_fact === actualizada.id_fact
+                            ? { ...prev, fecha_em_fact: actualizada.fecha_em }
+                            : prev)
+                    }
+                }}
             />
 
             <ChecklistEjecucionDialog

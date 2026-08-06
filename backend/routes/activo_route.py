@@ -191,13 +191,14 @@ def build_activo_data(activo_model: ActivoTi, db: Session) -> dict:
         data["nombre_dispo"] = dispo.nombre
         data["dispo_color"] = dispo.color or "default"
 
-    # Para obtener la ruta de la factura
+    # Datos de la factura asociada (ruta relativa + fecha emisión)
     if activo_model.id_fact is not None:
         factura = (
             db.query(Factura).filter(Factura.id_fact == activo_model.id_fact).first()
         )
         if factura:
             data["ruta_pdf_fact"] = factura.ruta_pdf_fact
+            data["fecha_em_fact"] = factura.fecha_em
 
     return data
 

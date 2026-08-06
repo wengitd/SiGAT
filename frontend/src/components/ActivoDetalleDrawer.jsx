@@ -1,9 +1,10 @@
 import {
-    Drawer, Box, Typography, IconButton, Divider, Chip, Link, Stack, Button,
+    Drawer, Box, Typography, IconButton, Divider, Chip, Stack, Button,
 } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import BuildCircleIcon from "@mui/icons-material/BuildCircle"
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck"
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf"
 
 function Fila({ label, valor }) {
     if (valor == null || valor === "") return null
@@ -35,9 +36,9 @@ function Seccion({ titulo, children, ultima = false }) {
 
 /**
  * Panel lateral con el detalle completo de un activo.
- * Props: open, onClose, activo (fila del inventario o null), onPreparar(proposito).
+ * Props: open, onClose, activo (fila del inventario o null), onPreparar(proposito), onVerFactura.
  */
-export default function ActivoDetalleDrawer({ open, onClose, activo, onPreparar }) {
+export default function ActivoDetalleDrawer({ open, onClose, activo, onPreparar, onVerFactura }) {
     if (!activo) {
         return (
             <Drawer anchor="right" open={open} onClose={onClose}>
@@ -100,10 +101,22 @@ export default function ActivoDetalleDrawer({ open, onClose, activo, onPreparar 
                     <Fila label="Número de serie" valor={activo.num_serie} />
                     <Fila label="Origen" valor={activo.origen} />
                     <Fila label="Fecha de recepción" valor={activo.fecha_recep} />
+                    <Fila label="Fecha emisión factura" valor={activo.fecha_em_fact} />
                     <Fila
                         label="Factura"
-                        valor={activo.ruta_pdf_fact
-                            ? <Link href={activo.ruta_pdf_fact} target="_blank" rel="noreferrer">Ver PDF</Link>
+                        valor={activo.id_fact
+                            ? (
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<PictureAsPdfIcon />}
+                                    onClick={onVerFactura}
+                                    sx={{ alignSelf: "flex-start", mt: 0.25 }}
+                                >
+                                    Ver PDF
+                                </Button>
+                            )
                             : "—"}
                     />
                 </Seccion>

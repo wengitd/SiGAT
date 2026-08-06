@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:16
+    build: ./database
+    image: sigat-postgres:latest
     container_name: sigat_postgres
     restart: unless-stopped
     environment:
@@ -9,7 +10,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -32,6 +32,9 @@ services:
     environment:
       APP_ENV: production
       PYTHONDONTWRITEBYTECODE: "1"
+      FACTURAS_STORAGE_PATH: /data/facturas
+    volumes:
+      - facturas_data:/data/facturas
     healthcheck:
       test:
         [
@@ -68,3 +71,4 @@ services:
 
 volumes:
   postgres_data:
+  facturas_data:
