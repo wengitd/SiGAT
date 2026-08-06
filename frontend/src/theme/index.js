@@ -35,8 +35,11 @@ const theme = createTheme({
         // Colores de estado para badges/chips
         success: { main: "#2E7D32" },
         warning: { main: "#ED6C02" },
-        error: { main: "#D32F2F" },
+        error: { main: "#E86046" },
         info: { main: "#0288D1" },
+        verde_oscuro: {main:"#0B6E5E"},
+        verde_claro: {main: "#2E9E8C"},
+        
     },
 
     // ── TIPOGRAFÍA ─────────────────────────────────────
