@@ -91,11 +91,7 @@ export default function Layout() {
             icon: <InventoryIcon />,
             path: "/inventario",
         },
-        {
-            label: "Estadísticas",
-            icon: <BarChartIcon />,
-            path: "/estadisticas",
-        },
+
         {
             label: "Trazabilidad",
             icon: <HistoryIcon />,
@@ -156,20 +152,24 @@ export default function Layout() {
                     }}
                 >
                     {collapsed ? (
-                        <Typography
-                            variant="subtitle2"
-                            sx={{ color: "#fff", fontWeight: 700, letterSpacing: 0.5, lineHeight: 1 }}
-                        >
-                            SiGAT
-                        </Typography>
+                        
+                        <img src="/public/logos/logo-sin-circulo.png" width={"50"}  alt="SiGAT" />
+                           
                     ) : (
                         <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700, letterSpacing: 1 }}>
-                                SiGAT
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)" }}>
-                                Gestión de Activos TI
-                            </Typography>
+                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 1 }}>
+                                <img src="/public/logos/logo-sin-circulo.png" alt="SiGAT" width={40} />
+                                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1 }}>
+                                        <Box component="span" sx={{ color: "#fff" }}>Si</Box>
+                                        <Box component="span" sx={{ color: "primary.light" }}>GAT</Box>
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, fontSize: "0.5rem" , color: "rgba(255,255,255,0.45)" }}>
+                                        GESTIÓN DE ACTIVOS TI
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        
 
                             {nombreUsuario && (
                                 <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
@@ -182,7 +182,7 @@ export default function Layout() {
                                         sx={{
                                             height: 18,
                                             fontSize: "0.65rem",
-                                            bgcolor: isAdmin ? "#d32f2f" : isEditor ? "#1976d2" : "#757575",
+                                            bgcolor: isAdmin ? "#3f51b5" : isEditor ? "#1976d2" : "#757575",
                                             color: "#fff",
                                             fontWeight: 700,
                                         }}
