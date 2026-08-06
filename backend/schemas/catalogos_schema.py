@@ -167,23 +167,6 @@ class ProveedorLicenciaOut(ProveedorLicenciaBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ProveedorFacturaBase(BaseModel):
-    nombre: str = Field(max_length=100)
-
-
-class ProveedorFacturaCreate(ProveedorFacturaBase):
-    pass
-
-
-class ProveedorFacturaUpdate(BaseModel):
-    nombre: str | None = Field(default=None, max_length=100)
-
-
-class ProveedorFacturaOut(ProveedorFacturaBase):
-    id_prov_fact: int
-    model_config = ConfigDict(from_attributes=True)
-
-
 class MarcaBase(BaseModel):
     nombre: str = Field(max_length=100)
 

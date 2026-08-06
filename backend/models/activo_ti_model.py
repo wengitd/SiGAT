@@ -96,7 +96,9 @@ class ActivoTi(Base):
     id_dispo: Mapped[int] = mapped_column(
         ForeignKey("disponibilidad.id_dispo"), nullable=False
     )
-    id_fact: Mapped[int] = mapped_column(ForeignKey("factura.id_fact"))
+    id_fact: Mapped[int | None] = mapped_column(
+        ForeignKey("factura.id_fact"), nullable=True
+    )
     id_tipoe: Mapped[int] = mapped_column(
         ForeignKey("tipo_estado.id_tipoe"), nullable=False
     )

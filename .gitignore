@@ -19,7 +19,6 @@ venv/
 node_modules/
 dist/
 build/
-frontend/.pnpm-store/
 
 # Logs
 *.log

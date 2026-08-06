@@ -129,12 +129,6 @@ const GRUPOS = [
                     },
                 ],
             },
-            {
-                title: "proveedor de factura",
-                endpoint: "/proveedores-factura",
-                idField: "id_prov_fact",
-                fields: [{ name: "nombre", label: "Nombre", required: true }],
-            },
         ],
     },
     {

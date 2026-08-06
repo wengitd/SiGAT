@@ -137,6 +137,7 @@ class ActivoOut(ActivoBase):
 
     tipo: str
     ruta_pdf_fact: str | None = None
+    fecha_em_fact: date | None = None
     detalles_so: dict | None = None
     nombre_so: str | None = None
     nombre_marca: str | None = None

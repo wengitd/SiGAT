@@ -52,7 +52,7 @@ A continuación se documenta cada tabla del esquema en el orden lógico de creac
 
 El esquema distingue dos familias de tablas de catálogo:
 
-- **Catálogos simples**: listas de valores independientes, sin dependencia de otro catálogo (`empresa`, `cargo`, `planta`, `tipo_equipo`, `familia_so`, `tipo_periferico`, `marca`, `proveedor_licencia`, `proveedor_factura`).
+- **Catálogos simples**: listas de valores independientes, sin dependencia de otro catálogo (`empresa`, `cargo`, `planta`, `tipo_equipo`, `familia_so`, `tipo_periferico`, `marca`, `proveedor_licencia`).
 - **Catálogos dependientes**: sus opciones sólo tienen sentido en el contexto de un catálogo padre y se cargan en el frontend mediante listas desplegables en cascada (`version_so` depende de `familia_so`; `edicion_so` depende de `version_so`; `modelo` depende de `marca`; `version_licencia` depende de `proveedor_licencia`; `sub_area` depende de `departamento`).
 
 En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usuario elige una opción existente del catálogo o crea una nueva sin salir del formulario, lo que mantiene los catálogos vivos sin requerir mantenimiento manual previo.
@@ -222,20 +222,7 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 ---
 
-### 4.12 `proveedor_factura`
-
-**Descripción**: catálogo simple con los proveedores que emiten facturas de adquisición de activos tecnológicos.
-
-| Atributo | Tipo | Restricciones | Default | Descripción |
-| --- | --- | --- | --- | --- |
-| `id_prov_fact` | SERIAL | PK | auto | Identificador único del proveedor de factura |
-| `nombre` | VARCHAR(100) | NOT NULL, UNIQUE | — | Nombre del proveedor |
-
-**Claves foráneas**: ninguna.
-
----
-
-### 4.13 `disponibilidad`
+### 4.12 `disponibilidad`
 
 **Descripción**: catálogo simple con los estados operativos que puede tener un activo tecnológico frente al usuario (ej. disponible, asignado, en mantención, de baja), inspirados en el ciclo de vida de activos de TI del marco ITIL 4 [6]. Cada valor incluye un color asociado, usado por el frontend para representar el estado con una etiqueta (badge) visual. Junto con `estado_dispo`, define qué disponibilidades son válidas para cada condición física del activo (`tipo_estado`).
 
@@ -252,7 +239,7 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 ---
 
-### 4.14 `version_licencia`
+### 4.13 `version_licencia`
 
 **Descripción**: catálogo dependiente de `proveedor_licencia`, con las versiones de software disponibles para cada proveedor (ej. `Office` → `2019`, `365`; `Windows` → `Enterprise`, `Server`).
 
@@ -269,24 +256,21 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 ---
 
-### 4.15 `factura`
+### 4.14 `factura`
 
-**Descripción**: registra las facturas asociadas a la adquisición de activos tecnológicos por parte de la empresa. Solo aplica para activos con origen `'empresa'`; los activos personales (origen `'personal'`) no tienen factura asociada.
+**Descripción**: registra las facturas asociadas a la adquisición de activos tecnológicos por parte de la empresa. Solo aplica para activos con origen `'empresa'`; los activos personales (origen `'personal'`) no tienen factura asociada. El PDF se almacena en el volumen local bajo `activo_{id_act}/`.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_fact` | SERIAL | PK | auto | Identificador único de la factura |
 | `fecha_em` | DATE | — | — | Fecha de emisión de la factura |
-| `num_folio` | INT | NOT NULL, UNIQUE | — | Número de folio de la factura |
-| `ruta_pdf_fact` | VARCHAR(200) | NOT NULL | — | Ruta del archivo PDF de la factura en el almacenamiento |
-| `id_prov_fact` | INT | FK, NOT NULL | — | Proveedor que emitió la factura |
+| `ruta_pdf_fact` | VARCHAR(200) | NOT NULL | — | Ruta relativa del PDF en el almacenamiento |
 
-**Claves foráneas**:
-- `factura.id_prov_fact → proveedor_factura.id_prov_fact`
+**Claves foráneas**: ninguna.
 
 ---
 
-### 4.16 `departamento`
+### 4.15 `departamento`
 
 **Descripción**: representa las unidades organizacionales del Holding Leonera a las que pertenecen los empleados. Cada departamento se asocia a una empresa subsidiaria del catálogo `empresa` y a una zona geográfica/funcional restringida por CHECK.
 
@@ -650,7 +634,6 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | edicion_so → version_so | N:1 | edicion_so.id_ver_so |
 | modelo → marca | N:1 | modelo.id_marca |
 | version_licencia → proveedor_licencia | N:1 | version_licencia.id_prov |
-| factura → proveedor_factura | N:1 | factura.id_prov_fact |
 | departamento → empresa | N:1 | departamento.id_org |
 | sub_area → departamento | N:1 | sub_area.id_dpto |
 | empleado → cargo | N:1 | empleado.id_cargo |
