@@ -153,12 +153,12 @@ export default function Layout() {
                 >
                     {collapsed ? (
                         
-                        <img src="/public/logos/logo-sin-circulo.png" width={"50"}  alt="SiGAT" />
+                        <img src="/logos/logo-sin-circulo.png" width={"50"}  alt="SiGAT" />
                            
                     ) : (
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 1 }}>
-                                <img src="/public/logos/logo-sin-circulo.png" alt="SiGAT" width={40} />
+                                <img src="/logos/logo-sin-circulo.png" alt="SiGAT" width={40} />
                                 <Box sx={{ display: "flex", flexDirection: "column" }}>
                                     <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1 }}>
                                         <Box component="span" sx={{ color: "#fff" }}>Si</Box>
