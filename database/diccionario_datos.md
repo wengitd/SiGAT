@@ -254,6 +254,8 @@ En ambos casos, el frontend implementa el patrón **"Creatable Select"**: el usu
 
 **Datos semilla cargados**: `Office` → `2019`, `365`; `Windows` → `Enterprise`, `Server`, `Home`; `Sophos` → `Intercept X`.
 
+**Notas**: este mapeo proveedor–versión es lo que se asigna a un empleado mediante `emp_lic`. Un empleado solo puede tener una versión de cada proveedor.
+
 ---
 
 ### 4.14 `factura`
@@ -419,39 +421,23 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 ---
 
-### 4.23 `licencia`
+### 4.23 `emp_lic`
 
-**Descripción**: representa un producto de software licenciado por la organización (sistema operativo, ofimática, antivirus, etc.), identificado únicamente por su proveedor y versión. No almacena fechas de vigencia del contrato: la temporalidad pertenece a la asignación al empleado (`emp_lic.fecha_asignacion`). Las filas de esta tabla se vinculan a empleados mediante la tabla asociativa `emp_lic`.
-
-| Atributo | Tipo | Restricciones | Default | Descripción |
-| --- | --- | --- | --- | --- |
-| `id_lic` | SERIAL | PK | auto | Identificador único de la licencia |
-| `id_prov` | INT | FK, NOT NULL | — | Proveedor del software licenciado |
-| `id_ver` | INT | FK, NOT NULL | — | Versión del producto licenciado |
-
-**Claves foráneas**:
-- `licencia.id_prov → proveedor_licencia.id_prov`
-- `licencia.id_ver → version_licencia.id_ver`
-
-**Notas**: las columnas `fecha_ini` y `fecha_exp` que existían en versiones anteriores del esquema fueron eliminadas; la fecha relevante para el negocio es `emp_lic.fecha_asignacion`.
-
----
-
-### 4.24 `emp_lic`
-
-**Descripción**: tabla asociativa que materializa la relación N:N entre `empleado` y `licencia`. Registra qué licencias tiene cada empleado y la fecha en que se le asignaron. Una vez asignada, la licencia se considera permanente para ese empleado hasta que se elimine el vínculo (hard delete).
+**Descripción**: tabla asociativa que materializa la relación N:N entre `empleado` y `version_licencia`. Registra qué versión (y, por tanto, qué proveedor) tiene cada empleado y la fecha en que se le asignó. Una vez asignada, el vínculo se considera permanente hasta que se elimine (hard delete). Un empleado no puede tener dos versiones del mismo proveedor.
 
 | Atributo | Tipo | Restricciones | Default | Descripción |
 | --- | --- | --- | --- | --- |
 | `id_emp` | INT | PK compuesta, FK, NOT NULL | — | Empleado al que se asigna la licencia |
-| `id_lic` | INT | PK compuesta, FK, NOT NULL | — | Licencia asignada |
+| `id_ver` | INT | PK compuesta, FK, NOT NULL | — | Versión de licencia asignada (implica el proveedor) |
 | `fecha_asignacion` | DATE | NOT NULL | — | Fecha en que se asignó la licencia al empleado (la fija el backend al crear el vínculo, típicamente la fecha del día) |
 
 **Claves foráneas**:
 - `emp_lic.id_emp → empleado.id_emp`
-- `emp_lic.id_lic → licencia.id_lic`
+- `emp_lic.id_ver → version_licencia.id_ver`
 
-**Clave primaria compuesta**: `(id_emp, id_lic)` — garantiza que un empleado no pueda tener la misma licencia asignada dos veces.
+**Clave primaria compuesta**: `(id_emp, id_ver)` — impide asignar la misma versión dos veces al mismo empleado.
+
+**Regla de negocio**: unicidad por `(empleado, proveedor)`. Se valida en el servicio (join a `version_licencia.id_prov`), no en la PK: si el empleado ya tiene Office 365, no puede recibir Office 2019.
 
 ---
 
@@ -647,10 +633,8 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 | checklist → asignacion | N:1 | checklist.id_asig |
 | checklist_paso → checklist | N:1 | checklist_paso.id_check |
 | checklist_paso → plantilla_paso | N:1 | checklist_paso.id_paso |
-| licencia → proveedor_licencia | N:1 | licencia.id_prov |
-| licencia → version_licencia | N:1 | licencia.id_ver |
 | emp_lic → empleado | N:1 | emp_lic.id_emp |
-| emp_lic → licencia | N:1 | emp_lic.id_lic |
+| emp_lic → version_licencia | N:1 | emp_lic.id_ver |
 | estado_dispo → tipo_estado | N:1 | estado_dispo.id_tipoe |
 | estado_dispo → disponibilidad | N:1 | estado_dispo.id_dispo |
 | activo_ti → modelo | N:1 | activo_ti.id_modelo |
@@ -689,7 +673,7 @@ El hash de contraseña se genera con el algoritmo argon2id mediante la librería
 
 **Soft-delete.** Las entidades sensibles a desactivación (`empleado.operatividad`, `tipo_estado.operatividad`, `usuario_sistema.vigente`) implementan borrado lógico para preservar la integridad referencial y la auditabilidad histórica, en lugar de borrado físico. La vigencia de una `asignacion` ya no depende de un flag booleano, sino de si `fecha_dev` es NULL.
 
-**Fecha de licencia en la asignación, no en el contrato.** La tabla `licencia` identifica solo el producto (proveedor + versión). La fecha que interesa operativamente es `emp_lic.fecha_asignacion`: cuándo se vinculó esa licencia a un empleado concreto. Un mismo `id_lic` puede asignarse a varios empleados, cada uno con su propia `fecha_asignacion`. Por ello se eliminaron `fecha_ini` y `fecha_exp` de `licencia`.
+**Asignación de licencia sobre el catálogo, no sobre un contrato intermedio.** El producto licenciado es el mapeo `version_licencia` (proveedor + versión) del Mantenedor. `emp_lic` vincula ese `id_ver` a un empleado y guarda `fecha_asignacion`. Un mismo `id_ver` puede asignarse a varios empleados; un empleado solo puede tener una versión por proveedor. La tabla intermedia `licencia` se eliminó por redundante.
 
 **Restricciones CHECK para enumeraciones.** Los campos discriminadores y de rol con un conjunto cerrado y estable de valores (`activo_ti.tipo`, `activo_ti.origen`, `usuario_sistema.rol`, `departamento.zona`, `checklist_paso.estado`, `equipo_computo.disco_tipo`, `equipo_computo.disco_unidad`, `tipo_estado.nombre`, `disponibilidad.nombre`, `solicitud_baja.estado_sol`) utilizan restricciones CHECK con listas de valores permitidos, en lugar de tipos ENUM nativos de PostgreSQL. Esto facilita la portabilidad del esquema y la modificación de los valores admitidos mediante migraciones. A diferencia de los demás catálogos del sistema, `tipo_estado` y `disponibilidad` no siguen el patrón "Creatable Select": representan un vocabulario de negocio cerrado y no se espera que crezca desde el frontend.
 

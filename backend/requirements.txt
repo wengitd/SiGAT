@@ -11,4 +11,6 @@ python-jose[cryptography]==3.3.0  # Creacion y validacion de tokens JWT.
 python-multipart==0.0.20          # Soporte para formularios y subida de archivos multipart.
 pydantic[email]			#para validar correos
 
-#pip install -r requirements.txt
+# Dev (opcional): uv pip install pytest httpx
+#pytest>=8.0
+#httpx>=0.27

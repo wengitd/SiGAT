@@ -10,6 +10,8 @@ Proyecto de título - Forestal Leonera - 2026
 - Contenedores: Docker + Docker Compose
 - Paquetes: `pnpm` (frontend), `uv` (backend)
 
+Convenciones de arquitectura y buenas prácticas: [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md).
+
 ## Requisitos
 
 1. Clonar el repositorio
@@ -114,8 +116,12 @@ docker compose -f docker-compose.prod.yml down -v
 4. `pnpm run dev`
 5. Abrir http://localhost:5173
 
+La UI sigue arquitectura feature-first bajo `frontend/src/` (`app/`, `core/`, `features/`, `shared/`).
+
 ## Backend local (sin Docker)
 
 1. Crear entorno con `uv venv` en la raíz del proyecto
 2. `uv pip install -r backend/requirements.txt`
-3. Ejecutar Uvicorn desde `backend` con las variables de `.env`
+3. Desde `backend`: `uvicorn app.main:app --reload` (con variables de `.env`)
+
+La API sigue la arquitectura por dominio bajo `backend/app/` (`core/`, `modules/`, `shared/`).

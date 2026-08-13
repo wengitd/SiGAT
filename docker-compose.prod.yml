@@ -33,8 +33,10 @@ services:
       APP_ENV: production
       PYTHONDONTWRITEBYTECODE: "1"
       FACTURAS_STORAGE_PATH: /data/facturas
+      ACTAS_STORAGE_PATH: /data/actas
     volumes:
       - facturas_data:/data/facturas
+      - actas_data:/data/actas
     healthcheck:
       test:
         [
@@ -69,6 +71,11 @@ services:
       retries: 3
       start_period: 5s
 
+# El volumen de datos se utiliza para persistir los datos
+# Si el usuario quiere almacenar en otra 
+# ubicación, debe cambiar el nombre del volumen y la ruta en el archivo docker-compose.prod.yml
+
 volumes:
   postgres_data:
-  facturas_data:
+  facturas_data: 
+  actas_data: 

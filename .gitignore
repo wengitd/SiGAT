@@ -25,3 +25,6 @@ build/
 
 # Datos locales de Postgres (Docker volumes nunca se commitean)
 postgres_data/
+
+nginx
+dist
